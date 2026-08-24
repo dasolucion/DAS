@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Imprimir Factura - DAS</title>
+    <style>
+        /* Estilos generales y tipografía */
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 11px;
+            color: #000;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+
+        /* Contenedor principal simulando la hoja */
+        .hoja {
+            width: 800px; /* Ancho estándar para impresión */
+            margin: 20px auto;
+            background: #fff;
+            padding: 40px;
+            box-sizing: border-box;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        /* Colores exactos del PDF */
+        .texto-azul { color: #1e4189; }
+        .texto-rojo { color: #d32f2f; }
+
+        /* Cabecera */
+        .cabecera {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 30px;
+        }
+        .logo-container img {
+            height: 80px; /* Ajusta según el tamaño de tu logo */
+        }
+        .datos-empresa {
+            text-align: center;
+            flex-grow: 1;
+            padding: 0 20px;
+        }
+        .datos-empresa h1 {
+            font-size: 16px;
+            margin: 0 0 5px 0;
+        }
+        .datos-empresa p {
+            margin: 2px 0;
+            font-size: 11px;
+        }
+        .datos-control {
+            text-align: left;
+            font-size: 12px;
+            font-weight: bold;
+            line-height: 1.6;
+        }
+
+        /* Información del Cliente y Factura */
+        .info-section {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        .info-col-izq { width: 55%; }
+        .info-col-der { width: 40%; }
+        
+        .fila-info {
+            display: flex;
+            margin-bottom: 4px;
+        }
+        .fila-info .etiqueta {
+            width: 70px;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+        .fila-info .etiqueta-der {
+            width: 90px;
+            font-weight: bold;
+        }
+        .fila-info .valor {
+            flex-grow: 1;
+        }
+
+        /* Tabla de Artículos */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th {
+            border-top: 2px solid #000;
+            border-bottom: 2px solid #000;
+            padding: 6px 4px;
+            font-size: 11px;
+        }
+        td {
+            padding: 6px 4px;
+            font-size: 11px;
+        }
+        .text-left { text-align: left; }
+        .text-right { text-align: right; }
+        .text-center { text-align: center; }
+
+        /* Pie de Totales */
+        .pie-factura {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+        }
+        .notas {
+            width: 60%;
+            font-weight: bold;
+            font-size: 10px;
+        }
+        .tabla-totales {
+            width: 35%;
+            border-top: 2px solid #000;
+        }
+        .tabla-totales .fila-total {
+            display: flex;
+            justify-content: space-between;
+            padding: 4px 0;
+        }
+        .fila-total.bold { font-weight: bold; }
+
+        /* Disclaimer y Footer */
+        .disclaimer {
+            text-align: center;
+            font-size: 9px;
+            color: #666;
+            margin-top: 50px;
+            line-height: 1.4;
+        }
+        .original {
+            text-align: center;
+            font-weight: bold;
+            font-size: 14px;
+            margin-top: 15px;
+        }
+
+        /* ESTILOS DE IMPRESIÓN */
+        @media print {
+            body { background-color: #fff; }
+            .hoja {
+                margin: 0;
+                padding: 0;
+                box-shadow: none;
+                width: 100%;
+            }
+            /* Forza al navegador a imprimir los colores exactos (Rojo y Azul) */
+            * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            /* Ocultar elementos innecesarios al imprimir */
+            @page { margin: 1cm; size: auto; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="hoja">
+        <!-- HEADER -->
+        <div class="cabecera">
+            <div class="logo-container">
+                <img src="https://dasolucion.github.io/das/logo.png" alt="DAS Logo">
+            </div>
+            <div class="datos-empresa texto-azul">
+                <h1>DAS SOLUCIONES INTEGRALES, C.A.</h1>
+                <p>Calle El Colegio, Edif. Torre B, Piso 22, Apto. 226, Conj. Res. El Naranjal</p>
+                <p>Las Minas de Baruta, Caracas 1070</p>
+            </div>
+            <div class="datos-control texto-azul">
+                <div>RIF. J-40282664-8</div>
+                <div>FORMA LIBRE</div>
+                <div>CONTROL Nº 00- <span class="texto-rojo" id="val_control">...</span></div>
+            </div>
+        </div>
+
+        <!-- INFO CLIENTE Y FACTURA -->
+        <div class="info-section">
+            <!-- Columna Izquierda -->
+            <div class="info-col-izq">
+                <div class="fila-info"><div class="etiqueta">Cliente:</div><div class="valor" id="val_cliente">Cargando...</div></div>
+                <div class="fila-info"><div class="etiqueta">R.I.F.:</div><div class="valor" id="val_rif">...</div></div>
+                <div class="fila-info"><div class="etiqueta">Dirección:</div><div class="valor" id="val_direccion">...</div></div>
+                <div class="fila-info"><div class="etiqueta">Teléfono:</div><div class="valor" id="val_telefono">...</div></div>
+                <div class="fila-info"><div class="etiqueta">Contacto:</div><div class="valor" id="val_contacto">...</div></div>
+                <div class="fila-info"><div class="etiqueta">Correo:</div><div class="valor" id="val_correo">...</div></div>
+            </div>
+            <!-- Columna Derecha -->
+            <div class="info-col-der">
+                <div class="fila-info"><div class="etiqueta-der">Factura Nº</div><div class="valor" style="font-size:14px; font-weight:bold;" id="val_numero_factura">...</div></div>
+                <div class="fila-info"><div class="etiqueta-der">Emision:</div><div class="valor bold" id="val_emision">...</div></div>
+                <div class="fila-info"><div class="etiqueta-der">Condicion: </div><div class="valor bold" id="val_condicion">...</div></div>
+                <div class="fila-info"><div class="etiqueta-der">Forma de Pago:</div><div class="valor bold" id="val_forma_pago">...</div></div>
+                <div class="fila-info"><div class="etiqueta-der">Vendedor:</div><div class="valor bold" id="val_vendedor">...</div></div>
+            </div>
+        </div>
+
+        <!-- TABLA DE ARTÍCULOS -->
+        <table>
+            <thead>
+                <tr>
+                    <th class="text-left" style="width: 40%;">Descripción</th>
+                    <th class="text-right">Cantidad</th>
+                    <th class="text-right">Precio</th>
+                    <th class="text-right">% Alic.</th>
+                    <th class="text-right">Monto Alic.</th>
+                    <th class="text-right">Total</th>
+                </tr>
+            </thead>
+            <tbody id="tabla_body">
+                <!-- Los items se inyectan acá con JavaScript -->
+            </tbody>
+        </table>
+
+        <!-- TOTALES Y NOTAS -->
+        <div class="pie-factura">
+            <div class="notas">
+                <p style="margin: 0 0 20px 0;">Notas :</p>
+                <p style="margin: 0;">Favor realizar depósito o transferencia a nombre de <strong>DAS Soluciones Integrales, C.A. Banco Banesco Cuenta Corriente N° 01340342273421075292</strong></p>
+            </div>
+            
+            <div class="tabla-totales">
+                <div class="fila-total"><span>Sub Total</span> <span id="val_subtotal">0,00</span></div>
+                <div class="fila-total"><span>Descuento</span> <span id="val_descuento">0,00</span></div>
+                <div class="fila-total"><span>Base Imponible</span> <span id="val_base">0,00</span></div>
+                <div class="fila-total"><span>IVA 16%</span> <span id="val_iva">0,00</span></div>
+                <div class="fila-total bold"><span>Total a Pagar</span> <span id="val_total">0,00</span></div>
+            </div>
+        </div>
+
+        <!-- FOOTER / PROVIDENCIA SENIAT -->
+        <div class="disclaimer texto-azul">
+            Corporación Bobinas y Rollos, C.A. RIF J-31151599-2 AV PRINCIPAL LAS CANTERAS DEL ESTE, MACARACUAY GALPON S/N PB. CARACAS ESTADO MIRANDA. TELEFONOS 0212-2580068<br>
+            NUMERO DE PROVIDENCIA: SENIAT-01-00683 DEL 01/04/2008 TIPO DE DOCUMENTO: FORMA LIBRE N° DE CONTROL DESDE EL 00-001251 HASTA 00-001400 FECHA DE ELABORACION 09/07/2025
+        </div>
+        <div class="original texto-rojo">
+            ORIGINAL - CLIENTE
+        </div>
+    </div>
+
+    <!-- SCRIPT DE SUPABASE Y LOGICA DE LLENADO -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        // 1. CONFIGURACIÓN SUPABASE
+        const SUPABASE_URL = 'https://frlaldgtcoykntmgxqmh.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZybGFsZGd0Y295a250bWd4cW1oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc1MTczNDEsImV4cCI6MjEwMzA5MzM0MX0.lTXPGXldiXSIc8FzKp-pA7t5WJmH6_7e_cwuFHF4TO8';
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // Formateador de moneda formato Venezuela (1.234,50)
+        const formatoVE = new Intl.NumberFormat('es-VE', { 
+            minimumFractionDigits: 2, 
+            maximumFractionDigits: 2 
+        });
+
+        async function cargarEImprimirFactura() {
+            try {
+                // Obtener ID de la venta desde la URL (ej: imprimir_factura.html?id=1)
+                const urlParams = new URLSearchParams(window.location.search);
+                const facturaId = urlParams.get('id');
+
+                if (!facturaId) {
+                    alert('No se especificó un ID de factura en la URL.');
+                    return;
+                }
+
+                // 2. CONSULTAS A SUPABASE
+                
+                // A. Traer la Venta y los datos del Cliente relacinado
+                const { data: venta, error: errVenta } = await supabase
+                    .from('ventas')
+                    .select('*, clientes(*)')
+                    .eq('id', facturaId)
+                    .single();
+
+                if (errVenta) throw errVenta;
+
+                // B. Traer el detalle de la venta (los ítems)
+                // OJO: Si tu columna en ventas_detalle que guarda el ID de la venta no se llama "venta_id", cámbiala aquí:
+                const { data: detalles, error: errDetalles } = await supabase
+                    .from('venta_detalles')
+                    .select('*')
+                    .eq('venta_id', facturaId);
+
+                if (errDetalles) throw errDetalles;
+
+                // 3. POBLAR EL HTML CON LOS DATOS
+                
+                // Datos cabecera y control
+                document.getElementById('val_control').innerText = venta.control_numero || '';
+                document.getElementById('val_numero_factura').innerText = venta.numero || '';
+                
+                // Formatear Fecha (Soporta si viene como timestamp ej: '2025-08-21T00:00:00' o solo fecha)
+                if(venta.emision) {
+                    const soloFecha = venta.emision.split('T')[0];
+                    const [anio, mes, dia] = soloFecha.split('-');
+                    document.getElementById('val_emision').innerText = `${dia}/${mes}/${anio}`;
+                }
+                
+                // Datos Venta
+                document.getElementById('val_condicion').innerText = venta.condicion || '';
+                document.getElementById('val_forma_pago').innerText = venta.forma_pago || '';
+                document.getElementById('val_vendedor').innerText = venta.vendedor || '';
+
+                // Datos del Cliente (Usando los campos que personalizaste)
+                const c = venta.clientes;
+                if (c) {
+                    document.getElementById('val_cliente').innerText = c.descripcion || '';
+                    document.getElementById('val_rif').innerText = c.identificacion || '';
+                    document.getElementById('val_direccion').innerText = c.direccion || '';
+                    document.getElementById('val_telefono').innerText = c.telefono || '';
+                    document.getElementById('val_contacto').innerText = c.persona_contacto || '';
+                    document.getElementById('val_correo').innerText = c.correo || '';
+                } else {
+                    document.getElementById('val_cliente').innerText = 'Cliente no encontrado';
+                }
+
+                // Poblar Tabla Artículos de ventas_detalle
+                const tablaBody = document.getElementById('tabla_body');
+                tablaBody.innerHTML = ''; // limpiar contenido por defecto
+                
+                if(detalles && detalles.length > 0) {
+                    detalles.forEach(item => {
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td class="text-left">${item.descripcion || ''}</td>
+                            <td class="text-right">${item.cantidad || 0}</td>
+                            <td class="text-right">${formatoVE.format(item.precio || 0)}</td>
+                            <td class="text-right">${item.porcentaje_alic || 16}</td>
+                            <td class="text-right">${formatoVE.format(item.monto_alic || 0)}</td>
+                            <td class="text-right">${formatoVE.format(item.total || 0)}</td>
+                        `;
+                        tablaBody.appendChild(tr);
+                    });
+                }
+
+                // Totales de la Venta
+                document.getElementById('val_subtotal').innerText = formatoVE.format(venta.subtotal || 0);
+                document.getElementById('val_descuento').innerText = formatoVE.format(venta.descuento || 0);
+                document.getElementById('val_base').innerText = formatoVE.format(venta.base_imponible || 0);
+                document.getElementById('val_iva').innerText = formatoVE.format(venta.iva || 0);
+                document.getElementById('val_total').innerText = formatoVE.format(venta.total || 0);
+
+                // 4. LANZAR VENTANA DE IMPRESIÓN (Esperamos 0.5s a que el DOM cargue completo)
+                setTimeout(() => {
+                    window.print();
+                }, 500);
+
+            } catch (error) {
+                console.error("Error consultando a Supabase:", error);
+                alert("Hubo un error cargando los datos de la base de datos.");
+            }
+        }
+
+        // Ejecutar apenas la estructura HTML esté lista
+        window.addEventListener('DOMContentLoaded', cargarEImprimirFactura);
+    </script>
+</body>
+</html>
