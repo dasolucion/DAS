@@ -244,8 +244,7 @@
             ORIGINAL - CLIENTE
         </div>
     </div>
-
-    <!-- SCRIPT DE SUPABASE Y LOGICA DE LLENADO -->
+<!-- SCRIPT DE SUPABASE Y LOGICA DE LLENADO -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
         // 1. CONFIGURACIÓN SUPABASE
@@ -261,7 +260,7 @@
 
         async function cargarEImprimirFactura() {
             try {
-                // Obtener ID de la venta desde la URL (ej: imprimir_factura.html?id=1)
+                // Obtener ID de la venta desde la URL
                 const urlParams = new URLSearchParams(window.location.search);
                 const facturaId = urlParams.get('id');
 
@@ -281,34 +280,28 @@
 
                 if (errVenta) throw errVenta;
 
-                // B. Traer el detalle de la venta (los ítems)
-                // OJO: Si tu columna en ventas_detalle que guarda el ID de la venta no se llama "venta_id", cámbiala aquí:
+                // B. Traer el detalle de la venta UNIENDO la tabla de productos para obtener el nombre
                 const { data: detalles, error: errDetalles } = await supabase
                     .from('venta_detalles')
-                    .select('*')
+                    .select('*, productos(descripcion)')
                     .eq('venta_id', facturaId);
 
                 if (errDetalles) throw errDetalles;
 
                 // 3. POBLAR EL HTML CON LOS DATOS
                 
-                // Datos cabecera y control
-                document.getElementById('val_control').innerText = venta.control_numero || '';
-                document.getElementById('val_numero_factura').innerText = venta.numero || '';
+                // Datos cabecera y control (Ajustado a tus columnas 'control' y 'factura')
+                document.getElementById('val_control').innerText = venta.control || '';
+                document.getElementById('val_numero_factura').innerText = venta.factura || '';
                 
-                // Formatear Fecha (Soporta si viene como timestamp ej: '2025-08-21T00:00:00' o solo fecha)
-                if(venta.emision) {
-                    const soloFecha = venta.emision.split('T')[0];
+                // Formatear Fecha (Ajustado a tu columna 'fecha')
+                if(venta.fecha) {
+                    const soloFecha = venta.fecha.split('T')[0];
                     const [anio, mes, dia] = soloFecha.split('-');
                     document.getElementById('val_emision').innerText = `${dia}/${mes}/${anio}`;
                 }
                 
-                // Datos Venta
-                document.getElementById('val_condicion').innerText = venta.condicion || '';
-                document.getElementById('val_forma_pago').innerText = venta.forma_pago || '';
-                document.getElementById('val_vendedor').innerText = venta.vendedor || '';
-
-                // Datos del Cliente (Usando los campos que personalizaste)
+                // Datos del Cliente
                 const c = venta.clientes;
                 if (c) {
                     document.getElementById('val_cliente').innerText = c.descripcion || '';
@@ -321,33 +314,43 @@
                     document.getElementById('val_cliente').innerText = 'Cliente no encontrado';
                 }
 
-                // Poblar Tabla Artículos de ventas_detalle
+                // Poblar Tabla Artículos
                 const tablaBody = document.getElementById('tabla_body');
-                tablaBody.innerHTML = ''; // limpiar contenido por defecto
+                tablaBody.innerHTML = ''; 
                 
                 if(detalles && detalles.length > 0) {
                     detalles.forEach(item => {
+                        // Extraemos el nombre del producto del Join
+                        const nombreProducto = item.productos ? item.productos.descripcion : 'Producto/Servicio Desconocido';
+                        
+                        // Calculamos los subtotales por item (Asumiendo 16% de IVA)
+                        const subtotalItem = item.cantidad * item.precio_unitario;
+                        const montoAlicItem = subtotalItem * 0.16;
+                        const totalItem = subtotalItem + montoAlicItem;
+
                         const tr = document.createElement('tr');
                         tr.innerHTML = `
-                            <td class="text-left">${item.descripcion || ''}</td>
-                            <td class="text-right">${item.cantidad || 0}</td>
-                            <td class="text-right">${formatoVE.format(item.precio || 0)}</td>
-                            <td class="text-right">${item.porcentaje_alic || 16}</td>
-                            <td class="text-right">${formatoVE.format(item.monto_alic || 0)}</td>
-                            <td class="text-right">${formatoVE.format(item.total || 0)}</td>
+                            <td class="text-left">${nombreProducto}</td>
+                            <td class="text-right">${item.cantidad}</td>
+                            <td class="text-right">${formatoVE.format(item.precio_unitario)}</td>
+                            <td class="text-right">16</td>
+                            <td class="text-right">${formatoVE.format(montoAlicItem)}</td>
+                            <td class="text-right">${formatoVE.format(totalItem)}</td>
                         `;
                         tablaBody.appendChild(tr);
                     });
                 }
 
-                // Totales de la Venta
-                document.getElementById('val_subtotal').innerText = formatoVE.format(venta.subtotal || 0);
-                document.getElementById('val_descuento').innerText = formatoVE.format(venta.descuento || 0);
-                document.getElementById('val_base').innerText = formatoVE.format(venta.base_imponible || 0);
-                document.getElementById('val_iva').innerText = formatoVE.format(venta.iva || 0);
+                // Totales de la Venta (Calculamos la base imponible restando el impuesto al total)
+                const baseImponible = venta.total - venta.impuestos;
+
+                document.getElementById('val_subtotal').innerText = formatoVE.format(baseImponible);
+                document.getElementById('val_descuento').innerText = '0,00';
+                document.getElementById('val_base').innerText = formatoVE.format(baseImponible);
+                document.getElementById('val_iva').innerText = formatoVE.format(venta.impuestos || 0);
                 document.getElementById('val_total').innerText = formatoVE.format(venta.total || 0);
 
-                // 4. LANZAR VENTANA DE IMPRESIÓN (Esperamos 0.5s a que el DOM cargue completo)
+                // 4. LANZAR VENTANA DE IMPRESIÓN (Esperamos medio segundo a que cargue todo)
                 setTimeout(() => {
                     window.print();
                 }, 500);
@@ -358,8 +361,7 @@
             }
         }
 
-        // Ejecutar apenas la estructura HTML esté lista
         window.addEventListener('DOMContentLoaded', cargarEImprimirFactura);
     </script>
-</body>
+   </body>
 </html>
