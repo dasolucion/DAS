@@ -1,0 +1,1078 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DAS Ventas - Sistema de Gestión</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+    <style>
+        @media print {
+            .no-print { display: none !important; }
+            .print-area { width: 100% !important; margin: 0 !important; padding: 0 !important; background: white !important; color: black !important; }
+            .print-area * { background: white !important; color: black !important; border-color: #ddd !important; }
+        }
+        /* Personalización del scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 font-sans h-screen overflow-hidden flex antialiased selection:bg-sky-500 selection:text-white">
+
+    <!-- Menú Lateral Estilizado -->
+    <aside id="sidebar" class="no-print w-64 bg-slate-900 flex flex-col transition-transform transform -translate-x-full absolute z-40 h-full md:relative md:translate-x-0 shadow-2xl border-r border-slate-800">
+        <div class="p-5 text-lg font-bold text-white border-b border-slate-800 flex justify-between items-center bg-slate-950/50 backdrop-blur-sm">
+            <span class="flex items-center gap-3">
+                <div class="bg-sky-500 text-slate-950 p-2 rounded-xl text-sm shadow-lg shadow-sky-500/20">
+                    <i class="fa-solid fa-briefcase"></i>
+                </div>
+                DAS Ventas
+            </span>
+            <button onclick="toggleSidebar()" class="md:hidden text-slate-400 hover:text-white text-lg">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        
+        <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
+            <button onclick="mostrarModulo('clientes')" class="w-full text-left py-3 px-4 rounded-xl text-xs font-medium transition flex items-center gap-3 text-slate-300 hover:bg-slate-800 hover:text-white border border-transparent hover:border-slate-700">
+                <i class="fa-solid fa-users w-5 text-center text-sky-400"></i> Clientes
+            </button>
+            <button onclick="mostrarModulo('productos')" class="w-full text-left py-3 px-4 rounded-xl text-xs font-medium transition flex items-center gap-3 text-slate-300 hover:bg-slate-800 hover:text-white border border-transparent hover:border-slate-700">
+                <i class="fa-solid fa-boxes-stacked w-5 text-center text-sky-400"></i> Prod/Servicios
+            </button>
+            <button onclick="mostrarModulo('presupuestos')" class="w-full text-left py-3 px-4 rounded-xl text-xs font-medium transition flex items-center gap-3 text-slate-300 hover:bg-slate-800 hover:text-white border border-transparent hover:border-slate-700">
+                <i class="fa-solid fa-file-invoice w-5 text-center text-amber-400"></i> Presupuestos
+            </button>
+            <button onclick="mostrarModulo('ventas')" class="w-full text-left py-3 px-4 rounded-xl text-xs font-medium transition flex items-center gap-3 text-slate-300 hover:bg-slate-800 hover:text-white border border-transparent hover:border-slate-700">
+                <i class="fa-solid fa-cart-shopping w-5 text-center text-emerald-400"></i> Ventas
+            </button>
+            <button onclick="mostrarModulo('cxc')" class="w-full text-left py-3 px-4 rounded-xl text-xs font-medium transition flex items-center gap-3 text-slate-300 hover:bg-slate-800 hover:text-white border border-transparent hover:border-slate-700">
+                <i class="fa-solid fa-wallet w-5 text-center text-rose-400"></i> Cuentas por Cobrar
+            </button>
+        </nav>
+        
+        <div class="p-4 border-t border-slate-800 text-[10px] text-slate-500 text-center font-mono uppercase tracking-widest bg-slate-950/30">
+            Panel de Control v1.1
+        </div>
+    </aside>
+
+    <!-- Contenido Principal -->
+    <main class="flex-1 flex flex-col print-area w-full relative overflow-hidden bg-slate-950">
+        
+        <!-- Encabezado Móvil -->
+        <header class="no-print bg-slate-900 border-b border-slate-800 p-4 flex justify-between items-center md:hidden sticky top-0 z-30 backdrop-blur-md bg-opacity-80">
+            <h1 class="text-base font-bold text-white flex items-center gap-2">
+                <div class="bg-sky-500 text-slate-950 p-1.5 rounded-lg text-[10px]"><i class="fa-solid fa-briefcase"></i></div> DAS Ventas
+            </h1>
+            <button onclick="toggleSidebar()" class="text-slate-300 focus:outline-none"><i class="fa-solid fa-bars text-xl"></i></button>
+        </header>
+
+        <!-- Contenedor de Vistas Scrolleable -->
+        <div class="flex-1 p-4 md:p-8 overflow-y-auto w-full">
+            
+            <!-- ==============================
+                 MÓDULO: CLIENTES
+            ============================== -->
+            <section id="clientes" class="modulo block max-w-6xl mx-auto space-y-6">
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-2xl flex items-center gap-3">
+                    <div class="bg-slate-800 text-sky-400 p-2.5 rounded-xl border border-slate-700">
+                        <i class="fa-solid fa-users text-lg"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-bold text-white tracking-tight">Gestión de Clientes</h2>
+                        <p class="text-xs text-slate-400">Directorio y registro de clientes</p>
+                    </div>
+                </div>
+                
+                <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-xl no-print">
+                    <h3 id="form-cliente-titulo" class="text-sm font-bold text-white mb-5 pb-3 border-b border-slate-800 flex items-center gap-2">
+                        <i class="fa-solid fa-user-plus text-sky-400"></i> Registrar Nuevo Cliente
+                    </h3>
+                    <form id="form-cliente" class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div>
+                            <label class="block text-xs font-medium text-slate-300 mb-1">Razón Social / Descripción</label>
+                            <input type="text" id="cli-desc" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-sky-500 transition" required>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-300 mb-1">Identificación (RIF / Cédula)</label>
+                            <input type="text" id="cli-id" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-sky-500 transition" required>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-300 mb-1">Persona de Contacto</label>
+                            <input type="text" id="cli-contacto" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-sky-500 transition">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-300 mb-1">Teléfono</label>
+                            <input type="tel" id="cli-tel" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-sky-500 transition">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-300 mb-1">Correo Electrónico</label>
+                            <input type="email" id="cli-correo" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-sky-500 transition">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-300 mb-1">Dirección</label>
+                            <input type="text" id="cli-dir" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-sky-500 transition">
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-xs font-medium text-slate-300 mb-1">Observaciones</label>
+                            <input type="text" id="cli-obs" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-sky-500 transition" placeholder="Observaciones o monto personalizado">
+                        </div>
+                        <div class="flex items-center space-x-3 md:col-span-2 pt-2">
+                            <input type="checkbox" id="cli-especial" class="w-4 h-4 bg-slate-950 border-slate-700 rounded accent-sky-500 cursor-pointer">
+                            <label for="cli-especial" class="text-xs font-medium text-slate-300 cursor-pointer">¿Es Contribuyente Especial?</label>
+                        </div>
+                        <div class="md:col-span-2 flex gap-3 pt-2">
+                            <button type="submit" class="bg-sky-600 hover:bg-sky-500 text-white font-bold px-6 py-2.5 rounded-xl transition shadow-lg shadow-sky-600/20 text-xs flex items-center gap-2">
+                                <i class="fa-solid fa-save"></i> Guardar Cliente
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse text-xs">
+                            <thead class="bg-slate-950 border-b border-slate-800 text-slate-400 uppercase tracking-wider text-[10px]">
+                                <tr>
+                                    <th class="p-4 font-medium">Descripción</th>
+                                    <th class="p-4 font-medium">ID / RIF</th>
+                                    <th class="p-4 font-medium">Contacto</th>
+                                    <th class="p-4 font-medium">C. Especial</th>
+                                    <th class="p-4 font-medium">Observaciones</th>
+                                    <th class="p-4 font-medium text-right">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabla-clientes" class="divide-y divide-slate-800"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ==============================
+                 MÓDULO: PRODUCTOS / SERVICIOS
+            ============================== -->
+            <section id="productos" class="modulo hidden max-w-6xl mx-auto space-y-6">
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-2xl flex items-center gap-3">
+                    <div class="bg-slate-800 text-sky-400 p-2.5 rounded-xl border border-slate-700">
+                        <i class="fa-solid fa-boxes-stacked text-lg"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-bold text-white tracking-tight">Inventario de Productos/Servicios</h2>
+                        <p class="text-xs text-slate-400">Catálogo general de costos y precios</p>
+                    </div>
+                </div>
+                
+                <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-xl no-print">
+                    <h3 id="form-producto-titulo" class="text-sm font-bold text-white mb-5 pb-3 border-b border-slate-800 flex items-center gap-2">
+                        <i class="fa-solid fa-plus-circle text-sky-400"></i> Registrar Nuevo Producto/Servicio
+                    </h3>
+                    <form id="form-producto" class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                        <div class="md:col-span-3">
+                            <label class="block text-xs font-medium text-slate-300 mb-1">Descripción del Producto/Servicio</label>
+                            <input type="text" id="prod-desc" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-sky-500 transition" required>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-300 mb-1">Costo Base ($)</label>
+                            <input type="number" step="0.01" id="prod-costo" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-sky-500 transition" required>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-300 mb-1">Precio de Venta Base ($)</label>
+                            <input type="number" step="0.01" id="prod-precio" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-emerald-400 transition" required>
+                        </div>
+                        <div class="flex items-end">
+                            <button type="submit" class="w-full bg-sky-600 hover:bg-sky-500 text-white font-bold px-6 py-2.5 rounded-xl transition shadow-lg shadow-sky-600/20 text-xs flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-save"></i> Guardar Ítem
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse text-xs">
+                            <thead class="bg-slate-950 border-b border-slate-800 text-slate-400 uppercase tracking-wider text-[10px]">
+                                <tr>
+                                    <th class="p-4 font-medium">Descripción</th>
+                                    <th class="p-4 font-medium">Costo ($)</th>
+                                    <th class="p-4 font-medium">Precio ($)</th>
+                                    <th class="p-4 font-medium text-right">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabla-productos" class="divide-y divide-slate-800"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ==============================
+                 MÓDULO: PRESUPUESTOS
+            ============================== -->
+            <section id="presupuestos" class="modulo hidden max-w-6xl mx-auto space-y-6">
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-2xl flex items-center gap-3">
+                    <div class="bg-slate-800 text-amber-400 p-2.5 rounded-xl border border-slate-700">
+                        <i class="fa-solid fa-file-invoice text-lg"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-bold text-white tracking-tight">Generar Presupuesto</h2>
+                        <p class="text-xs text-slate-400">Creación de cotizaciones para clientes</p>
+                    </div>
+                </div>
+                
+                <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-xl">
+                    <form id="form-transaccion" class="space-y-5">
+                        
+                        <!-- Bloque Tasa -->
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-5 no-print border-b border-slate-800 pb-5 mb-5 bg-slate-950/50 p-4 rounded-xl border border-slate-800">
+                            <div>
+                                <label class="block text-xs font-bold text-sky-400 uppercase mb-2"><i class="fa-solid fa-money-bill-transfer"></i> Tasa de Cambio (Multiplicador)</label>
+                                <input type="number" step="0.01" class="input-tasa w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-sm text-sky-400 font-mono font-bold outline-none focus:border-sky-500 transition" required>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5 no-print">
+                            <div>
+                                <label class="block text-xs font-medium text-slate-300 mb-1">Cliente</label>
+                                <select id="trans-cliente" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-sky-500 transition" required>
+                                    <option value="">Seleccione un Cliente...</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-slate-300 mb-1">Agregar Producto/Servicio</label>
+                                <div class="flex space-x-2">
+                                    <select id="trans-producto" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-sky-500 transition">
+                                        <option value="">Seleccione Prod/Servicio...</option>
+                                    </select>
+                                    <button type="button" id="btn-add-producto" class="bg-slate-800 hover:bg-slate-700 text-white font-bold px-4 py-2.5 rounded-xl border border-slate-700 transition text-xs shadow-sm">
+                                        <i class="fa-solid fa-plus"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-6 border border-slate-800 rounded-2xl p-5 bg-slate-950">
+                            <h4 class="font-bold text-slate-300 mb-3 text-xs uppercase tracking-wider flex items-center gap-2">
+                                <i class="fa-solid fa-list-check text-sky-400"></i> Artículos Seleccionados
+                            </h4>
+                            <div id="lista-articulos" class="space-y-2 mb-4 text-xs min-h-[60px]">
+                                <p class="text-slate-500 text-xs italic">No hay productos agregados aún.</p>
+                            </div>
+                            
+                            <div class="flex justify-end pt-4 border-t border-slate-800 space-x-8">
+                                <div class="text-right flex flex-col justify-between text-xs space-y-2">
+                                    <p class="text-slate-400 font-medium">Subtotal (Bs):</p>
+                                    <p class="text-slate-400 font-medium flex items-center justify-end gap-2">
+                                        Impuesto (<input type="number" id="calc-impuesto-porcentaje" value="16" class="w-14 bg-slate-900 border border-slate-700 text-center py-1 rounded-lg text-white outline-none focus:border-sky-500">%):
+                                    </p>
+                                    <p class="font-bold text-white text-sm pt-1">Total (Bs):</p>
+                                </div>
+                                <div class="text-right font-mono flex flex-col justify-between text-xs space-y-2">
+                                    <p id="calc-subtotal" class="font-semibold text-slate-300 py-1">0.00</p>
+                                    <p id="calc-impuesto-monto" class="text-slate-400 py-1">0.00</p>
+                                    <p id="calc-total" class="font-bold text-emerald-400 text-sm pt-1">0.00</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex space-x-3 no-print pt-2">
+                            <button type="submit" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-6 py-2.5 rounded-xl transition shadow-lg shadow-emerald-600/20 text-xs flex items-center gap-2">
+                                <i class="fa-solid fa-check"></i> Guardar Presupuesto
+                            </button>
+                            <button type="button" onclick="window.print()" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white font-bold px-6 py-2.5 rounded-xl transition text-xs flex items-center gap-2">
+                                <i class="fa-solid fa-print"></i> Imprimir
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl no-print">
+                    <h3 class="text-sm font-bold p-5 border-b border-slate-800 text-white flex items-center gap-2">
+                        <i class="fa-solid fa-clock-rotate-left text-sky-400"></i> Historial de Presupuestos
+                    </h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse text-xs">
+                            <thead class="bg-slate-950 border-b border-slate-800 text-slate-400 uppercase tracking-wider text-[10px]">
+                                <tr>
+                                    <th class="p-4 font-medium">Fecha</th>
+                                    <th class="p-4 font-medium">Cliente</th>
+                                    <th class="p-4 font-medium">Impuestos (Bs)</th>
+                                    <th class="p-4 font-medium">Total (Bs)</th>
+                                    <th class="p-4 font-medium text-right">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabla-presupuestos" class="divide-y divide-slate-800"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- ==============================
+                 MÓDULO: VENTAS
+            ============================== -->
+            <section id="ventas" class="modulo hidden max-w-6xl mx-auto space-y-6">
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-2xl flex items-center gap-3">
+                    <div class="bg-slate-800 text-emerald-400 p-2.5 rounded-xl border border-slate-700">
+                        <i class="fa-solid fa-cart-shopping text-lg"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-bold text-white tracking-tight">Procesar Venta</h2>
+                        <p class="text-xs text-slate-400">Facturación y registro de ventas</p>
+                    </div>
+                </div>
+                
+                <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-xl">
+                    <form id="form-venta" class="space-y-5">
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-5 no-print border-b border-slate-800 pb-5 mb-5 bg-slate-950/50 p-4 rounded-xl border border-slate-800">
+                            <div>
+                                <label class="block text-xs font-bold text-sky-400 uppercase mb-2"><i class="fa-solid fa-money-bill-transfer"></i> Tasa (Multiplicador)</label>
+                                <input type="number" step="0.01" class="input-tasa w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-sm text-sky-400 font-mono font-bold outline-none focus:border-sky-500 transition" required>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-slate-300 mb-1">Nº Factura</label>
+                                <input type="text" id="venta-factura" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-sky-500 font-mono transition" required>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-slate-300 mb-1">Nº Control (00-XXXXXX)</label>
+                                <input type="text" id="venta-control" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-emerald-400 font-bold outline-none focus:border-emerald-500 font-mono transition" required>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5 no-print">
+                            <div>
+                                <label class="block text-xs font-medium text-slate-300 mb-1">Cliente</label>
+                                <select id="venta-cliente" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-sky-500 transition" required>
+                                    <option value="">Seleccione un Cliente...</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-slate-300 mb-1">Agregar Producto/Servicio</label>
+                                <div class="flex space-x-2">
+                                    <select id="venta-producto" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-sky-500 transition">
+                                        <option value="">Seleccione Prod/Servicio...</option>
+                                    </select>
+                                    <button type="button" id="btn-add-venta" class="bg-slate-800 hover:bg-slate-700 text-white font-bold px-4 py-2.5 rounded-xl border border-slate-700 transition text-xs shadow-sm">
+                                        <i class="fa-solid fa-plus"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-6 border border-slate-800 rounded-2xl p-5 bg-slate-950">
+                            <h4 class="font-bold text-slate-300 mb-3 text-xs uppercase tracking-wider flex items-center gap-2">
+                                <i class="fa-solid fa-cart-arrow-down text-emerald-400"></i> Artículos (Venta)
+                            </h4>
+                            <div id="lista-articulos-venta" class="space-y-2 mb-4 text-xs min-h-[60px]">
+                                <p class="text-slate-500 text-xs italic">No hay productos agregados a la venta.</p>
+                            </div>
+                            
+                            <div class="flex justify-end pt-4 border-t border-slate-800 space-x-8">
+                                <div class="text-right flex flex-col justify-between text-xs space-y-2">
+                                    <p class="text-slate-400 font-medium">Subtotal (Bs):</p>
+                                    <p class="text-slate-400 font-medium flex items-center justify-end gap-2">
+                                        Impuesto (<input type="number" id="calc-impuesto-porcentaje-venta" value="16" class="w-14 bg-slate-900 border border-slate-700 text-center py-1 rounded-lg text-white outline-none focus:border-sky-500">%):
+                                    </p>
+                                    <p class="font-bold text-white text-sm pt-1">Total (Bs):</p>
+                                </div>
+                                <div class="text-right font-mono flex flex-col justify-between text-xs space-y-2">
+                                    <p id="calc-subtotal-venta" class="font-semibold text-slate-300 py-1">0.00</p>
+                                    <p id="calc-impuesto-monto-venta" class="text-slate-400 py-1">0.00</p>
+                                    <p id="calc-total-venta" class="font-bold text-emerald-400 text-sm pt-1">0.00</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center space-x-3 pt-2">
+                            <input type="checkbox" id="venta-cxc" class="w-4 h-4 bg-slate-950 border-slate-700 rounded accent-sky-500 cursor-pointer" checked>
+                            <label for="venta-cxc" class="text-xs font-medium text-slate-300 cursor-pointer">Registrar como Cuenta por Cobrar (CxC)</label>
+                        </div>
+
+                        <div class="flex space-x-3 no-print pt-2">
+                            <button type="submit" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-6 py-2.5 rounded-xl transition shadow-lg shadow-emerald-600/20 text-xs flex items-center gap-2">
+                                <i class="fa-solid fa-file-invoice-dollar"></i> Procesar Venta
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl no-print">
+                    <h3 class="text-sm font-bold p-5 border-b border-slate-800 text-white flex items-center gap-2">
+                        <i class="fa-solid fa-clock-rotate-left text-emerald-400"></i> Historial de Ventas
+                    </h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse text-xs">
+                            <thead class="bg-slate-950 border-b border-slate-800 text-slate-400 uppercase tracking-wider text-[10px]">
+                                <tr>
+                                    <th class="p-4 font-medium">Fecha</th>
+                                    <th class="p-4 font-medium">Nº Factura</th>
+                                    <th class="p-4 font-medium">Nº Control</th>
+                                    <th class="p-4 font-medium">Cliente</th>
+                                    <th class="p-4 font-medium">Total (Bs)</th>
+                                    <th class="p-4 font-medium">Estado CxC</th>
+                                    <th class="p-4 font-medium text-right">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabla-ventas" class="divide-y divide-slate-800"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ==============================
+                 MÓDULO: CUENTAS POR COBRAR (CxC)
+            ============================== -->
+            <section id="cxc" class="modulo hidden max-w-6xl mx-auto space-y-6">
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-2xl flex items-center gap-3">
+                    <div class="bg-slate-800 text-rose-400 p-2.5 rounded-xl border border-slate-700">
+                        <i class="fa-solid fa-wallet text-lg"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-bold text-white tracking-tight">Cuentas por Cobrar (CxC)</h2>
+                        <p class="text-xs text-slate-400">Seguimiento de saldos pendientes</p>
+                    </div>
+                </div>
+
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+                    <h3 class="text-sm font-bold p-5 border-b border-slate-800 text-white flex items-center gap-2">
+                        <i class="fa-solid fa-triangle-exclamation text-amber-400"></i> Ventas Pendientes de Cobro
+                    </h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse text-xs">
+                            <thead class="bg-slate-950 border-b border-slate-800 text-slate-400 uppercase tracking-wider text-[10px]">
+                                <tr>
+                                    <th class="p-4 font-medium">Fecha</th>
+                                    <th class="p-4 font-medium">Cliente</th>
+                                    <th class="p-4 font-medium">Impuestos (Bs)</th>
+                                    <th class="p-4 font-medium">Total Pendiente (Bs)</th>
+                                    <th class="p-4 font-medium text-right">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabla-cxc" class="divide-y divide-slate-800"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <!-- Overlay móvil -->
+    <div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-30 hidden md:hidden"></div>
+
+    <script>
+        // ==========================================
+        // CONFIGURACIÓN Y SUPABASE
+        // ==========================================
+        const { createClient } = supabase;
+        const supabaseUrl = 'https://frlaldgtcoykntmgxqmh.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZybGFsZGd0Y295a250bWd4cW1oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc1MTczNDEsImV4cCI6MjEwMzA5MzM0MX0.lTXPGXldiXSIc8FzKp-pA7t5WJmH6_7e_cwuFHF4TO8';
+        const db = createClient(supabaseUrl, supabaseKey);
+
+        let editandoClienteId = null;
+        let editandoProductoId = null;
+
+        // ==========================================
+        // GESTIÓN DE LA TASA DE CAMBIO (GLOBAL)
+        // ==========================================
+        function initTasaCambio() {
+            const savedTasa = localStorage.getItem('das_tasa') || '1';
+            document.querySelectorAll('.input-tasa').forEach(input => {
+                input.value = savedTasa;
+                input.addEventListener('input', (e) => {
+                    const val = e.target.value;
+                    localStorage.setItem('das_tasa', val);
+                    document.querySelectorAll('.input-tasa').forEach(other => {
+                        if (other !== e.target) other.value = val;
+                    });
+                });
+            });
+        }
+
+        function getTasa() {
+            return parseFloat(localStorage.getItem('das_tasa')) || 1;
+        }
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            sidebar.classList.toggle('-translate-x-full');
+            overlay.classList.toggle('hidden');
+        }
+
+        function mostrarModulo(id) {
+            const modulos = document.querySelectorAll('.modulo');
+            modulos.forEach(mod => {
+                mod.classList.add('hidden');
+                mod.classList.remove('block');
+            });
+            document.getElementById(id).classList.remove('hidden');
+            document.getElementById(id).classList.add('block');
+            
+            if(window.innerWidth < 768 && !document.getElementById('sidebar').classList.contains('-translate-x-full')){
+                toggleSidebar();
+            }
+
+            if(id === 'clientes') cargarClientes();
+            if(id === 'productos') cargarProductos();
+            if(id === 'presupuestos') { cargarOpcionesPresupuesto(); cargarHistorialPresupuestos(); }
+            if(id === 'ventas') { cargarOpcionesVentas(); cargarHistorialVentas(); generarCorrelativosVenta(); }
+            if(id === 'cxc') { cargarCxC(); }
+        }
+
+        // ==========================================
+        // MÓDULO: CLIENTES
+        // ==========================================
+        document.getElementById('form-cliente').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.querySelector('#form-cliente button[type="submit"]');
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Guardando...';
+            btn.disabled = true;
+
+            const nuevoCliente = {
+                descripcion: document.getElementById('cli-desc').value,
+                identificacion: document.getElementById('cli-id').value,
+                persona_contacto: document.getElementById('cli-contacto').value,
+                telefono: document.getElementById('cli-tel').value,
+                correo: document.getElementById('cli-correo').value,
+                direccion: document.getElementById('cli-dir').value,
+                contribuyente_especial: document.getElementById('cli-especial').checked,
+                observaciones: document.getElementById('cli-obs').value
+            };
+
+            if (editandoClienteId) {
+                const { error } = await db.from('clientes').update(nuevoCliente).eq('id', editandoClienteId);
+                if (error) alert("Error al actualizar: " + error.message);
+                else {
+                    editandoClienteId = null;
+                    document.getElementById('form-cliente-titulo').innerHTML = '<i class="fa-solid fa-user-plus text-sky-400"></i> Registrar Nuevo Cliente';
+                    btn.innerHTML = '<i class="fa-solid fa-save"></i> Guardar Cliente';
+                    document.getElementById('form-cliente').reset();
+                    cargarClientes();
+                }
+            } else {
+                const { error } = await db.from('clientes').insert([nuevoCliente]);
+                if (error) alert("Error al guardar: " + error.message);
+                else {
+                    document.getElementById('form-cliente').reset();
+                    cargarClientes();
+                }
+            }
+            if(!editandoClienteId){
+                btn.innerHTML = originalHTML;
+            }
+            btn.disabled = false;
+        });
+
+        async function cargarClientes() {
+            const { data, error } = await db.from('clientes').select('*').order('created_at', { ascending: false });
+            if (error) return console.error(error);
+            const tbody = document.getElementById('tabla-clientes');
+            tbody.innerHTML = '';
+            data.forEach(c => {
+                const badge = c.contribuyente_especial 
+                    ? '<span class="bg-sky-500/10 text-sky-400 border border-sky-500/20 px-2 py-1 rounded-md text-[10px] font-bold">Sí</span>' 
+                    : '<span class="bg-slate-800 text-slate-400 border border-slate-700 px-2 py-1 rounded-md text-[10px]">No</span>';
+                
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-800/50 transition border-b border-slate-800">
+                        <td class="p-4 font-medium text-white">${c.descripcion}</td>
+                        <td class="p-4 text-slate-400 font-mono text-[11px]">${c.identificacion}</td>
+                        <td class="p-4 text-slate-400">${c.persona_contacto || '-'}</td>
+                        <td class="p-4">${badge}</td>
+                        <td class="p-4 text-slate-400 text-[11px]">${c.observaciones || '-'}</td>
+                        <td class="p-4 text-right space-x-2">
+                            <button onclick="editarCliente('${c.id}')" class="text-sky-400 hover:text-sky-300 font-medium px-2"><i class="fa-solid fa-pen"></i></button>
+                            <button onclick="eliminarCliente('${c.id}')" class="text-rose-400 hover:text-rose-300 font-medium px-2"><i class="fa-solid fa-trash"></i></button>
+                        </td>
+                    </tr>`;
+            });
+        }
+
+        async function editarCliente(id) {
+            const { data, error } = await db.from('clientes').select('*').eq('id', id).single();
+            if (error) return alert('No se pudo cargar');
+            document.getElementById('cli-desc').value = data.descripcion;
+            document.getElementById('cli-id').value = data.identificacion;
+            document.getElementById('cli-contacto').value = data.persona_contacto || '';
+            document.getElementById('cli-tel').value = data.telefono || '';
+            document.getElementById('cli-correo').value = data.correo || '';
+            document.getElementById('cli-dir').value = data.direccion || '';
+            document.getElementById('cli-obs').value = data.observaciones || '';
+            document.getElementById('cli-especial').checked = data.contribuyente_especial;
+            editandoClienteId = id;
+            document.getElementById('form-cliente-titulo').innerHTML = '<i class="fa-solid fa-pen-to-square text-sky-400"></i> Editando Cliente';
+            document.querySelector('#form-cliente button[type="submit"]').innerHTML = '<i class="fa-solid fa-arrows-rotate"></i> Actualizar Cliente';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        async function eliminarCliente(id) {
+            if (!confirm('¿Eliminar cliente?')) return;
+            const { error } = await db.from('clientes').delete().eq('id', id);
+            if (error) alert('Error: ' + error.message);
+            else cargarClientes();
+        }
+
+        // ==========================================
+        // MÓDULO: PRODUCTOS / SERVICIOS
+        // ==========================================
+        document.getElementById('form-producto').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.querySelector('#form-producto button[type="submit"]');
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Guardando...';
+            btn.disabled = true;
+
+            const nuevoProducto = {
+                descripcion: document.getElementById('prod-desc').value,
+                costo: parseFloat(document.getElementById('prod-costo').value),
+                precio: parseFloat(document.getElementById('prod-precio').value)
+            };
+
+            if (editandoProductoId) {
+                const { error } = await db.from('productos').update(nuevoProducto).eq('id', editandoProductoId);
+                if (error) alert("Error: " + error.message);
+                else {
+                    editandoProductoId = null;
+                    document.getElementById('form-producto-titulo').innerHTML = '<i class="fa-solid fa-plus-circle text-sky-400"></i> Registrar Nuevo Producto/Servicio';
+                    btn.innerHTML = '<i class="fa-solid fa-save"></i> Guardar Ítem';
+                    document.getElementById('form-producto').reset();
+                    cargarProductos();
+                }
+            } else {
+                const { error } = await db.from('productos').insert([nuevoProducto]);
+                if (error) alert("Error: " + error.message);
+                else {
+                    document.getElementById('form-producto').reset();
+                    cargarProductos();
+                }
+            }
+            if(!editandoProductoId) btn.innerHTML = originalHTML;
+            btn.disabled = false;
+        });
+
+        async function cargarProductos() {
+            const { data, error } = await db.from('productos').select('*').order('created_at', { ascending: false });
+            if (error) return console.error(error);
+            const tbody = document.getElementById('tabla-productos');
+            tbody.innerHTML = '';
+            data.forEach(p => {
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-800/50 transition border-b border-slate-800">
+                        <td class="p-4 font-medium text-white">${p.descripcion}</td>
+                        <td class="p-4 font-mono text-slate-400 text-[11px]">$${p.costo.toFixed(2)}</td>
+                        <td class="p-4 font-mono font-bold text-emerald-400 text-[11px]">$${p.precio.toFixed(2)}</td>
+                        <td class="p-4 text-right space-x-2">
+                            <button onclick="editarProducto('${p.id}')" class="text-sky-400 hover:text-sky-300 font-medium px-2"><i class="fa-solid fa-pen"></i></button>
+                            <button onclick="eliminarProducto('${p.id}')" class="text-rose-400 hover:text-rose-300 font-medium px-2"><i class="fa-solid fa-trash"></i></button>
+                        </td>
+                    </tr>`;
+            });
+        }
+
+        async function editarProducto(id) {
+            const { data, error } = await db.from('productos').select('*').eq('id', id).single();
+            if (error) return alert('No se pudo cargar');
+            document.getElementById('prod-desc').value = data.descripcion;
+            document.getElementById('prod-costo').value = data.costo;
+            document.getElementById('prod-precio').value = data.precio;
+            editandoProductoId = id;
+            document.getElementById('form-producto-titulo').innerHTML = '<i class="fa-solid fa-pen-to-square text-sky-400"></i> Editando Prod/Servicio';
+            document.querySelector('#form-producto button[type="submit"]').innerHTML = '<i class="fa-solid fa-arrows-rotate"></i> Actualizar Ítem';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        async function eliminarProducto(id) {
+            if (!confirm('¿Eliminar producto/servicio?')) return;
+            const { error } = await db.from('productos').delete().eq('id', id);
+            if (error) alert('Error: ' + error.message);
+            else cargarProductos();
+        }
+
+        // ==========================================
+        // MÓDULO: PRESUPUESTOS
+        // ==========================================
+        let carritoPresupuesto = [];
+        let subtotalPresupuesto = 0, impuestosPresupuesto = 0, totalPresupuesto = 0;
+
+        async function cargarOpcionesPresupuesto() {
+            const { data: clientes } = await db.from('clientes').select('id, descripcion').order('descripcion');
+            const selectCliente = document.getElementById('trans-cliente');
+            selectCliente.innerHTML = '<option value="">Seleccione un Cliente...</option>';
+            if(clientes) clientes.forEach(c => selectCliente.innerHTML += `<option value="${c.id}">${c.descripcion}</option>`);
+
+            const { data: productos } = await db.from('productos').select('id, descripcion, precio').order('descripcion');
+            const selectProducto = document.getElementById('trans-producto');
+            selectProducto.innerHTML = '<option value="">Seleccione Prod/Servicio...</option>';
+            if(productos) productos.forEach(p => selectProducto.innerHTML += `<option value="${p.id}" data-precio="${p.precio}" data-nombre="${p.descripcion}">${p.descripcion} - $${p.precio.toFixed(2)}</option>`);
+        }
+
+        document.getElementById('btn-add-producto').addEventListener('click', () => {
+            const select = document.getElementById('trans-producto');
+            const opt = select.options[select.selectedIndex];
+            if (!opt.value) return;
+
+            const id = opt.value;
+            const nombre = opt.getAttribute('data-nombre');
+            const precioBs = parseFloat(opt.getAttribute('data-precio')) * getTasa();
+            
+            const existe = carritoPresupuesto.find(i => i.id === id && i.precio === precioBs);
+            if (existe) existe.cantidad++;
+            else carritoPresupuesto.push({ id, nombre, precio: precioBs, cantidad: 1 });
+            renderCarritoPresupuesto();
+        });
+
+        function renderCarritoPresupuesto() {
+            const lista = document.getElementById('lista-articulos');
+            lista.innerHTML = '';
+            subtotalPresupuesto = 0;
+            if(carritoPresupuesto.length === 0) {
+                lista.innerHTML = '<p class="text-slate-500 text-xs italic">No hay productos agregados aún.</p>';
+                actualizarTotalesPresupuesto();
+                return;
+            }
+            carritoPresupuesto.forEach((item, index) => {
+                const totalItem = item.precio * item.cantidad;
+                subtotalPresupuesto += totalItem;
+                lista.innerHTML += `
+                    <div class="flex justify-between items-center bg-slate-900 p-3 rounded-xl border border-slate-800 mb-2">
+                        <span class="font-medium text-slate-200">
+                            <span class="text-sky-400 font-bold">${item.cantidad}x</span> ${item.nombre}
+                        </span>
+                        <div class="flex items-center space-x-4">
+                            <span class="font-mono font-bold text-emerald-400">Bs. ${totalItem.toFixed(2)}</span>
+                            <button type="button" class="text-rose-400 hover:text-rose-300 font-bold" onclick="quitarCarritoPresupuesto(${index})"><i class="fa-solid fa-xmark"></i></button>
+                        </div>
+                    </div>`;
+            });
+            actualizarTotalesPresupuesto();
+        }
+
+        function quitarCarritoPresupuesto(index) { carritoPresupuesto.splice(index, 1); renderCarritoPresupuesto(); }
+
+        function actualizarTotalesPresupuesto() {
+            const porc = parseFloat(document.getElementById('calc-impuesto-porcentaje').value) || 0;
+            impuestosPresupuesto = subtotalPresupuesto * (porc / 100);
+            totalPresupuesto = subtotalPresupuesto + impuestosPresupuesto;
+            document.getElementById('calc-subtotal').innerText = subtotalPresupuesto.toFixed(2);
+            document.getElementById('calc-impuesto-monto').innerText = impuestosPresupuesto.toFixed(2);
+            document.getElementById('calc-total').innerText = totalPresupuesto.toFixed(2);
+        }
+        document.getElementById('calc-impuesto-porcentaje').addEventListener('input', actualizarTotalesPresupuesto);
+
+        document.getElementById('form-transaccion').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const clienteId = document.getElementById('trans-cliente').value;
+            if (!clienteId || carritoPresupuesto.length === 0) return alert('Seleccione cliente y agregue productos.');
+
+            const btn = document.querySelector('#form-transaccion button[type="submit"]');
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Guardando...';
+            btn.disabled = true;
+
+            const { data, error } = await db.from('presupuestos').insert([{ cliente_id: clienteId, impuestos: impuestosPresupuesto, total: totalPresupuesto }]).select();
+            if (error) { btn.innerHTML = originalHTML; btn.disabled = false; return alert('Error: ' + error.message); }
+
+            const presupuestoId = data[0].id;
+            const detalles = carritoPresupuesto.map(i => ({ presupuesto_id: presupuestoId, producto_id: i.id, cantidad: i.cantidad, precio_unitario: i.precio }));
+            const { error: errDet } = await db.from('presupuesto_detalles').insert(detalles);
+
+            if (errDet) alert('Error en detalles: ' + errDet.message);
+            else {
+                carritoPresupuesto = [];
+                renderCarritoPresupuesto();
+                document.getElementById('form-transaccion').reset();
+                document.getElementById('calc-impuesto-porcentaje').value = "16";
+                cargarHistorialPresupuestos();
+            }
+            btn.innerHTML = originalHTML;
+            btn.disabled = false;
+        });
+
+        async function cargarHistorialPresupuestos() {
+            const { data, error } = await db.from('presupuestos').select('*, clientes(descripcion)').order('fecha', { ascending: false });
+            if (error) return console.error(error);
+            const tbody = document.getElementById('tabla-presupuestos');
+            tbody.innerHTML = '';
+            data.forEach(p => {
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-800/50 transition border-b border-slate-800">
+                        <td class="p-4 text-slate-400 font-mono text-[11px]">${new Date(p.fecha).toLocaleDateString()}</td>
+                        <td class="p-4 font-medium text-white">${p.clientes?.descripcion || 'Desconocido'}</td>
+                        <td class="p-4 font-mono text-slate-400 text-[11px]">Bs. ${p.impuestos.toFixed(2)}</td>
+                        <td class="p-4 font-mono font-bold text-emerald-400 text-[11px]">Bs. ${p.total.toFixed(2)}</td>
+                        <td class="p-4 text-right">
+                            <button onclick="eliminarPresupuesto('${p.id}')" class="text-rose-400 hover:text-rose-300 font-medium px-2"><i class="fa-solid fa-trash"></i></button>
+                        </td>
+                    </tr>`;
+            });
+        }
+
+        async function eliminarPresupuesto(id) {
+            if (!confirm('¿Eliminar presupuesto?')) return;
+            const { error } = await db.from('presupuestos').delete().eq('id', id);
+            if (error) alert('Error: ' + error.message);
+            else cargarHistorialPresupuestos();
+        }
+
+        // ==========================================
+        // MÓDULO: VENTAS
+        // ==========================================
+        let carritoVentas = [];
+        let subtotalVenta = 0, impuestosVenta = 0, totalVenta = 0;
+
+        async function generarCorrelativosVenta() {
+            try {
+                const { data, error } = await db.from('ventas')
+                    .select('factura, control')
+                    .order('created_at', { ascending: false })
+                    .limit(1);
+
+                let nextFactura = 1;
+                let nextControl = 1;
+
+                if (data && data.length > 0) {
+                    const lastFactura = data[0].factura || '';
+                    const lastControl = data[0].control || '';
+                    const lastFacturaNum = parseInt(String(lastFactura).replace(/\D/g, ''), 10) || 0;
+                    const lastControlNum = parseInt(String(lastControl).replace(/\D/g, ''), 10) || 0;
+                    
+                    nextFactura = lastFacturaNum + 1;
+                    nextControl = lastControlNum + 1;
+                }
+
+                document.getElementById('venta-factura').value = String(nextFactura).padStart(6, '0');
+                document.getElementById('venta-control').value = '00-' + String(nextControl).padStart(6, '0');
+            } catch (err) {
+                console.error("Error generando correlativos:", err);
+            }
+        }
+
+        async function cargarOpcionesVentas() {
+            const { data: clientes } = await db.from('clientes').select('id, descripcion').order('descripcion');
+            const selectCliente = document.getElementById('venta-cliente');
+            selectCliente.innerHTML = '<option value="">Seleccione un Cliente...</option>';
+            if(clientes) clientes.forEach(c => selectCliente.innerHTML += `<option value="${c.id}">${c.descripcion}</option>`);
+
+            const { data: productos } = await db.from('productos').select('id, descripcion, precio').order('descripcion');
+            const selectProducto = document.getElementById('venta-producto');
+            selectProducto.innerHTML = '<option value="">Seleccione Prod/Servicio...</option>';
+            if(productos) productos.forEach(p => selectProducto.innerHTML += `<option value="${p.id}" data-precio="${p.precio}" data-nombre="${p.descripcion}">${p.descripcion} - $${p.precio.toFixed(2)}</option>`);
+        }
+
+        document.getElementById('btn-add-venta').addEventListener('click', async () => {
+            const select = document.getElementById('venta-producto');
+            const opt = select.options[select.selectedIndex];
+            if (!opt.value) return;
+
+            const id = opt.value;
+            const nombre = opt.getAttribute('data-nombre');
+            let precioBase = parseFloat(opt.getAttribute('data-precio'));
+
+            if (id === 'fb062513-0f9c-4bff-8984-bcceeba631d7') {
+                const clienteId = document.getElementById('venta-cliente').value;
+                if (!clienteId) {
+                    alert('Por favor, seleccione un cliente primero para asignar el monto de sus observaciones.');
+                    return;
+                }
+
+                const { data: clienteData, error: errCli } = await db.from('clientes').select('observaciones').eq('id', clienteId).single();
+                if (errCli || !clienteData || !clienteData.observaciones) {
+                    alert('El cliente seleccionado no tiene información de observaciones registrada.');
+                    return;
+                }
+
+                const montoObs = parseFloat(clienteData.observaciones);
+                if (isNaN(montoObs)) {
+                    alert('Las observaciones del cliente no contienen un monto numérico válido.');
+                    return;
+                }
+                precioBase = montoObs;
+            }
+
+            const precioBs = precioBase * getTasa();
+            const existe = carritoVentas.find(i => i.id === id && i.precio === precioBs);
+            if (existe) existe.cantidad++;
+            else carritoVentas.push({ id, nombre, precio: precioBs, cantidad: 1 });
+            renderCarritoVentas();
+        });
+
+        function renderCarritoVentas() {
+            const lista = document.getElementById('lista-articulos-venta');
+            lista.innerHTML = '';
+            subtotalVenta = 0;
+            if(carritoVentas.length === 0) {
+                lista.innerHTML = '<p class="text-slate-500 text-xs italic">No hay productos agregados a la venta.</p>';
+                actualizarTotalesVenta();
+                return;
+            }
+            carritoVentas.forEach((item, index) => {
+                const totalItem = item.precio * item.cantidad;
+                subtotalVenta += totalItem;
+                lista.innerHTML += `
+                    <div class="flex justify-between items-center bg-slate-900 p-3 rounded-xl border border-slate-800 mb-2">
+                        <span class="font-medium text-slate-200">
+                            <span class="text-emerald-400 font-bold">${item.cantidad}x</span> ${item.nombre}
+                            <span class="text-[10px] text-slate-500 ml-1">((Bs. ${item.precio.toFixed(2)} c/u))</span>
+                        </span>
+                        <div class="flex items-center space-x-4">
+                            <span class="font-mono font-bold text-emerald-400">Bs. ${totalItem.toFixed(2)}</span>
+                            <button type="button" class="text-rose-400 hover:text-rose-300 font-bold" onclick="quitarCarritoVenta(${index})"><i class="fa-solid fa-xmark"></i></button>
+                        </div>
+                    </div>`;
+            });
+            actualizarTotalesVenta();
+        }
+
+        function quitarCarritoVenta(index) { carritoVentas.splice(index, 1); renderCarritoVentas(); }
+
+        function actualizarTotalesVenta() {
+            const porc = parseFloat(document.getElementById('calc-impuesto-porcentaje-venta').value) || 0;
+            impuestosVenta = subtotalVenta * (porc / 100);
+            totalVenta = subtotalVenta + impuestosVenta;
+            document.getElementById('calc-subtotal-venta').innerText = subtotalVenta.toFixed(2);
+            document.getElementById('calc-impuesto-monto-venta').innerText = impuestosVenta.toFixed(2);
+            document.getElementById('calc-total-venta').innerText = totalVenta.toFixed(2);
+        }
+        document.getElementById('calc-impuesto-porcentaje-venta').addEventListener('input', actualizarTotalesVenta);
+
+        document.getElementById('form-venta').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const clienteId = document.getElementById('venta-cliente').value;
+            const esCxC = document.getElementById('venta-cxc').checked;
+            const numFactura = document.getElementById('venta-factura').value;
+            const numControl = document.getElementById('venta-control').value;
+
+            if (!clienteId || carritoVentas.length === 0) return alert('Seleccione cliente y agregue productos.');
+
+            const btn = document.querySelector('#form-venta button[type="submit"]');
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Procesando...';
+            btn.disabled = true;
+
+            const { data, error } = await db.from('ventas').insert([{ 
+                cliente_id: clienteId, impuestos: impuestosVenta, total: totalVenta, cxc: esCxC, factura: numFactura, control: numControl
+            }]).select();
+            
+            if (error) { btn.innerHTML = originalHTML; btn.disabled = false; return alert('Error: ' + error.message); }
+
+            const ventaId = data[0].id;
+            const detalles = carritoVentas.map(i => ({ venta_id: ventaId, producto_id: i.id, cantidad: i.cantidad, precio_unitario: i.precio }));
+            const { error: errDet } = await db.from('venta_detalles').insert(detalles);
+
+            if (errDet) alert('Error en detalles: ' + errDet.message);
+            else {
+                carritoVentas = [];
+                renderCarritoVentas();
+                document.getElementById('form-venta').reset();
+                
+                document.getElementById('calc-impuesto-porcentaje-venta').value = "16";
+                document.getElementById('venta-cxc').checked = true;
+                initTasaCambio(); 
+                
+                cargarHistorialVentas();
+                cargarCxC();
+                generarCorrelativosVenta();
+            }
+            btn.innerHTML = originalHTML;
+            btn.disabled = false;
+        });
+
+        function imprimirVenta(idFactura) {
+            window.open(`factura_pdf.html?id=${idFactura}`, '_blank');
+        }
+
+        async function cargarHistorialVentas() {
+            const { data, error } = await db.from('ventas').select('*, clientes(descripcion)').order('fecha', { ascending: false });
+            if (error) return console.error(error);
+            const tbody = document.getElementById('tabla-ventas');
+            tbody.innerHTML = '';
+            data.forEach(v => {
+                const estadoCxC = v.cxc 
+                    ? '<span class="bg-amber-500/10 text-amber-400 border border-amber-500/20 px-2 py-1 rounded-md text-[10px] font-bold">Pendiente (CxC)</span>' 
+                    : '<span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-1 rounded-md text-[10px] font-bold">Pagado</span>';
+                
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-800/50 transition border-b border-slate-800">
+                        <td class="p-4 text-slate-400 font-mono text-[11px]">${new Date(v.fecha).toLocaleDateString()}</td>
+                        <td class="p-4 font-mono font-medium text-slate-300">${v.factura || '-'}</td>
+                        <td class="p-4 font-mono font-medium text-emerald-400">${v.control || '-'}</td>
+                        <td class="p-4 font-medium text-white">${v.clientes?.descripcion || 'Desconocido'}</td>
+                        <td class="p-4 font-mono font-bold text-emerald-400 text-[11px]">Bs. ${v.total.toFixed(2)}</td>
+                        <td class="p-4">${estadoCxC}</td>
+                        <td class="p-4 text-right space-x-2">
+                            <button onclick="imprimirVenta('${v.id}')" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 hover:text-white px-2.5 py-1.5 rounded-lg text-[10px] font-bold transition shadow-sm" title="Imprimir"><i class="fa-solid fa-print"></i></button>
+                            <button onclick="eliminarVenta('${v.id}')" class="text-rose-400 hover:text-rose-300 font-medium px-2"><i class="fa-solid fa-trash"></i></button>
+                        </td>
+                    </tr>`;
+            });
+        }
+
+        async function eliminarVenta(id) {
+            if (!confirm('¿Eliminar venta? Esto podría alterar el orden de los correlativos si borras la última.')) return;
+            const { error } = await db.from('ventas').delete().eq('id', id);
+            if (error) alert('Error: ' + error.message);
+            else {
+                cargarHistorialVentas();
+                cargarCxC();
+                generarCorrelativosVenta(); 
+            }
+        }
+
+        // ==========================================
+        // MÓDULO: CUENTAS POR COBRAR (CxC)
+        // ==========================================
+        async function cargarCxC() {
+            const { data, error } = await db.from('ventas').select('*, clientes(descripcion)').eq('cxc', true).order('fecha', { ascending: false });
+            if (error) return console.error(error);
+            const tbody = document.getElementById('tabla-cxc');
+            tbody.innerHTML = '';
+            
+            if(data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-slate-500 italic text-xs">No hay cuentas por cobrar pendientes.</td></tr>`;
+                return;
+            }
+
+            data.forEach(v => {
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-800/50 transition border-b border-slate-800">
+                        <td class="p-4 text-slate-400 font-mono text-[11px]">${new Date(v.fecha).toLocaleDateString()}</td>
+                        <td class="p-4 font-medium text-white">${v.clientes?.descripcion || 'Desconocido'}</td>
+                        <td class="p-4 font-mono text-slate-400 text-[11px]">Bs. ${v.impuestos.toFixed(2)}</td>
+                        <td class="p-4 font-mono font-bold text-amber-400 text-[11px]">Bs. ${v.total.toFixed(2)}</td>
+                        <td class="p-4 text-right">
+                            <button onclick="marcarComoPagado('${v.id}')" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded-lg text-[10px] font-bold transition shadow-lg shadow-emerald-600/20 flex items-center justify-end gap-1 float-right">
+                                <i class="fa-solid fa-check"></i> Marcar Pagado
+                            </button>
+                        </td>
+                    </tr>`;
+            });
+        }
+
+        async function marcarComoPagado(id) {
+            if (!confirm('¿Desea registrar esta cuenta como pagada?')) return;
+            const { error } = await db.from('ventas').update({ cxc: false }).eq('id', id);
+            if (error) alert('Error al actualizar: ' + error.message);
+            else {
+                cargarCxC();
+                cargarHistorialVentas();
+            }
+        }
+
+        // Carga inicial
+        window.onload = () => {
+            initTasaCambio();
+            cargarClientes();
+            cargarProductos();
+            cargarOpcionesPresupuesto();
+            cargarHistorialPresupuestos();
+            cargarOpcionesVentas();
+            cargarHistorialVentas();
+            cargarCxC();
+            generarCorrelativosVenta(); 
+        };
+    </script>
+</body>
+</html>
