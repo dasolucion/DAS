@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Taller 3D Pro - Sistema de Gestión</title>
+    <title>DAS - Sistema de Facturación</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
     <style>
@@ -18,12 +18,12 @@
     <!-- Menú Lateral Estilizado (Taller 3D Pro) -->
     <aside id="sidebar" class="no-print w-64 bg-slate-900 text-slate-300 flex flex-col transition-transform transform -translate-x-full absolute z-20 h-full md:relative md:translate-x-0 shadow-xl border-r border-slate-800">
         <div class="p-6 text-xl font-black tracking-wider text-white border-b border-slate-800 flex justify-between items-center bg-slate-950">
-            <span class="flex items-center gap-2">🛠️ Taller 3D Pro</span>
+            <span class="flex items-center gap-2">Ventas DAS</span>
             <button onclick="toggleSidebar()" class="md:hidden text-slate-400 hover:text-white text-lg">✕</button>
         </div>
         <nav class="flex-1 px-3 py-6 space-y-1.5">
             <button onclick="mostrarModulo('clientes')" class="nav-btn w-full text-left py-3 px-4 rounded-xl font-medium transition flex items-center gap-3 hover:bg-slate-800 hover:text-white">👥 Clientes</button>
-            <button onclick="mostrarModulo('productos')" class="nav-btn w-full text-left py-3 px-4 rounded-xl font-medium transition flex items-center gap-3 hover:bg-slate-800 hover:text-white">📦 Productos</button>
+            <button onclick="mostrarModulo('productos')" class="nav-btn w-full text-left py-3 px-4 rounded-xl font-medium transition flex items-center gap-3 hover:bg-slate-800 hover:text-white">📦 Productos/Servicios</button>
             <button onclick="mostrarModulo('presupuestos')" class="nav-btn w-full text-left py-3 px-4 rounded-xl font-medium transition flex items-center gap-3 hover:bg-slate-800 hover:text-white">📄 Presupuestos</button>
             <button onclick="mostrarModulo('ventas')" class="nav-btn w-full text-left py-3 px-4 rounded-xl font-medium transition flex items-center gap-3 hover:bg-slate-800 hover:text-white">💰 Ventas</button>
             <button onclick="mostrarModulo('cxc')" class="nav-btn w-full text-left py-3 px-4 rounded-xl font-medium transition flex items-center gap-3 hover:bg-slate-800 hover:text-white">💳 Cuentas por Cobrar</button>
@@ -120,7 +120,7 @@
             ============================== -->
             <section id="productos" class="modulo hidden max-w-6xl mx-auto">
                 <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-2xl font-extrabold text-slate-900">Inventario de Productos</h2>
+                    <h2 class="text-2xl font-extrabold text-slate-900">Productos/Servicios</h2>
                 </div>
                 
                 <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 mb-8 no-print">
@@ -192,7 +192,7 @@
                         <div class="mt-6 border border-slate-200 rounded-2xl p-5 bg-slate-50/50">
                             <h4 class="font-bold text-slate-700 mb-3 text-sm uppercase tracking-wider">Artículos Seleccionados</h4>
                             <div id="lista-articulos" class="space-y-2 mb-4 text-sm min-h-[60px]">
-                                <p class="text-slate-400 text-sm italic">No hay productos agregados aún.</p>
+                                <p class="text-slate-400 text-sm italic">No hay items agregados aún.</p>
                             </div>
                             
                             <div class="flex justify-end pt-4 border-t border-slate-200 space-x-8">
@@ -268,7 +268,7 @@
                         <div class="mt-6 border border-slate-200 rounded-2xl p-5 bg-slate-50/50">
                             <h4 class="font-bold text-slate-700 mb-3 text-sm uppercase tracking-wider">Artículos (Venta)</h4>
                             <div id="lista-articulos-venta" class="space-y-2 mb-4 text-sm min-h-[60px]">
-                                <p class="text-slate-400 text-sm italic">No hay productos agregados a la venta.</p>
+                                <p class="text-slate-400 text-sm italic">No hay items agregados a la venta.</p>
                             </div>
                             
                             <div class="flex justify-end pt-4 border-t border-slate-200 space-x-8">
@@ -583,7 +583,7 @@
             lista.innerHTML = '';
             subtotalPresupuesto = 0;
             if(carritoPresupuesto.length === 0) {
-                lista.innerHTML = '<p class="text-slate-400 text-sm italic">No hay productos agregados aún.</p>';
+                lista.innerHTML = '<p class="text-slate-400 text-sm italic">No hay items agregados aún.</p>';
                 actualizarTotalesPresupuesto();
                 return;
             }
@@ -617,7 +617,7 @@
         document.getElementById('form-transaccion').addEventListener('submit', async (e) => {
             e.preventDefault();
             const clienteId = document.getElementById('trans-cliente').value;
-            if (!clienteId || carritoPresupuesto.length === 0) return alert('Seleccione cliente y agregue productos.');
+            if (!clienteId || carritoPresupuesto.length === 0) return alert('Seleccione cliente y agregue items.');
 
             const { data, error } = await db.from('presupuestos').insert([{ cliente_id: clienteId, impuestos: impuestosPresupuesto, total: totalPresupuesto }]).select();
             if (error) return alert('Error: ' + error.message);
@@ -724,7 +724,7 @@
             lista.innerHTML = '';
             subtotalVenta = 0;
             if(carritoVentas.length === 0) {
-                lista.innerHTML = '<p class="text-slate-400 text-sm italic">No hay productos agregados a la venta.</p>';
+                lista.innerHTML = '<p class="text-slate-400 text-sm italic">No hay items agregados a la venta.</p>';
                 actualizarTotalesVenta();
                 return;
             }
@@ -759,7 +759,7 @@
             e.preventDefault();
             const clienteId = document.getElementById('venta-cliente').value;
             const esCxC = document.getElementById('venta-cxc').checked;
-            if (!clienteId || carritoVentas.length === 0) return alert('Seleccione cliente y agregue productos.');
+            if (!clienteId || carritoVentas.length === 0) return alert('Seleccione cliente y agregue items.');
 
             const { data, error } = await db.from('ventas').insert([{ 
                 cliente_id: clienteId, 
