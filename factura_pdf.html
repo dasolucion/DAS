@@ -46,7 +46,7 @@
 </head>
 <body>
 
-    <div class="hoja">
+    <div class="hoja" id="hoja-factura">
         <!-- HEADER -->
         <div class="cabecera">
             <div class="logo-container">
@@ -68,7 +68,7 @@
         <div class="info-section">
             <!-- Columna Izquierda -->
             <div class="info-col-izq">
-                <div class="fila-info"><div class="etiqueta">Cliente:</div><div class="valor" id="val_cliente">Cargando datos...</div></div>
+                <div class="fila-info"><div class="etiqueta">Cliente:</div><div class="valor" id="val_cliente">Iniciando conexión con Supabase...</div></div>
                 <div class="fila-info"><div class="etiqueta">R.I.F.:</div><div class="valor" id="val_rif">...</div></div>
                 <div class="fila-info"><div class="etiqueta">Dirección:</div><div class="valor" id="val_direccion">...</div></div>
                 <div class="fila-info"><div class="etiqueta">Teléfono:</div><div class="valor" id="val_telefono">...</div></div>
@@ -106,7 +106,7 @@
         <div class="pie-factura">
             <div class="notas">
                 <p style="margin: 0 0 20px 0;">Notas :</p>
-                <p style="margin: 0;">Favor realizar depósito o transferencia a nombre de <strong>DAS Soluciones Integrales, C.A. Banco Banesco Cuenta Corriente N° 01340342273421075292</strong></p>
+                <p style="margin: 0;">Favor realizar depósito o transferencia a nombre de <strong>DAS Soluciones Integrales, C.A.<br>Banco Banesco Cuenta Corriente N° 01340342273421075292</strong></p>
             </div>
             
             <div class="tabla-totales">
@@ -134,17 +134,31 @@
 
         const formatoVE = new Intl.NumberFormat('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
+        // Pantalla visual de error para reemplazar el "Alert" silencioso
+        function mostrarErrorEnPantalla(titulo, detalleObj) {
+            document.body.innerHTML = `
+                <div style="max-width: 600px; margin: 40px auto; padding: 20px; border: 2px solid #ef5350; background: #ffebee; border-radius: 8px; font-family: Arial, sans-serif;">
+                    <h2 style="color: #c62828; margin-top:0;">🛑 Error: ${titulo}</h2>
+                    <p style="font-size: 13px; color: #333;">Se ha detenido la carga de la factura. Detalle técnico para diagnóstico:</p>
+                    <pre style="background: #fff; padding: 12px; border: 1px solid #ffcdd2; overflow-x: auto; font-size: 12px; color: #d32f2f;">${JSON.stringify(detalleObj, null, 2)}</pre>
+                    <p style="font-size: 11px; color: #555;">Sugerencias:<br>- Verifique si la tabla tiene habilitada seguridad RLS impidiendo la lectura.<br>- Revise que el registro de la venta no haya sido borrado.</p>
+                </div>
+            `;
+        }
+
         async function cargarEImprimirFactura() {
             try {
                 const urlParams = new URLSearchParams(window.location.search);
                 const facturaId = urlParams.get('id');
 
                 if (!facturaId) {
-                    alert('Error: No se especificó el ID de la venta en la URL.');
+                    mostrarErrorEnPantalla("ID de Factura no proporcionado en la URL.", { error: "Parámetro ?id= no encontrado." });
                     return;
                 }
 
-                // 1. OBTENER VENTA PRINCIPAL (Sin relaciones para evitar errores de Foreign Key)
+                document.getElementById('val_cliente').innerText = 'Buscando venta en base de datos...';
+
+                // 1. OBTENER VENTA PRINCIPAL (Evita dependencias estrictas de Foreign Key)
                 const { data: venta, error: errVenta } = await supabase
                     .from('ventas')
                     .select('*')
@@ -152,43 +166,54 @@
                     .single();
 
                 if (errVenta || !venta) {
-                    console.error("Error al obtener la venta:", errVenta);
-                    alert("No se pudo obtener la factura en la base de datos.");
+                    mostrarErrorEnPantalla("Fallo al consultar la tabla 'ventas'.", errVenta || { motivo: "Registro no encontrado (NULL)" });
                     return;
                 }
+
+                document.getElementById('val_cliente').innerText = 'Buscando datos del cliente...';
 
                 // 2. OBTENER DATOS DEL CLIENTE MANUAMENTE
                 let c = {};
                 if (venta.cliente_id) {
-                    const { data: cliente } = await supabase.from('clientes').select('*').eq('id', venta.cliente_id).single();
+                    const { data: cliente, error: errCli } = await supabase
+                        .from('clientes')
+                        .select('*')
+                        .eq('id', venta.cliente_id)
+                        .single();
                     if (cliente) c = cliente;
                 }
 
-                // 3. OBTENER DETALLES DE LA VENTA MANUAMENTE
+                document.getElementById('val_cliente').innerText = 'Buscando artículos registrados...';
+
+                // 3. OBTENER DETALLES DE LA VENTA
                 const { data: detalles, error: errDetalles } = await supabase
                     .from('venta_detalles')
                     .select('*')
                     .eq('venta_id', facturaId);
 
-                // 4. OBTENER DICCIONARIO DE PRODUCTOS PARA LAS DESCRIPCIONES
+                // 4. OBTENER DICCIONARIO DE PRODUCTOS (Para descripciones)
                 const mapProductos = {};
                 if (detalles && detalles.length > 0) {
+                    // Pide todos los productos en una sola consulta
                     const { data: productos } = await supabase.from('productos').select('id, descripcion');
-                    if (productos) productos.forEach(p => mapProductos[p.id] = p.descripcion);
+                    if (productos) {
+                        productos.forEach(p => mapProductos[p.id] = p.descripcion);
+                    }
                 }
 
-                // --- LLENAR DATOS EN EL HTML ---
+                // --- LLENAR DATOS EN EL DOM ---
                 
                 document.getElementById('val_control').innerText = venta.control || '00-000000';
                 document.getElementById('val_numero_factura').innerText = venta.factura || '000000';
                 
+                // Tratar la fecha, adaptándola a la zona horaria del registro
                 const stringFecha = venta.fecha || venta.created_at || new Date().toISOString();
                 const soloFecha = stringFecha.split('T')[0];
                 const [anio, mes, dia] = soloFecha.split('-');
                 document.getElementById('val_emision').innerText = `${dia}/${mes}/${anio}`;
 
                 // Llenar Datos Cliente
-                document.getElementById('val_cliente').innerText = c.descripcion || 'Sin Nombre';
+                document.getElementById('val_cliente').innerText = c.descripcion || 'Cliente no registrado o Venta Genérica';
                 document.getElementById('val_rif').innerText = c.identificacion || 'N/A';
                 document.getElementById('val_direccion').innerText = c.direccion || '-';
                 document.getElementById('val_telefono').innerText = c.telefono || '-';
@@ -203,7 +228,7 @@
                 const totalGeneral = parseFloat(venta.total) || 0;
                 const baseImponibleTotal = totalGeneral - impuestosTotales;
                 
-                // Calcular qué % de IVA se aplicó realmente
+                // Calcular qué % de IVA se aplicó realmente según el panel principal
                 let porcentajeIva = 16;
                 if (baseImponibleTotal > 0 && impuestosTotales > 0) {
                     porcentajeIva = Math.round((impuestosTotales / baseImponibleTotal) * 100);
@@ -226,14 +251,14 @@
                                 <td class="text-left">${desc}</td>
                                 <td class="text-right">${cantidad}</td>
                                 <td class="text-right">${formatoVE.format(pUnitario)}</td>
-                                <td class="text-right">${porcentajeIva}</td>
+                                <td class="text-right">${porcentajeIva}%</td>
                                 <td class="text-right">${formatoVE.format(ivaItem)}</td>
                                 <td class="text-right">${formatoVE.format(totItem)}</td>
                             </tr>
                         `;
                     });
                 } else {
-                    tablaBody.innerHTML = `<tr><td colspan="6" class="text-center">No hay detalles registrados para esta factura.</td></tr>`;
+                    tablaBody.innerHTML = `<tr><td colspan="6" class="text-center text-rojo">Nota: Esta factura se guardó sin detalles de artículos en la base de datos.</td></tr>`;
                 }
 
                 // Llenar Totales Finales
@@ -246,8 +271,8 @@
                 setTimeout(() => { window.print(); }, 800);
 
             } catch (error) {
-                console.error("Error crítico:", error);
-                alert("Ocurrió un problema de conexión al generar la factura.");
+                console.error("Error crítico Javascript:", error);
+                mostrarErrorEnPantalla("Error de Javascript durante la ejecución.", { stack: error.stack, message: error.message });
             }
         }
 
@@ -255,6 +280,3 @@
     </script>
 </body>
 </html>
-
-(No es necesario actualizar DAS.html para este fallo específico, ya que la
-comunicación de error venía 100% desde el script interno de factura_pdf.html).
