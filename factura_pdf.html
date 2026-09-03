@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Imprimir Factura - DAS</title>
     <style>
-        /* Estilos generales y tipografía (TU DISEÑO ORIGINAL) */
+        /* TUS ESTILOS ORIGINALES INTACTOS */
         body { font-family: Arial, Helvetica, sans-serif; font-size: 11px; color: #000; margin: 0; padding: 0; background-color: #f4f4f4; }
         .hoja { width: 800px; margin: 20px auto; background: #fff; padding: 40px; box-sizing: border-box; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
         .texto-azul { color: #1e4189; }
@@ -37,7 +37,7 @@
         .disclaimer { text-align: center; font-size: 9px; color: #666; margin-top: 50px; line-height: 1.4; }
         .original { text-align: center; font-weight: bold; font-size: 14px; margin-top: 15px; }
         
-        /* Botonera para impresión */
+        /* Boton de imprimir (No sale en el papel) */
         .btn-imprimir { position: fixed; top: 20px; right: 20px; background: #1e4189; color: white; border: none; padding: 10px 20px; cursor: pointer; font-weight: bold; border-radius: 5px; font-size: 14px; box-shadow: 0 4px 6px rgba(0,0,0,0.2); }
         .btn-imprimir:hover { background: #152d61; }
 
@@ -55,7 +55,7 @@
     <button class="btn-imprimir" onclick="window.print()">🖨️ Imprimir Factura</button>
 
     <div class="hoja" id="hoja-factura">
-        <!-- HEADER -->
+        <!-- TU HEADER ORIGINAL -->
         <div class="cabecera">
             <div class="logo-container">
                 <img src="https://dasolucion.github.io/das/logo.png" alt="DAS Logo" onerror="this.style.display='none'">
@@ -74,7 +74,6 @@
 
         <!-- INFO CLIENTE Y FACTURA -->
         <div class="info-section">
-            <!-- Columna Izquierda -->
             <div class="info-col-izq">
                 <div class="fila-info"><div class="etiqueta">Cliente:</div><div class="valor" id="val_cliente">Iniciando conexión con Supabase...</div></div>
                 <div class="fila-info"><div class="etiqueta">R.I.F.:</div><div class="valor" id="val_rif">...</div></div>
@@ -83,7 +82,6 @@
                 <div class="fila-info"><div class="etiqueta">Contacto:</div><div class="valor" id="val_contacto">...</div></div>
                 <div class="fila-info"><div class="etiqueta">Correo:</div><div class="valor" id="val_correo">...</div></div>
             </div>
-            <!-- Columna Derecha -->
             <div class="info-col-der">
                 <div class="fila-info"><div class="etiqueta-der">Factura Nº</div><div class="valor" style="font-size:14px; font-weight:bold;" id="val_numero_factura">...</div></div>
                 <div class="fila-info"><div class="etiqueta-der">Emision:</div><div class="valor bold" id="val_emision">...</div></div>
@@ -123,13 +121,14 @@
                 <div class="fila-total"><span>Base Imponible</span> <span id="val_base">0,00</span></div>
                 <div class="fila-total"><span>IVA</span> <span id="val_iva">0,00</span></div>
                 
-                <!-- Fila de ISLR oculta por defecto, se muestra solo si aplica -->
+                <!-- Fila de ISLR (Oculta por defecto, solo sale si facturaste un Servicio) -->
                 <div class="fila-total texto-rojo" id="fila_islr" style="display: none;"><span>Retención ISLR (2%)</span> <span id="val_islr">0,00</span></div>
                 
                 <div class="fila-total bold"><span>Total a Pagar</span> <span id="val_total">0,00</span></div>
             </div>
         </div>
 
+        <!-- TU FOOTER Y SENIAT -->
         <div class="disclaimer texto-azul">
             Corporación Bobinas y Rollos, C.A. RIF J-31151599-2 AV PRINCIPAL LAS CANTERAS DEL ESTE, MACARACUAY GALPON S/N PB. CARACAS ESTADO MIRANDA. TELEFONOS 0212-2580068<br>
             NUMERO DE PROVIDENCIA: SENIAT-01-00683 DEL 01/04/2008 TIPO DE DOCUMENTO: FORMA LIBRE N° DE CONTROL DESDE EL 00-001251 HASTA 00-001400 FECHA DE ELABORACION 09/07/2025
@@ -137,7 +136,7 @@
         <div class="original texto-rojo">ORIGINAL - CLIENTE</div>
     </div>
 
-    <!-- SCRIPT DE SUPABASE Y LÓGICA DE LLENADO -->
+    <!-- ESTO ES LO QUE CONECTA CON TU BASE DE DATOS (NO LO BORRES) -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
         const SUPABASE_URL = 'https://frlaldgtcoykntmgxqmh.supabase.co';
@@ -146,6 +145,7 @@
 
         const formatoVE = new Intl.NumberFormat('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
+        // Función para mostrar errores en pantalla si algo falla
         function mostrarErrorEnPantalla(titulo, detalleObj) {
             document.body.innerHTML = `
                 <div style="max-width: 600px; margin: 40px auto; padding: 20px; border: 2px solid #ef5350; background: #ffebee; border-radius: 8px; font-family: Arial, sans-serif;">
@@ -158,15 +158,16 @@
 
         async function cargarEImprimirFactura() {
             try {
+                // Leer el ID de la URL
                 const urlParams = new URLSearchParams(window.location.search);
                 const facturaId = urlParams.get('id');
 
                 if (!facturaId) {
-                    mostrarErrorEnPantalla("ID de Factura no proporcionado en la URL.", { error: "Parámetro ?id= no encontrado." });
+                    mostrarErrorEnPantalla("ID de Factura no proporcionado en la URL.", { error: "Falta el ?id= en la dirección web." });
                     return;
                 }
 
-                document.getElementById('val_cliente').innerText = 'Buscando venta en base de datos...';
+                document.getElementById('val_cliente').innerText = 'Conectando con Supabase...';
 
                 // 1. OBTENER VENTA PRINCIPAL
                 const { data: venta, error: errVenta } = await supabase
@@ -185,7 +186,7 @@
                 // 2. OBTENER DATOS DEL CLIENTE
                 let c = {};
                 if (venta.cliente_id) {
-                    const { data: cliente, error: errCli } = await supabase
+                    const { data: cliente } = await supabase
                         .from('clientes')
                         .select('*')
                         .eq('id', venta.cliente_id)
@@ -193,15 +194,13 @@
                     if (cliente) c = cliente;
                 }
 
-                document.getElementById('val_cliente').innerText = 'Buscando artículos registrados...';
-
                 // 3. OBTENER DETALLES DE LA VENTA
-                const { data: detalles, error: errDetalles } = await supabase
+                const { data: detalles } = await supabase
                     .from('venta_detalles')
                     .select('*')
                     .eq('venta_id', facturaId);
 
-                // 4. OBTENER PRODUCTOS PARA DESCRIPCIONES Y TIPO
+                // 4. OBTENER NOMBRES Y TIPOS DE PRODUCTOS
                 const mapProductos = {};
                 if (detalles && detalles.length > 0) {
                     const { data: productos } = await supabase.from('productos').select('id, descripcion, tipo');
@@ -212,15 +211,19 @@
                     }
                 }
 
-                // --- LLENAR DATOS EN EL DOM ---
+                // --- INYECTAR DATOS EN LA PANTALLA ---
+                
+                // Cabecera de control y factura
                 document.getElementById('val_control').innerText = venta.control || '00-000000';
                 document.getElementById('val_numero_factura').innerText = venta.factura || '000000';
                 
+                // Arreglar la fecha (Tomando la de la base de datos)
                 const stringFecha = venta.fecha || venta.created_at || new Date().toISOString();
                 const soloFecha = stringFecha.split('T')[0];
                 const [anio, mes, dia] = soloFecha.split('-');
                 document.getElementById('val_emision').innerText = `${dia}/${mes}/${anio}`;
 
+                // Cliente
                 document.getElementById('val_cliente').innerText = c.descripcion || 'Cliente no registrado';
                 document.getElementById('val_rif').innerText = c.identificacion || 'N/A';
                 document.getElementById('val_direccion').innerText = c.direccion || '-';
@@ -228,16 +231,16 @@
                 document.getElementById('val_contacto').innerText = c.persona_contacto || '-';
                 document.getElementById('val_correo').innerText = c.correo || '-';
 
+                // Llenar Tabla de Artículos
                 const tablaBody = document.getElementById('tabla_body');
                 tablaBody.innerHTML = ''; 
 
                 const impuestosTotales = parseFloat(venta.impuestos) || 0;
-                const totalGeneralFactura = parseFloat(venta.total) || 0; // Este es subtotal + IVA
+                const totalGeneralFactura = parseFloat(venta.total) || 0; 
                 const baseImponibleTotal = totalGeneralFactura - impuestosTotales;
                 const retencionISLR = parseFloat(venta.retencion_islr) || 0;
-                const totalAPagar = totalGeneralFactura - retencionISLR;
                 
-                // Calcular % de IVA
+                // Calcular % de IVA Dinámicamente
                 let porcentajeIva = 16;
                 if (baseImponibleTotal > 0 && impuestosTotales > 0) {
                     porcentajeIva = Math.round((impuestosTotales / baseImponibleTotal) * 100);
@@ -248,6 +251,7 @@
                 if (detalles && detalles.length > 0) {
                     detalles.forEach(item => {
                         const infoProd = mapProductos[item.producto_id] || { desc: 'Producto sin descripción', tipo: '' };
+                        // Añadimos "(Servicio)" al final si es un servicio para que el contador/cliente lo note
                         const descFinal = infoProd.tipo === 'Servicio' ? infoProd.desc + ' (Servicio)' : infoProd.desc;
                         
                         const pUnitario = parseFloat(item.precio_unitario) || 0;
@@ -269,24 +273,24 @@
                         `;
                     });
                 } else {
-                    tablaBody.innerHTML = `<tr><td colspan="6" class="text-center text-rojo">Esta factura se guardó sin detalles en la base de datos.</td></tr>`;
+                    tablaBody.innerHTML = `<tr><td colspan="6" class="text-center text-rojo">Nota: Esta factura se guardó sin detalles en la base de datos.</td></tr>`;
                 }
 
-                // Llenar Totales Finales
+                // Totales
                 document.getElementById('val_subtotal').innerText = formatoVE.format(baseImponibleTotal);
                 document.getElementById('val_base').innerText = formatoVE.format(baseImponibleTotal);
                 document.getElementById('val_iva').innerText = formatoVE.format(impuestosTotales);
                 
-                // Manejar la visibilidad de la fila de ISLR
+                // Manejar la Retención del ISLR
                 if (retencionISLR > 0) {
                     document.getElementById('fila_islr').style.display = 'flex';
                     document.getElementById('val_islr').innerText = "- " + formatoVE.format(retencionISLR);
                 }
                 
-                // Total a Pagar Final (Total General - ISLR)
-                document.getElementById('val_total').innerText = formatoVE.format(totalAPagar);
+                // Total Final a pagar restando el ISLR
+                document.getElementById('val_total').innerText = formatoVE.format(totalGeneralFactura - retencionISLR);
 
-                // Auto-imprimir al cargar (opcional)
+                // Auto-impresión
                 setTimeout(() => { window.print(); }, 800);
 
             } catch (error) {
