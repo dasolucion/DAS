@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Imprimir Factura - DAS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #f1f5f9; color: #0f172a; }
+        
+        .hoja {
+            background: white;
+            width: 21cm;
+            min-height: 29.7cm;
+            display: block;
+            margin: 0 auto;
+            margin-top: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            padding: 2.5cm;
+        }
+
+        @media print {
+            body { background-color: white; margin: 0; padding: 0; }
+            .hoja {
+                margin: 0; padding: 0; width: 100%; min-height: auto;
+                box-shadow: none; padding-top: 0.5cm; padding-bottom: 0.5cm;
+            }
+            .no-print { display: none !important; }
+            @page { margin: 1cm; size: letter; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Botonera superior (No se imprime) -->
+    <div class="no-print bg-slate-900 text-white p-4 sticky top-0 shadow-lg flex justify-between items-center z-50">
+        <div class="flex items-center gap-3">
+            <button onclick="window.close()" class="bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded-lg text-sm font-bold transition">
+                <i class="fa-solid fa-arrow-left"></i> Volver
+            </button>
+            <span class="font-medium text-slate-300">Vista previa de impresión</span>
+        </div>
+        <button onclick="window.print()" id="btn-imprimir" class="bg-sky-500 hover:bg-sky-400 text-slate-950 px-6 py-2 rounded-lg text-sm font-bold transition flex items-center gap-2 shadow-lg shadow-sky-500/20 disabled:opacity-50">
+            <i class="fa-solid fa-print"></i> Imprimir Factura
+        </button>
+    </div>
+
+    <!-- Pantalla de Carga -->
+    <div id="pantalla-carga" class="flex flex-col items-center justify-center py-20 text-slate-500">
+        <i class="fa-solid fa-spinner fa-spin text-4xl mb-4 text-sky-500"></i>
+        <p class="font-medium">Iniciando conexión con Supabase e importando datos...</p>
+    </div>
+
+    <!-- Hoja de Factura -->
+    <div id="factura-contenido" class="hoja hidden">
+        
+        <!-- Encabezado -->
+        <header class="flex justify-between items-start border-b-2 border-slate-800 pb-6 mb-6">
+            <div>
+                <h1 class="text-3xl font-black text-slate-900 uppercase tracking-tighter flex items-center gap-2">
+                    <span class="bg-slate-900 text-white w-10 h-10 flex items-center justify-center rounded-lg text-xl">
+                        <i class="fa-solid fa-briefcase"></i>
+                    </span>
+                    DAS VENTAS
+                </h1>
+                <p class="text-sm text-slate-500 mt-2 font-medium">RIF: J-00000000-0</p>
+                <p class="text-xs text-slate-500">Dirección fiscal de tu empresa o local</p>
+                <p class="text-xs text-slate-500">Teléfono: +58 000 000 0000</p>
+            </div>
+            <div class="text-right">
+                <h2 class="text-2xl font-bold text-slate-800 uppercase tracking-widest mb-2">Factura</h2>
+                <div class="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
+                    <span class="font-bold text-slate-600">Nº Factura:</span>
+                    <span id="txt-factura" class="font-mono font-bold text-slate-900">000000</span>
+                    
+                    <span class="font-bold text-slate-600">Nº Control:</span>
+                    <span id="txt-control" class="font-mono font-bold text-slate-900">00-000000</span>
+                    
+                    <span class="font-bold text-slate-600">Fecha de Emisión:</span>
+                    <span id="txt-fecha" class="font-mono text-slate-900">DD/MM/AAAA</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Datos del Cliente -->
+        <section class="bg-slate-50 border border-slate-200 p-4 rounded-xl mb-6">
+            <h3 class="text-[10px] uppercase tracking-widest font-bold text-slate-400 mb-3">Datos del Cliente</h3>
+            <div class="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                    <p><span class="font-bold text-slate-700">Razón Social:</span> <span id="cli-nombre" class="text-slate-900">...</span></p>
+                    <p class="mt-1"><span class="font-bold text-slate-700">RIF / C.I:</span> <span id="cli-rif" class="font-mono text-slate-900">...</span></p>
+                    <p class="mt-1"><span class="font-bold text-slate-700">Teléfono:</span> <span id="cli-tel" class="text-slate-900">...</span></p>
+                </div>
+                <div>
+                    <p><span class="font-bold text-slate-700">Dirección:</span> <span id="cli-dir" class="text-slate-900">...</span></p>
+                    <p class="mt-1 text-xs text-slate-500"><span class="font-bold text-slate-700">Condición:</span> <span id="cli-condicion">Ordinario</span></p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tabla de Productos -->
+        <section class="mb-6 min-h-[300px]">
+            <table class="w-full text-sm text-left">
+                <thead class="text-xs text-white uppercase bg-slate-800 rounded-t-lg">
+                    <tr>
+                        <th class="px-4 py-3 rounded-tl-lg w-16 text-center">Cant.</th>
+                        <th class="px-4 py-3">Descripción</th>
+                        <th class="px-4 py-3 text-right">Precio Unit. (Bs)</th>
+                        <th class="px-4 py-3 rounded-tr-lg text-right">Total (Bs)</th>
+                    </tr>
+                </thead>
+                <tbody id="tabla-detalles" class="divide-y divide-slate-200">
+                    <!-- Filas inyectadas por JS -->
+                </tbody>
+            </table>
+        </section>
+
+        <!-- Totales -->
+        <section class="flex justify-between items-end border-t-2 border-slate-800 pt-6">
+            <div class="w-1/2">
+                <div class="bg-slate-50 border border-slate-200 p-3 rounded-lg inline-block">
+                    <p class="text-xs text-slate-500 font-medium">Tasa de Cambio Referencial:</p>
+                    <p class="text-sm font-bold font-mono text-slate-700">Bs. <span id="txt-tasa">0.00</span> / USD</p>
+                </div>
+                <p class="text-[10px] text-slate-400 mt-4 max-w-xs">
+                    Esta factura se generó electrónicamente. Los montos expresados incluyen los impuestos de ley vigentes.
+                </p>
+            </div>
+            
+            <div class="w-1/3">
+                <table class="w-full text-sm text-right">
+                    <tr>
+                        <td class="py-1 text-slate-600 font-medium">Subtotal:</td>
+                        <td class="py-1 font-mono font-semibold" id="tot-subtotal">0.00</td>
+                    </tr>
+                    <tr>
+                        <td class="py-1 text-slate-600 font-medium border-b border-slate-200 pb-2">I.V.A (16%):</td>
+                        <td class="py-1 font-mono font-semibold border-b border-slate-200 pb-2" id="tot-iva">0.00</td>
+                    </tr>
+                    <tr class="text-lg">
+                        <td class="py-2 font-bold text-slate-900">Total Factura:</td>
+                        <td class="py-2 font-mono font-black text-slate-900" id="tot-factura">0.00</td>
+                    </tr>
+                    <tr id="row-islr" class="hidden text-rose-600 text-xs">
+                        <td class="py-1 font-medium">Retención ISLR (2% Servicios) (-):</td>
+                        <td class="py-1 font-mono font-bold" id="tot-islr">0.00</td>
+                    </tr>
+                    <tr id="row-pagar" class="hidden text-lg bg-slate-100">
+                        <td class="py-2 px-2 font-bold text-slate-900 rounded-l-lg border-t border-b border-l border-slate-300">TOTAL A PAGAR:</td>
+                        <td class="py-2 px-2 font-mono font-black text-slate-900 rounded-r-lg border-t border-b border-r border-slate-300" id="tot-pagar">0.00</td>
+                    </tr>
+                </table>
+            </div>
+        </section>
+
+        <!-- Pie de página -->
+        <footer class="mt-12 text-center text-xs text-slate-400 font-medium">
+            <p>¡Gracias por confiar en DAS Ventas!</p>
+            <p>Software de Gestión Creado con IA</p>
+        </footer>
+
+    </div>
+
+    <script>
+        // CONFIGURACIÓN SUPABASE (Tus credenciales exactas)
+        const { createClient } = supabase;
+        const supabaseUrl = 'https://frlaldgtcoykntmgxqmh.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZybGFsZGd0Y295a250bWd4cW1oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc1MTczNDEsImV4cCI6MjEwMzA5MzM0MX0.lTXPGXldiXSIc8FzKp-pA7t5WJmH6_7e_cwuFHF4TO8';
+        const db = createClient(supabaseUrl, supabaseKey);
+
+        function formatNumber(num) {
+            return parseFloat(num || 0).toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
+        async function cargarFactura() {
+            try {
+                // 1. Obtener ID de la URL (?id=xxxxxx)
+                const params = new URLSearchParams(window.location.search);
+                const ventaId = params.get('id');
+
+                if (!ventaId) {
+                    throw new Error("No se proporcionó un ID de factura en la URL.");
+                }
+
+                // 2. Traer Venta Principal
+                const { data: venta, error: errVenta } = await db.from('ventas').select('*').eq('id', ventaId).single();
+                if (errVenta || !venta) throw new Error("Factura no encontrada en la base de datos.");
+
+                // 3. Traer Cliente
+                const { data: cliente, error: errCliente } = await db.from('clientes').select('*').eq('id', venta.cliente_id).single();
+                
+                // 4. Traer Detalles y Productos
+                const { data: detalles } = await db.from('venta_detalles').select('*').eq('venta_id', ventaId);
+                const { data: productos } = await db.from('productos').select('id, descripcion, tipo');
+                
+                const mapProd = {};
+                if (productos) {
+                    productos.forEach(p => mapProd[p.id] = p);
+                }
+
+                // 5. Inyectar Datos Cabecera
+                document.getElementById('txt-factura').innerText = venta.factura || 'N/A';
+                document.getElementById('txt-control').innerText = venta.control || 'N/A';
+                
+                const fechaFact = new Date(venta.fecha || venta.created_at);
+                document.getElementById('txt-fecha').innerText = isNaN(fechaFact) ? '-' : fechaFact.toLocaleDateString('es-VE');
+                
+                document.getElementById('txt-tasa').innerText = formatNumber(venta.tasa || 1);
+
+                // 6. Inyectar Datos Cliente
+                if (cliente) {
+                    document.getElementById('cli-nombre').innerText = cliente.descripcion;
+                    document.getElementById('cli-rif').innerText = cliente.identificacion;
+                    document.getElementById('cli-tel').innerText = cliente.telefono || 'N/A';
+                    document.getElementById('cli-dir').innerText = cliente.direccion || 'N/A';
+                    document.getElementById('cli-condicion').innerText = cliente.contribuyente_especial ? 'Contribuyente Especial' : 'Ordinario';
+                }
+
+                // 7. Renderizar Detalles (Productos en la tabla)
+                const tbody = document.getElementById('tabla-detalles');
+                tbody.innerHTML = '';
+                
+                if (detalles && detalles.length > 0) {
+                    detalles.forEach(d => {
+                        const infoProd = mapProd[d.producto_id] || { descripcion: 'Artículo desconocido', tipo: '' };
+                        const totalItem = parseFloat(d.cantidad) * parseFloat(d.precio_unitario);
+                        
+                        const tipoTag = infoProd.tipo === 'Servicio' ? ' <span class="text-[9px] bg-slate-200 px-1 py-0.5 rounded text-slate-500 ml-1">Servicio</span>' : '';
+
+                        tbody.innerHTML += `
+                            <tr class="hover:bg-slate-50 transition">
+                                <td class="px-4 py-3 text-center font-bold text-slate-700">${d.cantidad}</td>
+                                <td class="px-4 py-3 font-medium text-slate-800">${infoProd.descripcion}${tipoTag}</td>
+                                <td class="px-4 py-3 text-right font-mono text-slate-600">${formatNumber(d.precio_unitario)}</td>
+                                <td class="px-4 py-3 text-right font-mono font-bold text-slate-900">${formatNumber(totalItem)}</td>
+                            </tr>
+                        `;
+                    });
+                } else {
+                    tbody.innerHTML = `<tr><td colspan="4" class="px-4 py-8 text-center text-slate-400">No hay detalles registrados.</td></tr>`;
+                }
+
+                // 8. Renderizar Totales Matemáticos
+                const totalCalculado = parseFloat(venta.total) || 0;
+                const ivaCalculado = parseFloat(venta.impuestos) || 0;
+                const subtotalCalculado = totalCalculado - ivaCalculado;
+                const islrCalculado = parseFloat(venta.retencion_islr) || 0;
+
+                document.getElementById('tot-subtotal').innerText = formatNumber(subtotalCalculado);
+                document.getElementById('tot-iva').innerText = formatNumber(ivaCalculado);
+                document.getElementById('tot-factura').innerText = formatNumber(totalCalculado);
+
+                // Si hay retencion ISLR, mostrar las filas adicionales
+                if (islrCalculado > 0) {
+                    document.getElementById('row-islr').classList.remove('hidden');
+                    document.getElementById('row-pagar').classList.remove('hidden');
+                    
+                    document.getElementById('tot-islr').innerText = "-" + formatNumber(islrCalculado);
+                    document.getElementById('tot-pagar').innerText = formatNumber(totalCalculado - islrCalculado);
+                }
+
+                // Mostrar pantalla real
+                document.getElementById('pantalla-carga').classList.add('hidden');
+                document.getElementById('factura-contenido').classList.remove('hidden');
+
+            } catch (error) {
+                document.getElementById('pantalla-carga').innerHTML = `
+                    <i class="fa-solid fa-triangle-exclamation text-rose-500 text-5xl mb-4"></i>
+                    <p class="font-bold text-lg text-slate-800">Error al cargar factura</p>
+                    <p class="text-slate-500 text-sm mt-2 max-w-md text-center">${error.message}</p>
+                `;
+                document.getElementById('btn-imprimir').disabled = true;
+                console.error(error);
+            }
+        }
+
+        // Iniciar al abrir la pestaña
+        window.onload = cargarFactura;
+    </script>
+</body>
+</html>
