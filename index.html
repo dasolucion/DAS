@@ -69,7 +69,7 @@
         </nav>
         
         <div class="p-4 border-t border-slate-800 text-[10px] text-slate-500 text-center font-mono uppercase tracking-widest bg-slate-950/30">
-            Panel de Control v1.8
+            Panel de Control v1.9
         </div>
     </aside>
 
@@ -87,7 +87,6 @@
             
             <!-- DASHBOARD -->
             <section id="dashboard" class="modulo block max-w-6xl mx-auto space-y-6">
-                <!-- Dashboard content (Sin cambios estructurales, igual al anterior) -->
                 <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-2xl flex justify-between items-center gap-3">
                     <div class="flex items-center gap-3">
                         <div class="bg-slate-800 text-purple-400 p-2.5 rounded-xl border border-slate-700">
@@ -206,7 +205,7 @@
                 </div>
             </section>
             
-            <!-- PRODUCTOS / SERVICIOS (Añadido Tipo) -->
+            <!-- PRODUCTOS / SERVICIOS (Actualizado para Múltiples Líneas) -->
             <section id="productos" class="modulo hidden max-w-6xl mx-auto space-y-6">
                 <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-2xl flex items-center gap-3">
                     <div class="bg-slate-800 text-sky-400 p-2.5 rounded-xl border border-slate-700">
@@ -223,29 +222,34 @@
                         <i class="fa-solid fa-plus-circle text-sky-400"></i> Registrar Nuevo Ítem
                     </h3>
                     <form id="form-producto" class="grid grid-cols-1 md:grid-cols-4 gap-5">
+                        
+                        <!-- AQUI ESTA LA CAJA DE TEXTO GRANDE -->
                         <div class="md:col-span-4 lg:col-span-2">
-                            <label class="block text-xs font-medium text-slate-300 mb-1">Descripción</label>
-                            <input type="text" id="prod-desc" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-sky-500 transition" required>
+                            <label class="block text-xs font-medium text-slate-300 mb-1">Descripción del Ítem (Soporta múltiples líneas)</label>
+                            <textarea id="prod-desc" rows="5" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-sky-500 transition resize-y" placeholder="Ej: Impresión 3D Figura Personalizada&#10;- Color: Rojo Vivo&#10;- Altura: 15cm&#10;- Material: PLA" required></textarea>
                         </div>
-                        <div>
-                            <label class="block text-xs font-medium text-slate-300 mb-1">Tipo</label>
-                            <select id="prod-tipo" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-sky-500 transition" required>
-                                <option value="Producto">Producto</option>
-                                <option value="Servicio">Servicio</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-medium text-slate-300 mb-1">Costo Base ($)</label>
-                            <input type="number" step="0.01" id="prod-costo" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-sky-500 transition" required>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-medium text-slate-300 mb-1">Precio de Venta Base ($)</label>
-                            <input type="number" step="0.01" id="prod-precio" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-emerald-400 transition" required>
-                        </div>
-                        <div class="md:col-span-4 lg:col-span-3 flex items-end">
-                            <button type="submit" class="w-full md:w-auto bg-sky-600 hover:bg-sky-500 text-white font-bold px-6 py-2.5 rounded-xl transition shadow-lg shadow-sky-600/20 text-xs flex items-center justify-center gap-2">
-                                <i class="fa-solid fa-save"></i> Guardar Ítem
-                            </button>
+
+                        <div class="md:col-span-4 lg:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-5">
+                            <div>
+                                <label class="block text-xs font-medium text-slate-300 mb-1">Tipo</label>
+                                <select id="prod-tipo" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-sky-500 transition" required>
+                                    <option value="Producto">Producto</option>
+                                    <option value="Servicio">Servicio</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-slate-300 mb-1">Costo Base ($)</label>
+                                <input type="number" step="0.01" id="prod-costo" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-sky-500 transition" required>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-slate-300 mb-1">Precio Venta ($)</label>
+                                <input type="number" step="0.01" id="prod-precio" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-emerald-400 transition" required>
+                            </div>
+                            <div class="md:col-span-3 flex items-end justify-end mt-2">
+                                <button type="submit" class="w-full md:w-auto bg-sky-600 hover:bg-sky-500 text-white font-bold px-6 py-2.5 rounded-xl transition shadow-lg shadow-sky-600/20 text-xs flex items-center justify-center gap-2">
+                                    <i class="fa-solid fa-save"></i> Guardar Ítem
+                                </button>
+                            </div>
                         </div>
                     </form>
                 </div>
@@ -267,9 +271,8 @@
                 </div>
             </section>
 
-            <!-- CLIENTES (Se mantiene igual) -->
+            <!-- CLIENTES -->
             <section id="clientes" class="modulo hidden max-w-6xl mx-auto space-y-6">
-                <!-- (Código de clientes sin alteraciones estructurales) -->
                 <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-2xl flex items-center gap-3">
                     <div class="bg-slate-800 text-sky-400 p-2.5 rounded-xl border border-slate-700">
                         <i class="fa-solid fa-users text-lg"></i>
@@ -346,7 +349,6 @@
 
             <!-- PROVEEDORES -->
             <section id="proveedores" class="modulo hidden max-w-6xl mx-auto space-y-6">
-                 <!-- (Código de proveedores sin alteraciones estructurales) -->
                 <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-2xl flex items-center gap-3">
                     <div class="bg-slate-800 text-teal-400 p-2.5 rounded-xl border border-slate-700">
                         <i class="fa-solid fa-truck-fast text-lg"></i>
@@ -418,7 +420,6 @@
 
             <!-- PRESUPUESTOS -->
             <section id="presupuestos" class="modulo hidden max-w-6xl mx-auto space-y-6">
-                <!-- Se mantiene igual, no altera lógica general -->
                 <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-2xl flex items-center gap-3">
                     <div class="bg-slate-800 text-amber-400 p-2.5 rounded-xl border border-slate-700">
                         <i class="fa-solid fa-file-invoice text-lg"></i>
@@ -518,7 +519,6 @@
 
             <!-- NOTAS DE ENTREGA -->
             <section id="notas" class="modulo hidden max-w-6xl mx-auto space-y-6">
-                <!-- Se mantiene igual a la version anterior con la columna de detalles -->
                 <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-2xl flex items-center gap-3">
                     <div class="bg-slate-800 text-cyan-400 p-2.5 rounded-xl border border-slate-700">
                         <i class="fa-solid fa-file-lines text-lg"></i>
@@ -604,7 +604,7 @@
                 </div>
             </section>
 
-            <!-- VENTAS (Añadido Input Tasa e ISLR) -->
+            <!-- VENTAS -->
             <section id="ventas" class="modulo hidden max-w-6xl mx-auto space-y-6">
                 <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-2xl flex items-center gap-3">
                     <div class="bg-slate-800 text-emerald-400 p-2.5 rounded-xl border border-slate-700">
@@ -622,7 +622,6 @@
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-5 no-print border-b border-slate-800 pb-5 mb-5 bg-slate-950/50 p-4 rounded-xl border border-slate-800">
                             <div>
                                 <label class="block text-xs font-bold text-sky-400 uppercase mb-2" title="Tasa editable para esta factura en específico"><i class="fa-solid fa-money-bill-transfer"></i> Tasa Venta (Editable)</label>
-                                <!-- TASA EDITABLE -->
                                 <div class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2 text-sm text-sky-400 font-mono font-bold flex items-center gap-2">
                                     Bs. <input type="number" step="0.01" id="input-tasa-venta" class="bg-transparent outline-none w-full text-sky-400 font-bold" value="1.00">
                                 </div>
@@ -724,7 +723,6 @@
             
             <!-- COMPRAS -->
             <section id="compras" class="modulo hidden max-w-6xl mx-auto space-y-6">
-                <!-- Se mantiene igual, no altera lógica general -->
                 <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-2xl flex items-center gap-3">
                     <div class="bg-slate-800 text-orange-400 p-2.5 rounded-xl border border-slate-700">
                         <i class="fa-solid fa-cart-flatbed text-lg"></i>
@@ -789,7 +787,7 @@
                 </div>
             </section>
 
-            <!-- CUENTAS POR COBRAR (CxC) (Actualizado para mostrar retencion ISLR) -->
+            <!-- CUENTAS POR COBRAR (CxC) -->
             <section id="cxc" class="modulo hidden max-w-6xl mx-auto space-y-6">
                 <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-2xl flex items-center gap-3">
                     <div class="bg-slate-800 text-rose-400 p-2.5 rounded-xl border border-slate-700">
@@ -856,9 +854,6 @@
             return parseFloat(num || 0).toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         }
 
-        // ==========================================
-        // GESTIÓN DE DATOS GLOBALES Y API BCV (NUEVO Auto-Update)
-        // ==========================================
         async function obtenerTasaBCV(silencioso = false) {
             try {
                 const btnIcon = document.getElementById('bcv-sync-icon');
@@ -871,13 +866,11 @@
                 if (data && data.promedio) {
                     const nuevaTasa = data.promedio;
                     
-                    // Actualizar inputs visuales
                     document.getElementById('conf-tasa').value = nuevaTasa.toFixed(2);
                     if(document.getElementById('input-tasa-venta')) document.getElementById('input-tasa-venta').value = nuevaTasa.toFixed(2);
                     
                     if(statusText) statusText.innerText = "(Tasa obtenida de BCV y Auto-guardada)";
                     
-                    // Si se llama silenciosamente al cargar (o manual), Auto-guardamos de una vez
                     if (datosGenerales.id) {
                          const { error } = await db.from('datos').update({ tasa: nuevaTasa }).eq('id', datosGenerales.id);
                          if (!error) {
@@ -912,7 +905,6 @@
             }
         }
 
-        // Renombrado para no confundir. Actualiza solo textos read-only
         function actualizarVistasDatosLocales() {
             document.getElementById('conf-tasa').value = datosGenerales.tasa;
             document.getElementById('conf-fact').value = datosGenerales.ult_fact;
@@ -1116,7 +1108,7 @@
         }
 
         // ==========================================
-        // MÓDULO: CLIENTES (Sin cambios)
+        // MÓDULO: CLIENTES
         // ==========================================
         document.getElementById('form-cliente').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -1208,7 +1200,7 @@
         }
 
         // ==========================================
-        // MÓDULO: PROVEEDORES (Sin cambios)
+        // MÓDULO: PROVEEDORES
         // ==========================================
         document.getElementById('form-proveedor').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -1295,7 +1287,7 @@
         }
 
         // ==========================================
-        // MÓDULO: PRODUCTOS / SERVICIOS (Agregado TIPO)
+        // MÓDULO: PRODUCTOS / SERVICIOS
         // ==========================================
         document.getElementById('form-producto').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -1305,15 +1297,15 @@
             btn.disabled = true;
 
             const nuevoProducto = {
-                descripcion: document.getElementById('prod-desc').value,
-                tipo: document.getElementById('prod-tipo').value, // 'Producto' o 'Servicio'
+                descripcion: document.getElementById('prod-desc').value, // Ahora puede contener \n (saltos de línea)
+                tipo: document.getElementById('prod-tipo').value,
                 costo: parseFloat(document.getElementById('prod-costo').value),
                 precio: parseFloat(document.getElementById('prod-precio').value)
             };
 
             if (editandoProductoId) {
                 const { error } = await db.from('productos').update(nuevoProducto).eq('id', editandoProductoId);
-                if (error) alert("Error guardando. Recuerda crear la columna 'tipo' (tipo text) en tu tabla productos. Mensaje: " + error.message);
+                if (error) alert("Error guardando: " + error.message);
                 else {
                     editandoProductoId = null;
                     document.getElementById('form-producto-titulo').innerHTML = '<i class="fa-solid fa-plus-circle text-sky-400"></i> Registrar Nuevo Ítem';
@@ -1323,7 +1315,7 @@
                 }
             } else {
                 const { error } = await db.from('productos').insert([nuevoProducto]);
-                if (error) alert("Error guardando. Recuerda crear la columna 'tipo' (tipo text) en tu tabla productos. Mensaje: " + error.message);
+                if (error) alert("Error guardando: " + error.message);
                 else {
                     document.getElementById('form-producto').reset();
                     cargarProductos();
@@ -1340,15 +1332,15 @@
             tbody.innerHTML = '';
             data.forEach(p => {
                 const tipoBadge = p.tipo === 'Servicio' 
-                    ? `<span class="bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 ml-2 px-1.5 py-0.5 rounded text-[9px] uppercase tracking-wider font-bold">Servicio</span>`
+                    ? `<span class="bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 mt-1 px-1.5 py-0.5 rounded text-[9px] uppercase tracking-wider font-bold inline-block">Servicio</span>`
                     : '';
 
                 tbody.innerHTML += `
                     <tr class="hover:bg-slate-800/50 transition border-b border-slate-800">
-                        <td class="p-4 font-medium text-white flex items-center">${p.descripcion} ${tipoBadge}</td>
-                        <td class="p-4 font-mono text-slate-400 text-[11px]">$${p.costo.toFixed(2)}</td>
-                        <td class="p-4 font-mono font-bold text-emerald-400 text-[11px]">$${p.precio.toFixed(2)}</td>
-                        <td class="p-4 text-right space-x-2">
+                        <td class="p-4 font-medium text-white whitespace-pre-wrap align-top">${p.descripcion}<br>${tipoBadge}</td>
+                        <td class="p-4 font-mono text-slate-400 text-[11px] align-top">$${p.costo.toFixed(2)}</td>
+                        <td class="p-4 font-mono font-bold text-emerald-400 text-[11px] align-top">$${p.precio.toFixed(2)}</td>
+                        <td class="p-4 text-right space-x-2 align-top">
                             <button onclick="editarProducto('${p.id}')" class="text-sky-400 hover:text-sky-300 font-medium px-2"><i class="fa-solid fa-pen"></i></button>
                             <button onclick="eliminarProducto('${p.id}')" class="text-rose-400 hover:text-rose-300 font-medium px-2"><i class="fa-solid fa-trash"></i></button>
                         </td>
@@ -1377,7 +1369,7 @@
         }
 
         // ==========================================
-        // MÓDULO: PRESUPUESTOS (Sin cambios)
+        // MÓDULO: PRESUPUESTOS
         // ==========================================
         let carritoPresupuesto = [];
         let subtotalPresupuesto = 0, impuestosPresupuesto = 0, totalPresupuesto = 0;
@@ -1391,7 +1383,15 @@
             const { data: productos } = await db.from('productos').select('id, descripcion, precio').order('descripcion');
             const selectProducto = document.getElementById('trans-producto');
             selectProducto.innerHTML = '<option value="">Seleccione Prod/Servicio...</option>';
-            if(productos) productos.forEach(p => selectProducto.innerHTML += `<option value="${p.id}" data-precio="${p.precio}" data-nombre="${p.descripcion}">${p.descripcion} - $${p.precio.toFixed(2)}</option>`);
+            if(productos) {
+                productos.forEach(p => {
+                    // Para el menú desplegable (que no soporta varias líneas), mostramos solo la primera parte.
+                    const descCorta = p.descripcion ? p.descripcion.replace(/\n/g, ' / ').substring(0, 70) + (p.descripcion.length > 70 ? '...' : '') : 'Sin nombre';
+                    // Pero guardamos la descripción completa codificada en data-nombre
+                    const descEncoded = p.descripcion ? encodeURIComponent(p.descripcion) : encodeURIComponent('Sin nombre');
+                    selectProducto.innerHTML += `<option value="${p.id}" data-precio="${p.precio}" data-nombre="${descEncoded}">${descCorta} - $${p.precio.toFixed(2)}</option>`;
+                });
+            }
         }
 
         document.getElementById('btn-add-producto').addEventListener('click', () => {
@@ -1400,7 +1400,7 @@
             if (!opt.value) return;
 
             const id = opt.value;
-            const nombre = opt.getAttribute('data-nombre');
+            const nombre = decodeURIComponent(opt.getAttribute('data-nombre')); // Recuperamos texto con saltos de línea
             const precioBs = parseFloat(opt.getAttribute('data-precio')) * (datosGenerales.tasa || 1);
             
             const existe = carritoPresupuesto.find(i => i.id === id && i.precio === precioBs);
@@ -1421,12 +1421,13 @@
             carritoPresupuesto.forEach((item, index) => {
                 const totalItem = item.precio * item.cantidad;
                 subtotalPresupuesto += totalItem;
+                // Usamos whitespace-pre-wrap para que se respeten los saltos de línea
                 lista.innerHTML += `
-                    <div class="flex justify-between items-center bg-slate-900 p-3 rounded-xl border border-slate-800 mb-2">
-                        <span class="font-medium text-slate-200">
+                    <div class="flex justify-between items-start bg-slate-900 p-3 rounded-xl border border-slate-800 mb-2">
+                        <span class="font-medium text-slate-200 whitespace-pre-wrap leading-relaxed">
                             <span class="text-sky-400 font-bold">${item.cantidad}x</span> ${item.nombre}
                         </span>
-                        <div class="flex items-center space-x-4">
+                        <div class="flex items-center space-x-4 pl-4">
                             <span class="font-mono font-bold text-emerald-400">Bs. ${formatNumber(totalItem)}</span>
                             <button type="button" class="text-rose-400 hover:text-rose-300 font-bold" onclick="quitarCarritoPresupuesto(${index})"><i class="fa-solid fa-xmark"></i></button>
                         </div>
@@ -1624,7 +1625,7 @@
         }
 
         // ==========================================
-        // MÓDULO: NOTAS DE ENTREGA (Sin cambios a la v anterior)
+        // MÓDULO: NOTAS DE ENTREGA
         // ==========================================
         let carritoNotas = [];
         let totalNotaUsd = 0;
@@ -1638,7 +1639,13 @@
             const { data: productos } = await db.from('productos').select('id, descripcion, precio').order('descripcion');
             const selectProducto = document.getElementById('nota-producto');
             selectProducto.innerHTML = '<option value="">Seleccione Prod/Servicio...</option>';
-            if(productos) productos.forEach(p => selectProducto.innerHTML += `<option value="${p.id}" data-precio="${p.precio}" data-nombre="${p.descripcion}">${p.descripcion} - $${p.precio.toFixed(2)}</option>`);
+            if(productos) {
+                productos.forEach(p => {
+                    const descCorta = p.descripcion ? p.descripcion.replace(/\n/g, ' / ').substring(0, 70) + (p.descripcion.length > 70 ? '...' : '') : 'Sin nombre';
+                    const descEncoded = p.descripcion ? encodeURIComponent(p.descripcion) : encodeURIComponent('Sin nombre');
+                    selectProducto.innerHTML += `<option value="${p.id}" data-precio="${p.precio}" data-nombre="${descEncoded}">${descCorta} - $${p.precio.toFixed(2)}</option>`;
+                });
+            }
         }
 
         document.getElementById('btn-add-nota').addEventListener('click', async () => {
@@ -1647,7 +1654,7 @@
             if (!opt.value) return;
 
             const id = opt.value;
-            const nombre = opt.getAttribute('data-nombre');
+            const nombre = decodeURIComponent(opt.getAttribute('data-nombre')); // Respetar saltos de línea
             let precioUsd = parseFloat(opt.getAttribute('data-precio'));
 
             if (id === 'fb062513-0f9c-4bff-8984-bcceeba631d7') { 
@@ -1679,12 +1686,12 @@
                 const totalItem = item.precio * item.cantidad;
                 totalNotaUsd += totalItem;
                 lista.innerHTML += `
-                    <div class="flex justify-between items-center bg-slate-900 p-3 rounded-xl border border-slate-800 mb-2">
-                        <span class="font-medium text-slate-200">
+                    <div class="flex justify-between items-start bg-slate-900 p-3 rounded-xl border border-slate-800 mb-2">
+                        <span class="font-medium text-slate-200 whitespace-pre-wrap leading-relaxed">
                             <span class="text-cyan-400 font-bold">${item.cantidad}x</span> ${item.nombre}
-                            <span class="text-[10px] text-slate-500 ml-1">(($${formatNumber(item.precio)} c/u))</span>
+                            <span class="text-[10px] text-slate-500 ml-1 block mt-1">(($${formatNumber(item.precio)} c/u))</span>
                         </span>
-                        <div class="flex items-center space-x-4">
+                        <div class="flex items-center space-x-4 pl-4">
                             <span class="font-mono font-bold text-cyan-400">$${formatNumber(totalItem)}</span>
                             <button type="button" class="text-rose-400 hover:text-rose-300 font-bold" onclick="quitarCarritoNota(${index})"><i class="fa-solid fa-xmark"></i></button>
                         </div>
@@ -1756,7 +1763,8 @@
                 if(detData) {
                     detData.forEach(d => {
                         if(!mapDetalles[d.nota_id]) mapDetalles[d.nota_id] = [];
-                        const nombreProd = mapProd[d.producto_id] || 'Producto desc.';
+                        // Quitamos saltos de línea solo para mostrar en la tabla de resumen
+                        const nombreProd = mapProd[d.producto_id] ? mapProd[d.producto_id].replace(/\n/g, ' ') : 'Producto desc.';
                         mapDetalles[d.nota_id].push(`${d.cantidad}x ${nombreProd}`);
                     });
                 }
@@ -1803,7 +1811,7 @@
         }
 
         // ==========================================
-        // MÓDULO: COMPRAS (Sin cambios)
+        // MÓDULO: COMPRAS
         // ==========================================
         async function cargarOpcionesCompras() {
             try {
@@ -1878,7 +1886,7 @@
         }
 
         // ==========================================
-        // MÓDULO: VENTAS (Cálculo ISLR y Tasa Venta)
+        // MÓDULO: VENTAS
         // ==========================================
         let carritoVentas = [];
         let subtotalVenta = 0, impuestosVenta = 0, totalFacturaVenta = 0, islrVenta = 0, totalCobrarVenta = 0;
@@ -1907,17 +1915,14 @@
             const { data: productos } = await db.from('productos').select('id, descripcion, precio, tipo').order('descripcion');
             const selectProducto = document.getElementById('venta-producto');
             selectProducto.innerHTML = '<option value="">Seleccione Prod/Servicio...</option>';
-            if(productos) productos.forEach(p => selectProducto.innerHTML += `<option value="${p.id}" data-precio="${p.precio}" data-nombre="${p.descripcion}" data-tipo="${p.tipo || 'Producto'}">${p.descripcion} - $${p.precio.toFixed(2)}</option>`);
+            if(productos) {
+                productos.forEach(p => {
+                    const descCorta = p.descripcion ? p.descripcion.replace(/\n/g, ' / ').substring(0, 70) + (p.descripcion.length > 70 ? '...' : '') : 'Sin nombre';
+                    const descEncoded = p.descripcion ? encodeURIComponent(p.descripcion) : encodeURIComponent('Sin nombre');
+                    selectProducto.innerHTML += `<option value="${p.id}" data-precio="${p.precio}" data-nombre="${descEncoded}" data-tipo="${p.tipo || 'Producto'}">${descCorta} - $${p.precio.toFixed(2)}</option>`;
+                });
+            }
         }
-
-        // Actualizamos cada vez que el usuario cambie manualmente la tasa en la vista de ventas
-        document.getElementById('input-tasa-venta').addEventListener('input', () => {
-             // Si el carrito tiene algo, se debería recalcular, pero para hacerlo simple, 
-             // la tasa multiplica al momento de AGREGAR al carrito. 
-             // Si cambian la tasa a mitad de facturar, es mejor vaciar o advertir,
-             // o bien que definan la tasa ANTES de agregar los productos.
-             // Para esta lógica sencilla, la tasa actúa al inyectar al carrito.
-        });
 
         document.getElementById('btn-add-venta').addEventListener('click', async () => {
             const select = document.getElementById('venta-producto');
@@ -1925,7 +1930,7 @@
             if (!opt.value) return;
 
             const id = opt.value;
-            const nombre = opt.getAttribute('data-nombre');
+            const nombre = decodeURIComponent(opt.getAttribute('data-nombre')); // Respetar saltos de línea
             let precioBase = parseFloat(opt.getAttribute('data-precio'));
             const tipoItem = opt.getAttribute('data-tipo');
 
@@ -1940,7 +1945,6 @@
                 if (!isNaN(montoObs)) precioBase = montoObs;
             }
 
-            // Usamos la tasa del input manual de la venta
             const tasaVenta = parseFloat(document.getElementById('input-tasa-venta').value) || 1;
             const precioBs = precioBase * tasaVenta;
             
@@ -1968,16 +1972,16 @@
                 if (item.tipo === 'Servicio') subtotalServicios += totalItem;
                 
                 const badgeTipo = item.tipo === 'Servicio' 
-                    ? `<span class="bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 px-1 rounded text-[8px] uppercase tracking-wider font-bold">Serv</span>`
+                    ? `<span class="bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 px-1 rounded text-[8px] uppercase tracking-wider font-bold inline-block ml-1">Serv</span>`
                     : '';
 
                 lista.innerHTML += `
-                    <div class="flex justify-between items-center bg-slate-900 p-3 rounded-xl border border-slate-800 mb-2">
-                        <span class="font-medium text-slate-200">
+                    <div class="flex justify-between items-start bg-slate-900 p-3 rounded-xl border border-slate-800 mb-2">
+                        <span class="font-medium text-slate-200 whitespace-pre-wrap leading-relaxed">
                             <span class="text-emerald-400 font-bold">${item.cantidad}x</span> ${item.nombre} ${badgeTipo}
-                            <span class="text-[10px] text-slate-500 ml-1">((Bs. ${formatNumber(item.precio)} c/u))</span>
+                            <span class="text-[10px] text-slate-500 ml-1 block mt-1">((Bs. ${formatNumber(item.precio)} c/u))</span>
                         </span>
-                        <div class="flex items-center space-x-4">
+                        <div class="flex items-center space-x-4 pl-4">
                             <span class="font-mono font-bold text-emerald-400">Bs. ${formatNumber(totalItem)}</span>
                             <button type="button" class="text-rose-400 hover:text-rose-300 font-bold" onclick="quitarCarritoVenta(${index})"><i class="fa-solid fa-xmark"></i></button>
                         </div>
@@ -1994,9 +1998,7 @@
             impuestosVenta = subtotalVenta * (porc / 100);
             totalFacturaVenta = subtotalVenta + impuestosVenta;
             
-            // Retención de ISLR: 2% exclusivo sobre el subtotal de los servicios facturados
             islrVenta = subServicios * 0.02; 
-            
             totalCobrarVenta = totalFacturaVenta - islrVenta;
 
             document.getElementById('calc-subtotal-venta').innerText = formatNumber(subtotalVenta);
@@ -2028,12 +2030,11 @@
             btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Procesando...';
             btn.disabled = true;
 
-            // IMPORTANTE: Requiere que la columna "retencion_islr" exista en tabla ventas
             const payload = { 
                 cliente_id: clienteId, 
                 impuestos: impuestosVenta, 
-                total: totalFacturaVenta, // Total general de la factura sin descuento
-                retencion_islr: islrVenta, // Dinero a restar del pago final en CxC
+                total: totalFacturaVenta, 
+                retencion_islr: islrVenta, 
                 cxc: esCxC, 
                 factura: numFactura, 
                 control: numControl,
@@ -2053,7 +2054,6 @@
                 const { error: errDet } = await db.from('venta_detalles').insert(detalles);
             }
 
-            // Actualizamos solo correlativos, pero NO la tasa general. La tasa de venta fue para esta factura nada más.
             await db.from('datos').update({ ult_fact: numFactura, ult_control: numControl }).eq('id', datosGenerales.id || 1);
             datosGenerales.ult_fact = numFactura;
             datosGenerales.ult_control = numControl;
@@ -2094,7 +2094,6 @@
                     : '<span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-1 rounded-md text-[10px] font-bold">Pagado</span>';
                 
                 const tasaReal = v.tasa && v.tasa > 0 ? v.tasa : 1;
-                // El total a mostrar acá es el de la factura
                 const totalUsd = v.total / tasaReal;
 
                 tbody.innerHTML += `
@@ -2126,7 +2125,7 @@
         }
 
         // ==========================================
-        // MÓDULO: CUENTAS POR COBRAR (Cálculo con ISLR)
+        // MÓDULO: CUENTAS POR COBRAR (CxC)
         // ==========================================
         async function cargarCxC() {
             try {
@@ -2148,11 +2147,9 @@
                         const subtotalBs = v.total - v.impuestos;
                         const impuestoCobrar = isEspecial ? (v.impuestos * 0.25) : v.impuestos;
                         
-                        // Calculo real por cobrar: Subtotal + Impuestos a cobrar - (Retenciones ISLR 2%)
                         const islrRetenido = parseFloat(v.retencion_islr) || 0;
                         const totalCobrarBs = subtotalBs + impuestoCobrar - islrRetenido;
                         
-                        // USD a la tasa del día actual (Tasa Global)
                         const porCobrarUsd = totalCobrarBs / (datosGenerales.tasa || 1); 
 
                         listadoMixto.push({
@@ -2161,8 +2158,8 @@
                             fecha: v.fecha || v.created_at,
                             cliente: cliInfo.descripcion || 'Desconocido',
                             impuestosBs: v.impuestos,
-                            totalBs: v.total, // Factura completa
-                            cobrarBs: totalCobrarBs, // Con todos los descuentos
+                            totalBs: v.total, 
+                            cobrarBs: totalCobrarBs, 
                             cobrarUsd: porCobrarUsd
                         });
                     });
@@ -2243,14 +2240,9 @@
             }
         }
 
-        // ==========================================
-        // Carga Inicial General
-        // ==========================================
         window.onload = async () => {
             await cargarDatosGenerales(); 
             mostrarModulo('dashboard'); 
-            
-            // Llama a la API, actualiza las casillas de tasa y guarda en DB silenciosamente.
             obtenerTasaBCV(true); 
         };
     </script>
