@@ -292,7 +292,7 @@
                 const impuestosTotales = parseFloat(venta.impuestos) || 0;
                 const totalGeneralFactura = parseFloat(venta.total) || 0; 
                 const baseImponibleTotal = totalGeneralFactura - impuestosTotales;
-                const retencionISLR = parseFloat(venta.retencion_islr) || 0;
+         //       const retencionISLR = parseFloat(venta.retencion_islr) || 0;
                 
                 let porcentajeIva = 16;
                 if (baseImponibleTotal > 0 && impuestosTotales > 0) {
@@ -333,10 +333,10 @@
                 document.getElementById('val_base').innerText = formatoVE.format(baseImponibleTotal);
                 document.getElementById('val_iva').innerText = formatoVE.format(impuestosTotales);
                 
-                if (retencionISLR > 0) {
-                    document.getElementById('fila_islr').style.display = 'flex';
-                    document.getElementById('val_islr').innerText = "- " + formatoVE.format(retencionISLR);
-                }
+       //         if (retencionISLR > 0) {
+       //             document.getElementById('fila_islr').style.display = 'flex';
+        //            document.getElementById('val_islr').innerText = "- " + formatoVE.format(retencionISLR);
+        //        }
                 
                 document.getElementById('val_total').innerText = formatoVE.format(totalGeneralFactura - retencionISLR);
 
