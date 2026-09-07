@@ -305,7 +305,7 @@
                     detalles.forEach(item => {
                         const infoProd = mapProductos[item.producto_id] || { desc: 'Producto sin descripción', tipo: '' };
                         
-                        let descFinal = infoProd.tipo === 'Servicio' ? infoProd.desc + '\n*(Servicio)*' : infoProd.desc;
+                        let descFinal = infoProd.tipo === 'Servicio' ? infoProd.desc  : infoProd.desc;
                         
                         const pUnitario = parseFloat(item.precio_unitario) || 0;
                         const cantidad = parseInt(item.cantidad) || 1;
