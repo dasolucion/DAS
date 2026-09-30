@@ -1641,11 +1641,15 @@ if (ctxVentas) {
 
                 islrData.retenciones = subtotalServicios * 0.02;
 
-                const { data: compras } = await db.from('compras')
-                    .select('subtotal')
-                    .gte('fecha', `${year}-01-01`)
-                    .lte('fecha', `${year}-12-31`);
-                islrData.compras = compras ? compras.reduce((s, c) => s + parseFloat(c.subtotal || 0), 0) : 0;
+const { data: compras } = await db.from('compras')
+    .select('subtotal, monto_exento')
+    .gte('fecha', `${year}-01-01`)
+    .lte('fecha', `${year}-12-31`);
+islrData.compras = compras ? compras.reduce((s, c) => {
+    const sub = parseFloat(c.subtotal || 0);
+    const exento = parseFloat(c.monto_exento || 0);
+    return s + sub + exento;
+}, 0) : 0;
 
                 const inputDirectivo = document.getElementById('gasto-directivo');
                 if (inputDirectivo && (parseFloat(inputDirectivo.value) || 0) === 0 && islrData.ingresos > 0) {
