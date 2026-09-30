@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Imprimir Factura - DAS</title>
+    <style>
+        /* Estilos base adaptados EXACTAMENTE a A5 Horizontal (210mm x 148mm) */
+        body { font-family: Arial, Helvetica, sans-serif; font-size: 10px; color: #000; margin: 0; padding: 0; background-color: #555; }
+        
+        /* Contenedor de la hoja en pantalla */
+        .hoja { 
+            width: 210mm; 
+            min-height: 148mm; 
+            margin: 20px auto; 
+            background: #fff; 
+            padding: 10mm 15mm; 
+            box-sizing: border-box; 
+            box-shadow: 0 0 10px rgba(0,0,0,0.3); 
+            position: relative;
+        }
+
+        .texto-azul { color: #1e4189; }
+        .texto-rojo { color: #d32f2f; }
+        
+        .cabecera { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; width: 100%; }
+        .logo-container img { height: 80px; }
+        
+        .datos-empresa { text-align: center; flex-grow: 1; padding: 0 10px; }
+        .datos-empresa h1 { font-size: 12px; margin: 0 0 2px 0; }
+        .datos-empresa p { margin: 1px 0; font-size: 9px; }
+        
+        .datos-control { text-align: left; font-size: 10px; font-weight: bold; line-height: 1.3; width: 120px; }
+        
+        .info-section { display: flex; justify-content: space-between; margin-bottom: 10px; width: 100%; }
+        .info-col-izq { width: 55%; }
+        .info-col-der { width: 42%; }
+        .fila-info { display: flex; margin-bottom: 2px; align-items: baseline; }
+        .fila-info .etiqueta { width: 55px; font-weight: bold; flex-shrink: 0; font-size: 10px;}
+        .fila-info .etiqueta-der { width: 70px; font-weight: bold; font-size: 10px;}
+        .fila-info .valor { flex-grow: 1; font-size: 10px; }
+        
+        table { width: 100%; border-collapse: collapse; margin-bottom: 10px; }
+        th { border-top: 1px solid #000; border-bottom: 1px solid #000; padding: 3px 2px; font-size: 9px; }
+        td { padding: 3px 2px; font-size: 9px; vertical-align: top; }
+        
+        /* Respeta los saltos de línea en la descripción */
+        .desc-multilinea { white-space: pre-wrap; line-height: 1.2; }
+        
+        .text-left { text-align: left; }
+        .text-right { text-align: right; }
+        .text-center { text-align: center; }
+        
+        /* Modificado para anclar las notas a la izq y totales a la derecha de forma estricta */
+        .pie-factura { display: flex; justify-content: space-between; align-items: flex-start; margin-top: 5px; width: 100%; }
+        .notas { width: 55%; font-weight: bold; font-size: 9px; text-align: left; }
+        .tabla-totales { width: 40%; border-top: 1px solid #000; padding-top: 3px; margin-left: auto; }
+        .tabla-totales .fila-total { display: flex; justify-content: space-between; padding: 2px 0; font-size: 10px;}
+        .fila-total.bold { font-weight: bold; font-size: 11px; }
+        
+        .disclaimer { text-align: center; font-size: 7px; color: #666; margin-top: 15px; line-height: 1.3; width: 100%; }
+        .original { text-align: center; font-weight: bold; font-size: 11px; margin-top: 5px; width: 100%; }
+        
+        /* Menú superior flotante (No se imprime) */
+        .botonera { position: fixed; top: 10px; right: 10px; display: flex; flex-direction: column; gap: 8px; z-index: 1000; }
+        .btn { background: #1e4189; color: white; border: none; padding: 10px 15px; cursor: pointer; font-weight: bold; border-radius: 5px; font-size: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); text-align: left; transition: 0.2s; }
+        .btn:hover { background: #152d61; }
+        .btn-talonario { background: #d32f2f; }
+        .btn-talonario:hover { background: #9a2020; }
+
+        /* ==========================================
+           REGLAS DE IMPRESIÓN (PDF y TALONARIO)
+           ========================================== */
+        @media print {
+            @page { margin: 0; size: 210mm 148mm landscape; } 
+            body { background-color: #fff; }
+            .hoja { margin: 0; padding: 10mm 15mm; box-shadow: none; width: 210mm; height: 148mm; overflow: hidden; }
+            .no-print { display: none !important; }
+            
+            /* Reglas EXCLUSIVAS para el MODO TALONARIO */
+            .hoja.modo-preimpreso {
+                display: flex !important;
+                flex-direction: column !important;
+                justify-content: center !important; 
+                align-items: center !important;
+                padding-top: 10mm !important; 
+                padding-bottom: 20mm !important; 
+            }
+            
+            /* Oculta los elementos marcados cuando se imprime en talonario */
+            .modo-preimpreso .oculto-en-talonario {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Botones flotantes -->
+    <div class="botonera no-print">
+        <button class="btn" onclick="imprimirDigital()">📄 Imprimir Digital (PDF)</button>
+        <button class="btn btn-talonario" onclick="imprimirTalonario()">🖨️ Imprimir en Talonario</button>
+    </div>
+
+    <!-- Contenedor Principal de la Hoja -->
+    <div class="hoja" id="hoja-factura">
+        
+        <!-- HEADER (Desaparece completo en talonario porque el papel ya lo tiene) -->
+        <div class="cabecera oculto-en-talonario">
+            <div class="logo-container">
+                <img src="https://dasolucion.github.io/DAS/logo.png" alt="DAS Logo" onerror="this.style.display='none'">
+            </div>
+            <div class="datos-empresa texto-azul">
+                <h1>DAS SOLUCIONES INTEGRALES, C.A.</h1>
+                <p>Calle El Colegio, Edif. Torre B, Piso 22, Apto. 226, Conj. Res. El Naranjal</p>
+                <p>Las Minas de Baruta, Caracas 1070</p>
+            </div>
+            <div class="datos-control texto-azul">
+                <div>RIF. J-40282664-8</div>
+                <div>FORMA LIBRE</div>
+                <div>CONTROL Nº <span class="texto-rojo" id="val_control">...</span></div>
+            </div>
+        </div>
+
+        <!-- INFO CLIENTE Y FACTURA (Siempre visible) -->
+        <div class="info-section">
+            <div class="info-col-izq">
+                <div class="fila-info"><div class="etiqueta">Cliente:</div><div class="valor" id="val_cliente">Iniciando conexión...</div></div>
+                <div class="fila-info"><div class="etiqueta">R.I.F.:</div><div class="valor" id="val_rif">...</div></div>
+                <div class="fila-info"><div class="etiqueta">Dirección:</div><div class="valor" id="val_direccion">...</div></div>
+                <div class="fila-info"><div class="etiqueta">Teléfono:</div><div class="valor" id="val_telefono">...</div></div>
+                <div class="fila-info"><div class="etiqueta">Contacto:</div><div class="valor" id="val_contacto">...</div></div>
+                <div class="fila-info"><div class="etiqueta">Correo:</div><div class="valor" id="val_correo">...</div></div>
+            </div>
+            <div class="info-col-der">
+                <div class="fila-info"><div class="etiqueta-der">Factura Nº:</div><div class="valor" style="font-size:12px; font-weight:bold;" id="val_numero_factura">...</div></div>
+                <div class="fila-info"><div class="etiqueta-der">Emision:</div><div class="valor bold" id="val_emision">...</div></div>
+                <div class="fila-info"><div class="etiqueta-der">Condicion: </div><div class="valor bold">Contado</div></div>
+                <div class="fila-info"><div class="etiqueta-der">Forma Pago:</div><div class="valor bold">Transferencia</div></div>
+                <div class="fila-info"><div class="etiqueta-der">Vendedor:</div><div class="valor bold">DAS</div></div>
+            </div>
+        </div>
+
+        <!-- TABLA DE ARTÍCULOS (Siempre visible) -->
+        <table id="tabla-principal">
+            <thead>
+                <tr>
+                    <th class="text-left" style="width: 45%;">Descripción</th>
+                    <th class="text-right">Cant</th>
+                    <th class="text-right">Precio Bs.</th>
+                    <th class="text-right">% Alic.</th>
+                    <th class="text-right">Mto Alic.</th>
+                    <th class="text-right">Total Bs.</th>
+                </tr>
+            </thead>
+            <tbody id="tabla_body">
+                <tr><td colspan="6" class="text-center">Cargando productos...</td></tr>
+            </tbody>
+        </table>
+
+        <!-- TOTALES Y NOTAS (SIEMPRE VISIBLES) -->
+        <div class="pie-factura">
+            <!-- Notas de Banco (Ya NO tiene la clase 'oculto-en-talonario') -->
+            <div class="notas">
+                <p style="margin: 0 0 5px 0;">Notas :</p>
+                <p style="margin: 0; line-height: 1.3;">Favor realizar depósito o transferencia a nombre de:<br><strong>DAS Soluciones Integrales, C.A.</strong><br>Banco Banesco Cta: 01340342273421075292</p>
+            </div>
+            
+            <div class="tabla-totales">
+                <div class="fila-total"><span>Sub Total Gravado</span> <span id="val_subtotal">0,00</span></div>
+                <div class="fila-total"><span>Exento</span> <span id="val_exento">0,00</span></div>
+                <div class="fila-total"><span>Base Imponible</span> <span id="val_base">0,00</span></div>
+                <div class="fila-total"><span>IVA</span> <span id="val_iva">0,00</span></div>
+                <div class="fila-total bold"><span>Total a Pagar</span> <span id="val_total">0,00</span></div>
+            </div>
+        </div>
+
+        <!-- FOOTER SENIAT (Desaparece en Talonario porque el papel ya lo trae) -->
+        <div class="disclaimer texto-azul oculto-en-talonario">
+            Corporación Bobinas y Rollos, C.A. RIF J-31151599-2 AV PRINCIPAL LAS CANTERAS DEL ESTE, MACARACUAY GALPON S/N PB. CARACAS ESTADO MIRANDA. TELEFONOS 0212-2580068<br>
+            NUMERO DE PROVIDENCIA: SENIAT-01-00683 DEL 01/04/2008 TIPO DE DOCUMENTO: FORMA LIBRE N° DE CONTROL DESDE EL 00-001251 HASTA 00-001400 FECHA DE ELABORACION 09/07/2025
+        </div>
+        <div class="original texto-rojo oculto-en-talonario">ORIGINAL - CLIENTE</div>
+    </div>
+
+    <!-- SCRIPT DE CONEXIÓN A SUPABASE Y FUNCIONES -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        const { createClient } = supabase;
+        const SUPABASE_URL = 'https://frlaldgtcoykntmgxqmh.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZybGFsZGd0Y295a250bWd4cW1oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc1MTczNDEsImV4cCI6MjEwMzA5MzM0MX0.lTXPGXldiXSIc8FzKp-pA7t5WJmH6_7e_cwuFHF4TO8';
+        const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        const formatoVE = new Intl.NumberFormat('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+        function imprimirDigital() {
+            document.getElementById('hoja-factura').classList.remove('modo-preimpreso');
+            document.getElementById('tabla-principal').style.borderTop = "none";
+            window.print();
+        }
+
+        function imprimirTalonario() {
+            document.getElementById('hoja-factura').classList.add('modo-preimpreso');
+            document.getElementById('tabla-principal').style.borderTop = "none";
+            window.print();
+        }
+
+        function mostrarErrorEnPantalla(titulo, detalleObj) {
+            document.body.innerHTML = `
+                <div style="max-width: 600px; margin: 40px auto; padding: 20px; border: 2px solid #ef5350; background: #ffebee; border-radius: 8px; font-family: Arial, sans-serif;">
+                    <h2 style="color: #c62828; margin-top:0;">🛑 Error: ${titulo}</h2>
+                    <p style="font-size: 13px; color: #333;">Se ha detenido la carga de la factura. Detalle técnico para diagnóstico:</p>
+                    <pre style="background: #fff; padding: 12px; border: 1px solid #ffcdd2; overflow-x: auto; font-size: 12px; color: #d32f2f;">${JSON.stringify(detalleObj, null, 2)}</pre>
+                </div>
+            `;
+        }
+
+        async function cargarDataFactura() {
+            try {
+                const urlParams = new URLSearchParams(window.location.search);
+                const facturaId = urlParams.get('id');
+
+                if (!facturaId) {
+                    mostrarErrorEnPantalla("ID de Factura no proporcionado en la URL.", { error: "Falta el ?id= en la dirección web." });
+                    return;
+                }
+
+                document.getElementById('val_cliente').innerText = 'Conectando con Supabase...';
+
+                // 1. OBTENER VENTA PRINCIPAL
+                const { data: venta, error: errVenta } = await db
+                    .from('ventas')
+                    .select('*')
+                    .eq('id', facturaId)
+                    .single();
+
+                if (errVenta || !venta) {
+                    mostrarErrorEnPantalla("Fallo al consultar la tabla 'ventas'.", errVenta || { motivo: "Registro no encontrado" });
+                    return;
+                }
+
+                // 2. OBTENER DATOS DEL CLIENTE
+                let c = {};
+                if (venta.cliente_id) {
+                    const { data: cliente } = await db
+                        .from('clientes')
+                        .select('*')
+                        .eq('id', venta.cliente_id)
+                        .single();
+                    if (cliente) c = cliente;
+                }
+
+                // 3. OBTENER DETALLES DE LA VENTA
+                const { data: detalles } = await db
+                    .from('venta_detalles')
+                    .select('*')
+                    .eq('venta_id', facturaId);
+
+                // 4. OBTENER NOMBRES, TIPOS Y SI LLEVA IVA LOS PRODUCTOS
+                const mapProductos = {};
+                if (detalles && detalles.length > 0) {
+                    const { data: productos } = await db.from('productos').select('id, descripcion, tipo, lleva_iva');
+                    if (productos) {
+                        productos.forEach(p => {
+                            mapProductos[p.id] = { 
+                                desc: p.descripcion, 
+                                tipo: p.tipo,
+                                llevaIVA: p.lleva_iva !== false
+                            };
+                        });
+                    }
+                }
+
+                // --- INYECTAR DATOS ---
+                document.getElementById('val_control').innerText = venta.control || '00-000000';
+                document.getElementById('val_numero_factura').innerText = venta.factura || '000000';
+                
+                const stringFecha = venta.fecha || venta.created_at || new Date().toISOString();
+                const soloFecha = stringFecha.split('T')[0];
+                const [anio, mes, dia] = soloFecha.split('-');
+                document.getElementById('val_emision').innerText = `${dia}/${mes}/${anio}`;
+
+                document.getElementById('val_cliente').innerText = c.descripcion || 'Cliente no registrado';
+                document.getElementById('val_rif').innerText = c.identificacion || 'N/A';
+                document.getElementById('val_direccion').innerText = c.direccion || '-';
+                document.getElementById('val_telefono').innerText = c.telefono || '-';
+                document.getElementById('val_contacto').innerText = c.persona_contacto || '-';
+                document.getElementById('val_correo').innerText = c.correo || '-';
+
+                const tablaBody = document.getElementById('tabla_body');
+                tablaBody.innerHTML = ''; 
+
+                const impuestosTotales = parseFloat(venta.impuestos) || 0;
+                const totalGeneralFactura = parseFloat(venta.total) || 0;
+                const montoExentoGuardado = parseFloat(venta.monto_exento) || 0;
+                const baseImponibleTotal = totalGeneralFactura - impuestosTotales - montoExentoGuardado;
+                
+                let porcentajeIva = 16;
+                if (baseImponibleTotal > 0 && impuestosTotales > 0) {
+                    porcentajeIva = Math.round((impuestosTotales / baseImponibleTotal) * 100);
+                } else if (impuestosTotales === 0) {
+                    porcentajeIva = 0;
+                }
+
+                // ==========================================
+                // RECORRER DETALLES Y CALCULAR GRAVADO/EXENTO
+                // ==========================================
+                let subtotalGravado = 0;
+                let subtotalExento = 0;
+                
+                if (detalles && detalles.length > 0) {
+                    detalles.forEach(item => {
+                        const infoProd = mapProductos[item.producto_id] || { desc: 'Producto sin descripción', tipo: '', llevaIVA: true };
+                        
+                        const llevaIVA = infoProd.llevaIVA;
+                        const pUnitario = parseFloat(item.precio_unitario) || 0;
+                        const cantidad = parseInt(item.cantidad) || 1;
+                        
+                        const sub = cantidad * pUnitario;
+                        
+                        let ivaItem = 0;
+                        let porcentajeAplicado = 0;
+                        let totalItem = sub;
+                        
+                        if (llevaIVA) {
+                            ivaItem = sub * (porcentajeIva / 100);
+                            totalItem = sub + ivaItem;
+                            porcentajeAplicado = porcentajeIva;
+                            subtotalGravado += sub;
+                        } else {
+                            porcentajeAplicado = 0;
+                            subtotalExento += sub;
+                        }
+
+                        const descFinal = llevaIVA 
+                            ? infoProd.desc 
+                            : `${infoProd.desc}\n[EXENTO]`;
+                        
+                        const etiquetaPorcentaje = llevaIVA ? `${porcentajeAplicado}%` : 'EXENTO';
+
+                        tablaBody.innerHTML += `
+                            <tr>
+                                <td class="text-left desc-multilinea">${descFinal}</td>
+                                <td class="text-right">${cantidad}</td>
+                                <td class="text-right">${formatoVE.format(pUnitario)}</td>
+                                <td class="text-right">${etiquetaPorcentaje}</td>
+                                <td class="text-right">${formatoVE.format(ivaItem)}</td>
+                                <td class="text-right">${formatoVE.format(totalItem)}</td>
+                            </tr>
+                        `;
+                    });
+                } else {
+                    tablaBody.innerHTML = `<tr><td colspan="6" class="text-center text-rojo">Esta factura no tiene detalles registrados.</td></tr>`;
+                }
+
+                // ==========================================
+                // ACTUALIZAR TOTALES
+                // ==========================================
+                document.getElementById('val_subtotal').innerText = formatoVE.format(subtotalGravado);
+                document.getElementById('val_exento').innerText = formatoVE.format(subtotalExento);
+                document.getElementById('val_base').innerText = formatoVE.format(subtotalGravado);
+                document.getElementById('val_iva').innerText = formatoVE.format(impuestosTotales);
+                document.getElementById('val_total').innerText = formatoVE.format(totalGeneralFactura);
+
+            } catch (error) {
+                console.error("Error crítico Javascript:", error);
+                mostrarErrorEnPantalla("Error de Javascript durante la ejecución.", { stack: error.stack, message: error.message });
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', cargarDataFactura);
+    </script>
+</body>
+</html>
