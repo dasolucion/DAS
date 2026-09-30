@@ -700,86 +700,105 @@
                 </div>
                 
                 <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-xl">
-                    <form id="form-venta" class="space-y-5">
-                        
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-5 no-print border-b border-slate-800 pb-5 mb-5 bg-slate-950/50 p-4 rounded-xl border border-slate-800">
-                            <div>
-                                <label class="block text-xs font-bold text-sky-400 uppercase mb-2" title="Tasa editable para esta factura en específico"><i class="fa-solid fa-money-bill-transfer"></i> Tasa Venta (Editable)</label>
-                                <div class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2 text-sm text-sky-400 font-mono font-bold flex items-center gap-2">
-                                    Bs. <input type="number" step="0.01" id="input-tasa-venta" class="bg-transparent outline-none w-full text-sky-400 font-bold" value="1.00">
-                                </div>
-                            </div>
-                            <div>
-                                <label class="block text-xs font-medium text-slate-300 mb-1">Nº Factura (Sugerido)</label>
-                                <input type="text" id="venta-factura" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-sky-500 font-mono transition" required>
-                            </div>
-                            <div>
-                                <label class="block text-xs font-medium text-slate-300 mb-1">Nº Control (Sugerido)</label>
-                                <input type="text" id="venta-control" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-emerald-400 font-bold outline-none focus:border-emerald-500 font-mono transition" required>
-                            </div>
-                        </div>
+<form id="form-venta" class="space-y-5">
+    
+    <!-- FILA 1: Tasa, N° Factura, N° Control -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-5 no-print border-b border-slate-800 pb-5 mb-5 bg-slate-950/50 p-4 rounded-xl border border-slate-800">
+        <div>
+            <label class="block text-xs font-bold text-sky-400 uppercase mb-2" title="Tasa editable para esta factura en específico"><i class="fa-solid fa-money-bill-transfer"></i> Tasa Venta (Editable)</label>
+            <div class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2 text-sm text-sky-400 font-mono font-bold flex items-center gap-2">
+                Bs. <input type="number" step="0.01" id="input-tasa-venta" class="bg-transparent outline-none w-full text-sky-400 font-bold" value="1.00">
+            </div>
+        </div>
+        <div>
+            <label class="block text-xs font-medium text-slate-300 mb-1">Nº Factura (Sugerido)</label>
+            <input type="text" id="venta-factura" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-sky-500 font-mono transition" required>
+        </div>
+        <div>
+            <label class="block text-xs font-medium text-slate-300 mb-1">Nº Control (Sugerido)</label>
+            <input type="text" id="venta-control" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-emerald-400 font-bold outline-none focus:border-emerald-500 font-mono transition" required>
+        </div>
+    </div>
 
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5 no-print">
-                            <div>
-                                <label class="block text-xs font-medium text-slate-300 mb-1">Cliente</label>
-                                <select id="venta-cliente" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-sky-500 transition" required>
-                                    <option value="">Seleccione un Cliente...</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block text-xs font-medium text-slate-300 mb-1">Agregar Producto/Servicio</label>
-                                <div class="flex space-x-2">
-                                    <select id="venta-producto" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-sky-500 transition">
-                                        <option value="">Seleccione Prod/Servicio...</option>
-                                    </select>
-                                    <button type="button" id="btn-add-venta" class="bg-slate-800 hover:bg-slate-700 text-white font-bold px-4 py-2.5 rounded-xl border border-slate-700 transition text-xs shadow-sm">
-                                        <i class="fa-solid fa-plus"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
+    <!-- FILA 2: Cliente + Producto + Precio + Cantidad + Botón (una sola línea) -->
+    <div class="grid grid-cols-12 gap-3 items-end no-print">
+        <div class="col-span-12 md:col-span-4">
+            <label class="block text-xs font-medium text-slate-300 mb-1">Cliente</label>
+            <select id="venta-cliente" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-sky-500 transition" required>
+                <option value="">Seleccione un Cliente...</option>
+            </select>
+        </div>
+        <div class="col-span-12 md:col-span-4">
+            <label class="block text-xs font-medium text-slate-300 mb-1">Agregar Producto/Servicio</label>
+            <select id="venta-producto" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-sky-500 transition">
+                <option value="">Seleccione Prod/Servicio...</option>
+            </select>
+        </div>
+        <div class="col-span-6 md:col-span-2">
+            <label class="block text-xs font-medium text-emerald-400 mb-1">Precio (Bs)</label>
+            <input type="number" step="0.01" id="venta-precio-editable" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-emerald-400 font-mono font-bold outline-none focus:border-emerald-500 transition" placeholder="0.00" title="Editable antes de agregar">
+        </div>
+        <div class="col-span-3 md:col-span-1">
+            <label class="block text-xs font-medium text-slate-300 mb-1">Cant.</label>
+            <input type="number" step="1" min="1" id="venta-cantidad" value="1" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white font-mono font-bold outline-none focus:border-sky-500 transition text-center">
+        </div>
+        <div class="col-span-3 md:col-span-1">
+            <label class="block text-xs font-medium text-slate-300 mb-1">&nbsp;</label>
+            <button type="button" id="btn-add-venta" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold py-2.5 rounded-xl border border-slate-700 transition text-xs shadow-sm" title="Agregar al detalle">
+                <i class="fa-solid fa-plus"></i>
+            </button>
+        </div>
+    </div>
 
-                        <div class="mt-6 border border-slate-800 rounded-2xl p-5 bg-slate-950">
-                            <h4 class="font-bold text-slate-300 mb-3 text-xs uppercase tracking-wider flex items-center gap-2">
-                                <i class="fa-solid fa-cart-arrow-down text-emerald-400"></i> Artículos (Venta)
-                            </h4>
-                            <div id="lista-articulos-venta" class="space-y-2 mb-4 text-xs min-h-[60px]">
-                                <p class="text-slate-500 text-xs italic">No hay productos agregados a la venta.</p>
-                            </div>
-                            
-                            <div class="flex justify-end pt-4 border-t border-slate-800 space-x-8">
-                                <div class="text-right flex flex-col justify-between text-xs space-y-2">
-                                    <p class="text-slate-400 font-medium">Subtotal Gravado (Bs):</p>
-                                    <p class="text-slate-400 font-medium text-amber-400">Subtotal Exento (Bs):</p>
-                                    <p class="text-slate-400 font-medium flex items-center justify-end gap-2">
-                                        IVA (<input type="number" id="calc-impuesto-porcentaje-venta" value="16" class="w-14 bg-slate-900 border border-slate-700 text-center py-1 rounded-lg text-white outline-none focus:border-sky-500">%):
-                                    </p>
-                                    <p class="font-bold text-slate-300 text-sm pt-1">Total Factura (Bs):</p>
-                                    <p class="text-slate-400 font-medium pb-1" title="Retención del 2% aplicada únicamente a los servicios facturados">Retención ISLR 2% (-):</p>
-                                    <p class="font-bold text-white text-base border-t border-slate-700 pt-2 mt-1">TOTAL A PAGAR (Bs):</p>
-                                </div>
-                                <div class="text-right font-mono flex flex-col justify-between text-xs space-y-2">
-                                    <p id="calc-subtotal-gravado-venta" class="font-semibold text-slate-300 py-1">0.00</p>
-                                    <p id="calc-subtotal-exento-venta" class="font-semibold text-amber-400 py-1">0.00</p>
-                                    <p id="calc-impuesto-monto-venta" class="text-slate-400 py-1">0.00</p>
-                                    <p id="calc-factura-total-venta" class="font-bold text-slate-300 text-sm pt-1">0.00</p>
-                                    <p id="calc-islr-monto-venta" class="text-rose-400 font-semibold pb-1">0.00</p>
-                                    <p id="calc-total-cobrar-venta" class="font-bold text-emerald-400 text-base border-t border-slate-700 pt-2 mt-1">0.00</p>
-                                </div>
-                            </div>
-                        </div>
+    <!-- FILA 3: Detalle de la venta (ancho completo) -->
+    <div class="mt-6 border border-slate-800 rounded-2xl p-5 bg-slate-950">
+        <h4 class="font-bold text-slate-300 mb-3 text-xs uppercase tracking-wider flex items-center gap-2">
+            <i class="fa-solid fa-cart-arrow-down text-emerald-400"></i> Artículos (Venta)
+        </h4>
+        <div id="lista-articulos-venta" class="space-y-2 mb-4 text-xs min-h-[60px]">
+            <p class="text-slate-500 text-xs italic">No hay productos agregados a la venta.</p>
+        </div>
+        
+       <div class="flex justify-end pt-4 border-t border-slate-800 space-x-8">
+    <div class="text-right flex flex-col justify-between text-xs space-y-2">
+        <p class="text-slate-400 font-medium">Subtotal Gravado (Bs):</p>
+        <p class="text-slate-400 font-medium text-amber-400">Subtotal Exento (Bs):</p>
+        <p class="text-slate-400 font-medium flex items-center justify-end gap-2">
+            IVA (<input type="number" id="calc-impuesto-porcentaje-venta" value="16" class="w-14 bg-slate-900 border border-slate-700 text-center py-1 rounded-lg text-white outline-none focus:border-sky-500">%):
+        </p>
+        <p class="text-slate-400 font-medium flex items-center justify-end gap-2">
+            Descuento (Bs):
+            <input type="number" step="0.01" min="0" id="calc-descuento-venta" value="0" class="w-20 bg-slate-900 border border-slate-700 text-center py-1 rounded-lg text-rose-400 font-mono font-bold outline-none focus:border-rose-500">
+        </p>
+        <p class="font-bold text-slate-300 text-sm pt-1">Total Factura (Bs):</p>
+        <p class="text-slate-400 font-medium pb-1" title="Retención del 2% aplicada únicamente a los servicios facturados">Retención ISLR 2% (-):</p>
+        <p class="font-bold text-white text-base border-t border-slate-700 pt-2 mt-1">TOTAL A PAGAR (Bs):</p>
+    </div>
+    <div class="text-right font-mono flex flex-col justify-between text-xs space-y-2">
+        <p id="calc-subtotal-gravado-venta" class="font-semibold text-slate-300 py-1">0.00</p>
+        <p id="calc-subtotal-exento-venta" class="font-semibold text-amber-400 py-1">0.00</p>
+        <p id="calc-impuesto-monto-venta" class="text-slate-400 py-1">0.00</p>
+        <p id="calc-descuento-monto-venta" class="text-rose-400 py-1">0.00</p>
+        <p id="calc-factura-total-venta" class="font-bold text-slate-300 text-sm pt-1">0.00</p>
+        <p id="calc-islr-monto-venta" class="text-rose-400 font-semibold pb-1">0.00</p>
+        <p id="calc-total-cobrar-venta" class="font-bold text-emerald-400 text-base border-t border-slate-700 pt-2 mt-1">0.00</p>
+    </div>
+</div>
+    </div>
 
-                        <div class="flex items-center space-x-3 pt-2">
-                            <input type="checkbox" id="venta-cxc" class="w-4 h-4 bg-slate-950 border-slate-700 rounded accent-sky-500 cursor-pointer" checked>
-                            <label for="venta-cxc" class="text-xs font-medium text-slate-300 cursor-pointer">Registrar como Cuenta por Cobrar (CxC)</label>
-                        </div>
+    <!-- FILA 4: Registrar CxC (ancho completo) -->
+    <div class="flex items-center space-x-3 pt-2">
+        <input type="checkbox" id="venta-cxc" class="w-4 h-4 bg-slate-950 border-slate-700 rounded accent-sky-500 cursor-pointer" checked>
+        <label for="venta-cxc" class="text-xs font-medium text-slate-300 cursor-pointer">Registrar como Cuenta por Cobrar (CxC)</label>
+    </div>
 
-                        <div class="flex space-x-3 no-print pt-2">
-                            <button type="submit" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-6 py-2.5 rounded-xl transition shadow-lg shadow-emerald-600/20 text-xs flex items-center gap-2">
-                                <i class="fa-solid fa-file-invoice-dollar"></i> Procesar Venta
-                            </button>
-                        </div>
-                    </form>
+    <!-- FILA 5: Botón Procesar Venta (ancho completo) -->
+    <div class="flex space-x-3 no-print pt-2">
+        <button type="submit" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-6 py-2.5 rounded-xl transition shadow-lg shadow-emerald-600/20 text-xs flex items-center gap-2">
+            <i class="fa-solid fa-file-invoice-dollar"></i> Procesar Venta
+        </button>
+    </div>
+</form>
                 </div>
 
                 <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl no-print">
@@ -1253,7 +1272,17 @@
             if(id === 'proveedores') cargarProveedores();
             if(id === 'presupuestos') { cargarOpcionesPresupuesto(); cargarHistorialPresupuestos(); }
             if(id === 'notas') { cargarOpcionesNotas(); cargarHistorialNotas(); }
-            if(id === 'ventas') { cargarOpcionesVentas(); cargarHistorialVentas(); generarCorrelativosVenta(); }
+if(id === 'ventas') { 
+    cargarOpcionesVentas(); 
+    cargarHistorialVentas(); 
+    generarCorrelativosVenta(); 
+    setTimeout(() => {
+        const inpP = document.getElementById('venta-precio-editable');
+        const inpC = document.getElementById('venta-cantidad');
+        if (inpP) inpP.value = '';
+        if (inpC) inpC.value = '1';
+    }, 100);
+}
             if(id === 'compras') { cargarOpcionesCompras(); cargarHistorialCompras(); }
             if(id === 'cxc') { cargarCxC(); }
         }
@@ -2525,56 +2554,124 @@ async function cargarProductos() {
             document.getElementById('venta-control').value = '00-' + String(nextControl).padStart(6, '0');
         }
 
-        async function cargarOpcionesVentas() {
-            const { data: clientes } = await db.from('clientes').select('id, descripcion').order('descripcion');
-            const selectCliente = document.getElementById('venta-cliente');
-            selectCliente.innerHTML = '<option value="">Seleccione un Cliente...</option>';
-            if(clientes) clientes.forEach(c => selectCliente.innerHTML += `<option value="${c.id}">${c.descripcion}</option>`);
+async function cargarOpcionesVentas() {
+    const { data: clientes } = await db.from('clientes').select('id, descripcion').order('descripcion');
+    const selectCliente = document.getElementById('venta-cliente');
+    selectCliente.innerHTML = '<option value="">Seleccione un Cliente...</option>';
+    if(clientes) clientes.forEach(c => selectCliente.innerHTML += `<option value="${c.id}">${c.descripcion}</option>`);
 
-            const { data: productos } = await db.from('productos').select('id, descripcion, precio, tipo, lleva_iva').order('descripcion');
-            const selectProducto = document.getElementById('venta-producto');
-            selectProducto.innerHTML = '<option value="">Seleccione Prod/Servicio...</option>';
-            if(productos) {
-                productos.forEach(p => {
-                    const descCorta = p.descripcion ? p.descripcion.replace(/\n/g, ' / ').substring(0, 70) + (p.descripcion.length > 70 ? '...' : '') : 'Sin nombre';
-                    const descEncoded = p.descripcion ? encodeURIComponent(p.descripcion) : encodeURIComponent('Sin nombre');
-                    const llevaIVA = p.lleva_iva !== false;
-                    const badgeExento = llevaIVA ? '' : ' [EXENTO]';
-                    selectProducto.innerHTML += `<option value="${p.id}" data-precio="${p.precio}" data-nombre="${descEncoded}" data-tipo="${p.tipo || 'Producto'}" data-lleva-iva="${llevaIVA}">${descCorta}${badgeExento} - $${parseFloat(p.precio).toFixed(2)}</option>`;
-                });
-            }
-        }
+    const { data: productos } = await db.from('productos').select('id, descripcion, precio, tipo, lleva_iva').order('descripcion');
+    const selectProducto = document.getElementById('venta-producto');
+    selectProducto.innerHTML = '<option value="">Seleccione Prod/Servicio...</option>';
+    if(productos) {
+        productos.forEach(p => {
+            const descCorta = p.descripcion ? p.descripcion.replace(/\n/g, ' / ').substring(0, 70) + (p.descripcion.length > 70 ? '...' : '') : 'Sin nombre';
+            const descEncoded = p.descripcion ? encodeURIComponent(p.descripcion) : encodeURIComponent('Sin nombre');
+            const llevaIVA = p.lleva_iva !== false;
+            const badgeExento = llevaIVA ? '' : ' [EXENTO]';
+            selectProducto.innerHTML += `<option value="${p.id}" data-precio="${p.precio}" data-nombre="${descEncoded}" data-tipo="${p.tipo || 'Producto'}" data-lleva-iva="${llevaIVA}">${descCorta}${badgeExento} - $${parseFloat(p.precio).toFixed(2)}</option>`;
+        });
+    }
+}
 
-        document.getElementById('btn-add-venta').addEventListener('click', async () => {
-            const select = document.getElementById('venta-producto');
-            const opt = select.options[select.selectedIndex];
-            if (!opt.value) return;
+// ==========================================
+// ACTUALIZAR PRECIO SUGERIDO EN VENTAS
+// ==========================================
+async function actualizarPrecioSugeridoVenta() {
+    const select = document.getElementById('venta-producto');
+    const inputPrecio = document.getElementById('venta-precio-editable');
+    if (!select || !inputPrecio) return;
 
-            const id = opt.value;
-            const nombre = decodeURIComponent(opt.getAttribute('data-nombre'));
-            let precioBase = parseFloat(opt.getAttribute('data-precio'));
-            const tipoItem = opt.getAttribute('data-tipo');
-            const llevaIVA = opt.getAttribute('data-lleva-iva') === 'true';
+    const opt = select.options[select.selectedIndex];
+    if (!opt || !opt.value) {
+        inputPrecio.value = '';
+        return;
+    }
 
-            if (id === 'fb062513-0f9c-4bff-8984-bcceeba631d7') { 
-                const clienteId = document.getElementById('venta-cliente').value;
-                if (!clienteId) return alert('Por favor, seleccione un cliente primero para asignar el monto de sus observaciones.');
-                
-                const { data: clienteData, error: errCli } = await db.from('clientes').select('observaciones').eq('id', clienteId).single();
-                if (errCli || !clienteData || !clienteData.observaciones) return alert('El cliente seleccionado no tiene observaciones registradas.');
-                
+    const id = opt.value;
+    let precioBase = parseFloat(opt.getAttribute('data-precio')) || 0;
+
+    // Producto especial: usa el monto de las observaciones del cliente
+    if (id === 'fb062513-0f9c-4bff-8984-bcceeba631d7') {
+        const clienteId = document.getElementById('venta-cliente').value;
+        if (clienteId) {
+            const { data: clienteData, error: errCli } = await db.from('clientes').select('observaciones').eq('id', clienteId).single();
+            if (!errCli && clienteData && clienteData.observaciones) {
                 const montoObs = parseFloat(clienteData.observaciones);
                 if (!isNaN(montoObs)) precioBase = montoObs;
             }
+        }
+    }
 
-            const tasaVenta = parseFloat(document.getElementById('input-tasa-venta').value) || 1;
-            const precioBs = precioBase * tasaVenta;
+    const tasaVenta = parseFloat(document.getElementById('input-tasa-venta').value) || 1;
+    const precioBs = precioBase * tasaVenta;
+    inputPrecio.value = precioBs.toFixed(2);
+}
+
+// ==========================================
+// LISTENERS PARA ACTUALIZAR PRECIO AUTOMÁTICAMENTE
+// ==========================================
+document.getElementById('venta-producto').addEventListener('change', () => {
+    actualizarPrecioSugeridoVenta();
+    const inpCant = document.getElementById('venta-cantidad');
+    if (inpCant) inpCant.value = '1';
+});
+document.getElementById('venta-cliente').addEventListener('change', actualizarPrecioSugeridoVenta);
+document.getElementById('input-tasa-venta').addEventListener('input', actualizarPrecioSugeridoVenta);
+
+document.getElementById('btn-add-venta').addEventListener('click', async () => {
+    const select = document.getElementById('venta-producto');
+    const opt = select.options[select.selectedIndex];
+    if (!opt.value) return alert('Seleccione un producto/servicio.');
+
+    const id = opt.value;
+    const nombre = decodeURIComponent(opt.getAttribute('data-nombre'));
+    const tipoItem = opt.getAttribute('data-tipo');
+    const llevaIVA = opt.getAttribute('data-lleva-iva') === 'true';
+
+    // Precio (del input editable)
+    const inputPrecio = document.getElementById('venta-precio-editable');
+    let precioBs = parseFloat(inputPrecio.value);
+
+    // Cantidad (del input, default 1)
+    const inputCantidad = document.getElementById('venta-cantidad');
+    let cantidad = parseInt(inputCantidad.value) || 1;
+    if (cantidad < 1) cantidad = 1;
+
+    // Si el precio está vacío o inválido, calcularlo automáticamente
+    if (isNaN(precioBs) || precioBs <= 0) {
+        let precioBase = parseFloat(opt.getAttribute('data-precio')) || 0;
+
+        if (id === 'fb062513-0f9c-4bff-8984-bcceeba631d7') { 
+            const clienteId = document.getElementById('venta-cliente').value;
+            if (!clienteId) return alert('Por favor, seleccione un cliente primero para asignar el monto de sus observaciones.');
             
-            const existe = carritoVentas.find(i => i.id === id && i.precio === precioBs);
-            if (existe) existe.cantidad++;
-            else carritoVentas.push({ id, nombre, precio: precioBs, cantidad: 1, tipo: tipoItem, llevaIVA });
-            renderCarritoVentas();
-        });
+            const { data: clienteData, error: errCli } = await db.from('clientes').select('observaciones').eq('id', clienteId).single();
+            if (errCli || !clienteData || !clienteData.observaciones) return alert('El cliente seleccionado no tiene observaciones registradas.');
+            
+            const montoObs = parseFloat(clienteData.observaciones);
+            if (!isNaN(montoObs)) precioBase = montoObs;
+        }
+
+        const tasaVenta = parseFloat(document.getElementById('input-tasa-venta').value) || 1;
+        precioBs = precioBase * tasaVenta;
+    }
+
+    // Acumular si ya existe mismo producto y mismo precio
+    const existe = carritoVentas.find(i => i.id === id && i.precio === precioBs);
+    if (existe) {
+        existe.cantidad += cantidad;
+    } else {
+        carritoVentas.push({ id, nombre, precio: precioBs, cantidad: cantidad, tipo: tipoItem, llevaIVA });
+    }
+    
+    renderCarritoVentas();
+    
+    // Limpiar campos
+    select.value = '';
+    inputPrecio.value = '';
+    inputCantidad.value = '1';
+});
 
         function renderCarritoVentas() {
             const lista = document.getElementById('lista-articulos-venta');
@@ -2623,39 +2720,45 @@ async function cargarProductos() {
 
         function quitarCarritoVenta(index) { carritoVentas.splice(index, 1); renderCarritoVentas(); }
 
-        function actualizarTotalesVenta(subServicios = null, subGravado = null, subExento = null) {
-            const porc = parseFloat(document.getElementById('calc-impuesto-porcentaje-venta').value) || 0;
-            
-            // Si no se pasan, recalcular desde el carrito
-            if (subGravado === null || subExento === null || subServicios === null) {
-                subGravado = 0; subExento = 0; subServicios = 0;
-                carritoVentas.forEach(i => {
-                    const t = i.precio * i.cantidad;
-                    if (i.llevaIVA === false) subExento += t;
-                    else {
-                        subGravado += t;
-                        if (i.tipo === 'Servicio') subServicios += t;
-                    }
-                });
+function actualizarTotalesVenta(subServicios = null, subGravado = null, subExento = null) {
+    const porc = parseFloat(document.getElementById('calc-impuesto-porcentaje-venta').value) || 0;
+    const descuento = parseFloat(document.getElementById('calc-descuento-venta').value) || 0;
+    
+    // Si no se pasan, recalcular desde el carrito
+    if (subGravado === null || subExento === null || subServicios === null) {
+        subGravado = 0; subExento = 0; subServicios = 0;
+        carritoVentas.forEach(i => {
+            const t = i.precio * i.cantidad;
+            if (i.llevaIVA === false) subExento += t;
+            else {
+                subGravado += t;
+                if (i.tipo === 'Servicio') subServicios += t;
             }
-
-            impuestosVenta = subGravado * (porc / 100);
-            totalFacturaVenta = subGravado + subExento + impuestosVenta;
-            
-            islrVenta = subServicios * 0.02; 
-            totalCobrarVenta = totalFacturaVenta - islrVenta;
-
-            document.getElementById('calc-subtotal-gravado-venta').innerText = formatNumber(subGravado);
-            document.getElementById('calc-subtotal-exento-venta').innerText = formatNumber(subExento);
-            document.getElementById('calc-impuesto-monto-venta').innerText = formatNumber(impuestosVenta);
-            document.getElementById('calc-factura-total-venta').innerText = formatNumber(totalFacturaVenta);
-            document.getElementById('calc-islr-monto-venta').innerText = "-" + formatNumber(islrVenta);
-            document.getElementById('calc-total-cobrar-venta').innerText = formatNumber(totalCobrarVenta);
-        }
-
-        document.getElementById('calc-impuesto-porcentaje-venta').addEventListener('input', () => {
-            actualizarTotalesVenta();
         });
+    }
+
+    const baseCalculo = subGravado + subExento;
+    impuestosVenta = subGravado * (porc / 100);
+    totalFacturaVenta = baseCalculo + impuestosVenta - descuento;
+    if (totalFacturaVenta < 0) totalFacturaVenta = 0;
+    
+    islrVenta = subServicios * 0.02; 
+    totalCobrarVenta = totalFacturaVenta - islrVenta;
+    if (totalCobrarVenta < 0) totalCobrarVenta = 0;
+
+    document.getElementById('calc-subtotal-gravado-venta').innerText = formatNumber(subGravado);
+    document.getElementById('calc-subtotal-exento-venta').innerText = formatNumber(subExento);
+    document.getElementById('calc-impuesto-monto-venta').innerText = formatNumber(impuestosVenta);
+    document.getElementById('calc-descuento-monto-venta').innerText = "- " + formatNumber(descuento);
+    document.getElementById('calc-factura-total-venta').innerText = formatNumber(totalFacturaVenta);
+    document.getElementById('calc-islr-monto-venta').innerText = "-" + formatNumber(islrVenta);
+    document.getElementById('calc-total-cobrar-venta').innerText = formatNumber(totalCobrarVenta);
+}
+
+// Listener del descuento
+document.getElementById('calc-descuento-venta').addEventListener('input', () => {
+    actualizarTotalesVenta();
+});
 
         document.getElementById('form-venta').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -2674,18 +2777,20 @@ async function cargarProductos() {
             btn.disabled = true;
 
             const montoExento = carritoVentas.reduce((s, i) => i.llevaIVA === false ? s + (i.precio * i.cantidad) : s, 0);
+const descuentoVenta = parseFloat(document.getElementById('calc-descuento-venta').value) || 0;
 
-            const payload = { 
-                cliente_id: clienteId, 
-                impuestos: impuestosVenta, 
-                monto_exento: montoExento,
-                total: totalFacturaVenta, 
-                retencion_islr: islrVenta, 
-                cxc: esCxC, 
-                factura: numFactura, 
-                control: numControl,
-                tasa: tasaUsada
-            };
+const payload = { 
+    cliente_id: clienteId, 
+    impuestos: impuestosVenta, 
+    monto_exento: montoExento,
+    descuento: descuentoVenta,
+    total: totalFacturaVenta, 
+    retencion_islr: islrVenta, 
+    cxc: esCxC, 
+    factura: numFactura, 
+    control: numControl,
+    tasa: tasaUsada
+};
 
             const { data, error } = await db.from('ventas').insert([payload]).select();
             
@@ -2705,17 +2810,18 @@ async function cargarProductos() {
             datosGenerales.ult_control = numControl;
             actualizarVistasDatosLocales();
 
-            carritoVentas = [];
-            renderCarritoVentas();
-            document.getElementById('form-venta').reset();
-            document.getElementById('calc-impuesto-porcentaje-venta').value = "16";
-            document.getElementById('venta-cxc').checked = true;
-            
-            cargarHistorialVentas();
-            cargarCxC();
-            generarCorrelativosVenta(); 
-            cargarDashboard();
-            cargarResumenIVA();
+carritoVentas = [];
+renderCarritoVentas();
+document.getElementById('form-venta').reset();
+document.getElementById('calc-impuesto-porcentaje-venta').value = "16";
+document.getElementById('calc-descuento-venta').value = "0";   // ← AGREGA ESTA LÍNEA
+document.getElementById('venta-cxc').checked = true;
+
+cargarHistorialVentas();
+cargarCxC();
+generarCorrelativosVenta(); 
+cargarDashboard();
+cargarResumenIVA();
 
             if(document.getElementById('islr') && !document.getElementById('islr').classList.contains('hidden')) {
                 cargarProyeccionISLR();
