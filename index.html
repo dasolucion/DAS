@@ -703,22 +703,26 @@
 <form id="form-venta" class="space-y-5">
     
     <!-- FILA 1: Tasa, N° Factura, N° Control -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-5 no-print border-b border-slate-800 pb-5 mb-5 bg-slate-950/50 p-4 rounded-xl border border-slate-800">
-        <div>
-            <label class="block text-xs font-bold text-sky-400 uppercase mb-2" title="Tasa editable para esta factura en específico"><i class="fa-solid fa-money-bill-transfer"></i> Tasa Venta (Editable)</label>
-            <div class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2 text-sm text-sky-400 font-mono font-bold flex items-center gap-2">
-                Bs. <input type="number" step="0.01" id="input-tasa-venta" class="bg-transparent outline-none w-full text-sky-400 font-bold" value="1.00">
-            </div>
-        </div>
-        <div>
-            <label class="block text-xs font-medium text-slate-300 mb-1">Nº Factura (Sugerido)</label>
-            <input type="text" id="venta-factura" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-sky-500 font-mono transition" required>
-        </div>
-        <div>
-            <label class="block text-xs font-medium text-slate-300 mb-1">Nº Control (Sugerido)</label>
-            <input type="text" id="venta-control" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-emerald-400 font-bold outline-none focus:border-emerald-500 font-mono transition" required>
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-5 no-print border-b border-slate-800 pb-5 mb-5 bg-slate-950/50 p-4 rounded-xl border border-slate-800">
+    <div>
+        <label class="block text-xs font-bold text-sky-400 uppercase mb-2" title="Tasa editable para esta factura en específico"><i class="fa-solid fa-money-bill-transfer"></i> Tasa Venta (Editable)</label>
+        <div class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2 text-sm text-sky-400 font-mono font-bold flex items-center gap-2">
+            Bs. <input type="number" step="0.01" id="input-tasa-venta" class="bg-transparent outline-none w-full text-sky-400 font-bold" value="1.00">
         </div>
     </div>
+    <div>
+        <label class="block text-xs font-medium text-slate-300 mb-1">Fecha de Factura</label>
+        <input type="date" id="venta-fecha" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-sky-500 font-mono transition" required>
+    </div>
+    <div>
+        <label class="block text-xs font-medium text-slate-300 mb-1">Nº Factura (Sugerido)</label>
+        <input type="text" id="venta-factura" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-sky-500 font-mono transition" required>
+    </div>
+    <div>
+        <label class="block text-xs font-medium text-slate-300 mb-1">Nº Control (Sugerido)</label>
+        <input type="text" id="venta-control" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-emerald-400 font-bold outline-none focus:border-emerald-500 font-mono transition" required>
+    </div>
+</div>
 
     <!-- FILA 2: Cliente + Producto + Precio + Cantidad + Botón (una sola línea) -->
     <div class="grid grid-cols-12 gap-3 items-end no-print">
@@ -2543,8 +2547,14 @@ async function cargarProductos() {
         let carritoVentas = [];
         let subtotalVenta = 0, impuestosVenta = 0, totalFacturaVenta = 0, islrVenta = 0, totalCobrarVenta = 0;
 
-        function generarCorrelativosVenta() {
-            const matchFactura = String(datosGenerales.ult_fact || '').match(/(\d+)$/);
+function generarCorrelativosVenta() {
+    // Fecha de hoy por defecto en el campo de venta
+    const campoFecha = document.getElementById('venta-fecha');
+    if (campoFecha && !campoFecha.value) {
+        campoFecha.value = new Date().toISOString().split('T')[0];
+    }
+    
+    const matchFactura = String(datosGenerales.ult_fact || '').match(/(\d+)$/);
             const lastFacturaNum = matchFactura ? parseInt(matchFactura[1], 10) : 0;
             
             const controlParts = String(datosGenerales.ult_control || '').split('-');
@@ -2771,7 +2781,8 @@ document.getElementById('calc-descuento-venta').addEventListener('input', () => 
             const numFactura = document.getElementById('venta-factura').value;
             const numControl = document.getElementById('venta-control').value;
             
-            const tasaUsada = parseFloat(document.getElementById('input-tasa-venta').value) || 1; 
+            const tasaUsada = parseFloat(document.getElementById('input-tasa-venta').value) || 1;
+            const fechaFactura = document.getElementById('venta-fecha').value;
 
             if (!clienteId || carritoVentas.length === 0) return alert('Seleccione cliente y agregue productos.');
 
@@ -2793,7 +2804,8 @@ const payload = {
     cxc: esCxC, 
     factura: numFactura, 
     control: numControl,
-    tasa: tasaUsada
+    tasa: tasaUsada,
+    fecha: fechaFactura
 };
 
             const { data, error } = await db.from('ventas').insert([payload]).select();
@@ -2819,6 +2831,7 @@ renderCarritoVentas();
 document.getElementById('form-venta').reset();
 document.getElementById('calc-impuesto-porcentaje-venta').value = "16";
 document.getElementById('calc-descuento-venta').value = "0";   // ← AGREGA ESTA LÍNEA
+document.getElementById('venta-fecha').value = new Date().toISOString().split('T')[0];
 document.getElementById('venta-cxc').checked = true;
 
 cargarHistorialVentas();
