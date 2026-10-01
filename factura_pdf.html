@@ -194,17 +194,21 @@
 
         const formatoVE = new Intl.NumberFormat('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-        function imprimirDigital() {
-            document.getElementById('hoja-factura').classList.remove('modo-preimpreso');
-            document.getElementById('tabla-principal').style.borderTop = "none";
-            window.print();
-        }
+function imprimirDigital() {
+    document.getElementById('hoja-factura').classList.remove('modo-preimpreso');
+    document.getElementById('tabla-principal').style.borderTop = "none";
+    const numFac = document.getElementById('val_numero_factura').innerText || '000000';
+    document.title = `FAC - ${numFac}`;
+    setTimeout(() => window.print(), 100);
+}
 
-        function imprimirTalonario() {
-            document.getElementById('hoja-factura').classList.add('modo-preimpreso');
-            document.getElementById('tabla-principal').style.borderTop = "none";
-            window.print();
-        }
+function imprimirTalonario() {
+    document.getElementById('hoja-factura').classList.add('modo-preimpreso');
+    document.getElementById('tabla-principal').style.borderTop = "none";
+    const numFac = document.getElementById('val_numero_factura').innerText || '000000';
+    document.title = `FAC - ${numFac}`;
+    setTimeout(() => window.print(), 100);
+}
 
         function mostrarErrorEnPantalla(titulo, detalleObj) {
             document.body.innerHTML = `
@@ -311,8 +315,12 @@
                 }
 
                 // --- INYECTAR DATOS ---
-                document.getElementById('val_control').innerText = venta.control || '00-000000';
-                document.getElementById('val_numero_factura').innerText = venta.factura || '000000';
+document.getElementById('val_control').innerText = venta.control || '00-000000';
+document.getElementById('val_numero_factura').innerText = venta.factura || '000000';
+
+// Cambiar el título del documento → así el PDF se guarda como "FAC - 001421.pdf"
+const numFactura = venta.factura || '000000';
+document.title = `FAC - ${numFactura}`;
                 
                 const stringFecha = venta.fecha || venta.created_at || new Date().toISOString();
                 const soloFecha = stringFecha.split('T')[0];
