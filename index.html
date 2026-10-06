@@ -1385,18 +1385,20 @@ if (datosGenerales.reserva_islr_usd === null || datosGenerales.reserva_islr_usd 
             if(id === 'proveedores') cargarProveedores();
             if(id === 'presupuestos') { cargarOpcionesPresupuesto(); cargarHistorialPresupuestos(); }
             if(id === 'notas') { cargarOpcionesNotas(); cargarHistorialNotas(); }
-if(id === 'ventas') { 
-    cargarOpcionesVentas(); 
-    cargarHistorialVentas(); 
-    generarCorrelativosVenta(); 
-    setTimeout(() => {
-        const inpP = document.getElementById('venta-precio-editable');
-        const inpC = document.getElementById('venta-cantidad');
-        if (inpP) inpP.value = '';
-        if (inpC) inpC.value = '1';
-    }, 100);
-}
-if(id === 'caja') cargarCaja(); }
+            if(id === 'ventas') { 
+                cargarOpcionesVentas(); 
+                cargarHistorialVentas(); 
+                generarCorrelativosVenta(); 
+                setTimeout(() => {
+                    const inpP = document.getElementById('venta-precio-editable');
+                    const inpC = document.getElementById('venta-cantidad');
+                    if (inpP) inpP.value = '';
+                    if (inpC) inpC.value = '1';
+                }, 100);
+            }
+            if(id === 'compras') { cargarOpcionesCompras(); cargarHistorialCompras(); }
+            if(id === 'cxc') { cargarCxC(); }
+            if(id === 'caja') cargarCaja();
         }
 
         // ==========================================
