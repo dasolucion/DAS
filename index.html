@@ -1386,7 +1386,6 @@ if (datosGenerales.reserva_islr_usd === null || datosGenerales.reserva_islr_usd 
             if(id === 'presupuestos') { cargarOpcionesPresupuesto(); cargarHistorialPresupuestos(); }
             if(id === 'notas') { cargarOpcionesNotas(); cargarHistorialNotas(); }
 if(id === 'ventas') { 
-    if(id === 'caja') cargarCaja();
     cargarOpcionesVentas(); 
     cargarHistorialVentas(); 
     generarCorrelativosVenta(); 
@@ -1397,8 +1396,7 @@ if(id === 'ventas') {
         if (inpC) inpC.value = '1';
     }, 100);
 }
-            if(id === 'compras') { cargarOpcionesCompras(); cargarHistorialCompras(); }
-            if(id === 'cxc') { cargarCxC(); }
+if(id === 'caja') cargarCaja(); }
         }
 
         // ==========================================
@@ -2035,12 +2033,11 @@ islrData.compras = compras ? compras.reduce((s, c) => {
             document.getElementById('islr-retenciones').innerText = `Bs. ${formatNumber(retenciones)}`;
             document.getElementById('islr-impuesto').innerText = `Bs. ${formatNumber(impuestoFinal)}`;
             document.getElementById('islr-impuesto-usd').innerText = `$${formatNumber(impuestoUsd)}`;
-        }
-        // --- Actualizar bloque de reservas ---
-const reservas = datosGenerales.reservas_mensuales || {};
-let sumaReservas = 0;
-Object.values(reservas).forEach(v => sumaReservas += parseFloat(v) || 0);
-actualizarResumenReservasISLR(impuestoFinal, sumaReservas, tasaCambio);
+ const reservas = datosGenerales.reservas_mensuales || {};
+    let sumaReservas = 0;
+    Object.values(reservas).forEach(v => sumaReservas += parseFloat(v) || 0);
+    actualizarResumenReservasISLR(impuestoFinal, sumaReservas, tasaCambio);
+            }
 
         function aplicar15Directivo() {
             const ingresos = islrData.ingresos || 0;
