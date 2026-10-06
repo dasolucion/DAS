@@ -935,14 +935,15 @@
                     <div class="overflow-x-auto">
                         <table class="w-full text-left border-collapse text-xs">
                             <thead class="bg-slate-950 border-b border-slate-800 text-slate-400 uppercase tracking-wider text-[10px]">
-                                <tr>
-                                    <th class="p-4 font-medium">Tipo</th>
-                                    <th class="p-4 font-medium">Fecha</th>
-                                    <th class="p-4 font-medium">Cliente</th>
-                                    <th class="p-4 font-medium" title="IVA que realmente se recibe (IVA total menos retención del 75% si es contribuyente especial)">IVA Recibido (Bs)</th>
-                                    <th class="p-4 font-medium">Por cobrar ($)</th>
-                                    <th class="p-4 font-medium text-right">Acciones</th>
-                                </tr>
+                               <tr>
+    <th class="p-4 font-medium">Tipo</th>
+    <th class="p-4 font-medium">Fecha</th>
+    <th class="p-4 font-medium">Cliente</th>
+    <th class="p-4 font-medium" title="Base (sin IVA) menos Retención de IVA menos Retención de ISLR">Base Neta a Cobrar (Bs)</th>
+    <th class="p-4 font-medium" title="IVA que realmente se recibe (IVA total menos retención del 75% si es contribuyente especial)">IVA Recibido (Bs)</th>
+    <th class="p-4 font-medium">Por cobrar ($)</th>
+    <th class="p-4 font-medium text-right">Acciones</th>
+</tr>
                             </thead>
                             <tbody id="tabla-cxc" class="divide-y divide-slate-800"></tbody>
                         </table>
@@ -3213,98 +3214,111 @@ cargarResumenIVA();
         // ==========================================
         // CUENTAS POR COBRAR (CxC)
         // ==========================================
-        async function cargarCxC() {
-            try {
-                const { data: clientesData } = await db.from('clientes').select('id, descripcion, contribuyente_especial');
-                const mapClientes = {};
-                if(clientesData) clientesData.forEach(c => mapClientes[c.id] = c);
+       async function cargarCxC() {
+    try {
+        const { data: clientesData } = await db.from('clientes').select('id, descripcion, contribuyente_especial');
+        const mapClientes = {};
+        if(clientesData) clientesData.forEach(c => mapClientes[c.id] = c);
 
-                const [resVentas, resNotas] = await Promise.all([
-                    db.from('ventas').select('*').eq('cxc', true),
-                    db.from('notas_entrega').select('*').eq('cxc', true)
-                ]);
+        const [resVentas, resNotas] = await Promise.all([
+            db.from('ventas').select('*').eq('cxc', true),
+            db.from('notas_entrega').select('*').eq('cxc', true)
+        ]);
+        
+        let listadoMixto = [];
+
+        if(resVentas.data) {
+            resVentas.data.forEach(v => {
+                const cliInfo = mapClientes[v.cliente_id] || {};
+                const isEspecial = cliInfo.contribuyente_especial || false;
+                const ivaTotal = parseFloat(v.impuestos) || 0;
+                const montoExento = parseFloat(v.monto_exento) || 0;
                 
-                let listadoMixto = [];
-
-                if(resVentas.data) {
-                    resVentas.data.forEach(v => {
-                        const cliInfo = mapClientes[v.cliente_id] || {};
-                        const isEspecial = cliInfo.contribuyente_especial || false;
-                        const ivaTotal = parseFloat(v.impuestos) || 0;
-                        const montoExento = parseFloat(v.monto_exento) || 0;
-                        
-                        const ivaRecibido = isEspecial ? (ivaTotal * 0.25) : ivaTotal;
-                        
-                        const subtotalBs = v.total - ivaTotal - montoExento;
-                        const islrRetenido = parseFloat(v.retencion_islr) || 0;
-                        
-                        const totalCobrarBs = subtotalBs + montoExento + ivaRecibido - islrRetenido;
-                        const porCobrarUsd = totalCobrarBs / (datosGenerales.tasa || 1); 
-
-                        listadoMixto.push({
-                            id: v.id, tipo: 'venta',
-                            fecha: v.fecha || v.created_at,
-                            cliente: cliInfo.descripcion || 'Desconocido',
-                            ivaRecibidoBs: ivaRecibido,
-                            cobrarUsd: porCobrarUsd
-                        });
-                    });
-                }
-
-                if(resNotas.data) {
-                    resNotas.data.forEach(n => {
-                        const cliInfo = mapClientes[n.cliente_id] || {};
-                        listadoMixto.push({
-                            id: n.id, tipo: 'nota',
-                            fecha: n.fecha || n.created_at,
-                            cliente: cliInfo.descripcion || 'Desconocido',
-                            ivaRecibidoBs: null,
-                            cobrarUsd: n.total_usd
-                        });
-                    });
-                }
-
-                listadoMixto.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
-
-                const tbody = document.getElementById('tabla-cxc');
-                tbody.innerHTML = '';
+                // IVA retenido por el cliente (75% si es contribuyente especial)
+                const retIva = isEspecial ? (ivaTotal * 0.75) : 0;
+                const ivaRecibido = ivaTotal - retIva;
                 
-                let granTotalUsd = 0;
+                // Base = Total factura − IVA − Exento (solo la parte gravada neta)
+                const subtotalBs = v.total - ivaTotal - montoExento;
+                
+                // Retención ISLR (2% de servicios, ya guardada en el registro)
+                const islrRetenido = parseFloat(v.retencion_islr) || 0;
+                
+                // Base neta a cobrar = Base + Exento − Ret IVA − Ret ISLR
+                const baseNetaCobrar = subtotalBs + montoExento - retIva - islrRetenido;
+                
+                // Total a cobrar real = base neta + IVA recibido
+                const totalCobrarBs = baseNetaCobrar + ivaRecibido;
+                const porCobrarUsd = totalCobrarBs / (datosGenerales.tasa || 1); 
 
-                if(listadoMixto.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-slate-500 italic text-xs">No hay cuentas por cobrar pendientes.</td></tr>`;
-                    document.getElementById('total-cxc-usd').innerText = `$0.00`;
-                    return;
-                }
-
-                listadoMixto.forEach(item => {
-                    granTotalUsd += item.cobrarUsd;
-                    
-                    const badgeTipo = item.tipo === 'venta' 
-                        ? '<span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded text-[10px] font-bold">Venta</span>'
-                        : '<span class="bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 px-2 py-0.5 rounded text-[10px] font-bold">Nota</span>';
-
-                    const valIvaRecibido = item.ivaRecibidoBs !== null ? `Bs. ${formatNumber(item.ivaRecibidoBs)}` : '-';
-
-                    tbody.innerHTML += `
-                        <tr class="hover:bg-slate-800/50 transition border-b border-slate-800">
-                            <td class="p-4">${badgeTipo}</td>
-                            <td class="p-4 text-slate-400 font-mono text-[11px]">${new Date(item.fecha).toLocaleDateString('es-VE')}</td>
-                            <td class="p-4 font-medium text-white">${item.cliente}</td>
-                            <td class="p-4 font-mono font-bold text-violet-400 text-[11px]">${valIvaRecibido}</td>
-                            <td class="p-4 font-mono font-bold text-sky-400 text-[11px]">$${formatNumber(item.cobrarUsd)}</td>
-                            <td class="p-4 text-right">
-                                <button onclick="marcarComoPagado('${item.id}', '${item.tipo}')" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded-lg text-[10px] font-bold transition shadow-lg shadow-emerald-600/20 flex items-center justify-end gap-1 float-right">
-                                    <i class="fa-solid fa-check"></i> Marcar Pagado
-                                </button>
-                            </td>
-                        </tr>`;
+                listadoMixto.push({
+                    id: v.id, tipo: 'venta',
+                    fecha: v.fecha || v.created_at,
+                    cliente: cliInfo.descripcion || 'Desconocido',
+                    baseNetaBs: baseNetaCobrar,
+                    ivaRecibidoBs: ivaRecibido,
+                    cobrarUsd: porCobrarUsd
                 });
-                
-                document.getElementById('total-cxc-usd').innerText = `$${formatNumber(granTotalUsd)}`;
-
-            } catch (err) { console.error("Error en CxC", err); }
+            });
         }
+
+        if(resNotas.data) {
+            resNotas.data.forEach(n => {
+                const cliInfo = mapClientes[n.cliente_id] || {};
+                listadoMixto.push({
+                    id: n.id, tipo: 'nota',
+                    fecha: n.fecha || n.created_at,
+                    cliente: cliInfo.descripcion || 'Desconocido',
+                    baseNetaBs: null,
+                    ivaRecibidoBs: null,
+                    cobrarUsd: n.total_usd
+                });
+            });
+        }
+
+        listadoMixto.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+
+        const tbody = document.getElementById('tabla-cxc');
+        tbody.innerHTML = '';
+        
+        let granTotalUsd = 0;
+
+        if(listadoMixto.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-slate-500 italic text-xs">No hay cuentas por cobrar pendientes.</td></tr>`;
+            document.getElementById('total-cxc-usd').innerText = `$0.00`;
+            return;
+        }
+
+        listadoMixto.forEach(item => {
+            granTotalUsd += item.cobrarUsd;
+            
+            const badgeTipo = item.tipo === 'venta' 
+                ? '<span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded text-[10px] font-bold">Venta</span>'
+                : '<span class="bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 px-2 py-0.5 rounded text-[10px] font-bold">Nota</span>';
+
+            const valBaseNeta = item.baseNetaBs !== null ? `Bs. ${formatNumber(item.baseNetaBs)}` : '-';
+            const valIvaRecibido = item.ivaRecibidoBs !== null ? `Bs. ${formatNumber(item.ivaRecibidoBs)}` : '-';
+
+            tbody.innerHTML += `
+                <tr class="hover:bg-slate-800/50 transition border-b border-slate-800">
+                    <td class="p-4">${badgeTipo}</td>
+                    <td class="p-4 text-slate-400 font-mono text-[11px]">${new Date(item.fecha).toLocaleDateString('es-VE')}</td>
+                    <td class="p-4 font-medium text-white">${item.cliente}</td>
+                    <td class="p-4 font-mono font-bold text-amber-400 text-[11px]">${valBaseNeta}</td>
+                    <td class="p-4 font-mono font-bold text-violet-400 text-[11px]">${valIvaRecibido}</td>
+                    <td class="p-4 font-mono font-bold text-sky-400 text-[11px]">$${formatNumber(item.cobrarUsd)}</td>
+                    <td class="p-4 text-right">
+                        <button onclick="marcarComoPagado('${item.id}', '${item.tipo}')" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded-lg text-[10px] font-bold transition shadow-lg shadow-emerald-600/20 flex items-center justify-end gap-1 float-right">
+                            <i class="fa-solid fa-check"></i> Marcar Pagado
+                        </button>
+                    </td>
+                </tr>`;
+        });
+        
+        document.getElementById('total-cxc-usd').innerText = `$${formatNumber(granTotalUsd)}`;
+
+    } catch (err) { console.error("Error en CxC", err); }
+}
 
         async function cargarCaja() {
     const year = new Date().getFullYear();
