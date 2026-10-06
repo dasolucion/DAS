@@ -73,6 +73,9 @@
             <button onclick="mostrarModulo('islr')" class="w-full text-left py-3 px-4 rounded-xl text-xs font-medium transition flex items-center gap-3 text-slate-300 hover:bg-slate-800 hover:text-white border border-transparent hover:border-slate-700">
                 <i class="fa-solid fa-scale-balanced w-5 text-center text-amber-400"></i> Proyección ISLR
             </button>
+            <button onclick="mostrarModulo('caja')" class="w-full text-left py-3 px-4 rounded-xl text-xs font-medium transition flex items-center gap-3 text-slate-300 hover:bg-slate-800 hover:text-white border border-transparent hover:border-slate-700">
+    <i class="fa-solid fa-vault w-5 text-center text-lime-400"></i> Caja
+</button>
         </nav>
         
         <div class="p-4 border-t border-slate-800 text-[10px] text-slate-500 text-center font-mono uppercase tracking-widest bg-slate-950/30">
@@ -196,6 +199,9 @@
                                     <th class="p-3 font-medium">Retenciones</th>
                                     <th class="p-3 font-medium">A Pagar (Bs)</th>
                                     <th class="p-3 font-medium text-emerald-400">$ Equivalente</th>
+<th class="p-3 font-medium text-violet-400">ISLR Est. Mes (Bs)</th>
+<th class="p-3 font-medium text-violet-400">Reserva ($)</th>
+<th class="p-3 font-medium text-cyan-400">Adelanto Div. (Bs)</th>
                                 </tr>
                             </thead>
                             <tbody id="tabla-dash-iva" class="divide-y divide-blue-900/20 text-slate-300 font-mono text-[11px]"></tbody>
@@ -852,6 +858,12 @@
                                 <option value="">Seleccione un Proveedor...</option>
                             </select>
                         </div>
+                        <div class="md:col-span-4 flex items-center gap-3 bg-slate-950 border border-cyan-800/50 rounded-xl p-3">
+    <input type="checkbox" id="comp-es-personal" class="w-4 h-4 bg-slate-950 border-slate-700 rounded accent-cyan-500 cursor-pointer">
+    <label for="comp-es-personal" class="text-xs font-medium text-cyan-300 cursor-pointer">
+        <i class="fa-solid fa-user-tie"></i> ¿Esta factura es mía como persona natural? <span class="text-slate-500">(Se registrará como factura propia)</span>
+    </label>
+</div>
                         <div>
                             <label class="block text-xs font-medium text-slate-300 mb-1">Fecha</label>
                             <input type="date" id="comp-fecha" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-orange-500 transition" required>
@@ -937,7 +949,65 @@
                     </div>
                 </div>
             </section>
+<!-- CAJA -->
+<section id="caja" class="modulo hidden max-w-6xl mx-auto space-y-6">
+    <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-2xl flex justify-between items-center gap-3">
+        <div class="flex items-center gap-3">
+            <div class="bg-slate-800 text-lime-400 p-2.5 rounded-xl border border-slate-700">
+                <i class="fa-solid fa-vault text-lg"></i>
+            </div>
+            <div>
+                <h2 class="text-xl font-bold text-white tracking-tight">Caja y Flujo de Efectivo <span id="caja-year" class="text-lime-400"></span></h2>
+                <p class="text-xs text-slate-400">Control de flujo disponible y retiros por facturación personal</p>
+            </div>
+        </div>
+        <button onclick="cargarCaja()" class="bg-slate-800 hover:bg-slate-700 text-white font-bold p-2.5 rounded-xl border border-slate-700 transition text-xs shadow-sm">
+            <i class="fa-solid fa-rotate-right text-lime-400"></i>
+        </button>
+    </div>
 
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div class="bg-slate-900 border border-emerald-900/50 rounded-2xl p-5">
+            <p class="text-xs text-slate-400 mb-1 uppercase tracking-wider">Ingresos del Año</p>
+            <p id="caja-total-ventas" class="text-2xl font-mono font-bold text-emerald-400">Bs. 0.00</p>
+        </div>
+        <div class="bg-slate-900 border border-lime-900/50 rounded-2xl p-5">
+            <p class="text-xs text-slate-400 mb-1 uppercase tracking-wider">Flujo Disponible</p>
+            <p id="caja-total-flujo" class="text-2xl font-mono font-bold text-lime-400">Bs. 0.00</p>
+        </div>
+        <div class="bg-slate-900 border border-cyan-900/50 rounded-2xl p-5">
+            <p class="text-xs text-slate-400 mb-1 uppercase tracking-wider">Facturado Personal</p>
+            <p id="caja-total-personal" class="text-2xl font-mono font-bold text-cyan-400">Bs. 0.00</p>
+        </div>
+        <div class="bg-slate-900 border border-amber-900/50 rounded-2xl p-5">
+            <p class="text-xs text-slate-400 mb-1 uppercase tracking-wider">Saldo Acumulado</p>
+            <p id="caja-total-saldo" class="text-2xl font-mono font-bold text-amber-400">Bs. 0.00</p>
+        </div>
+    </div>
+
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+        <h3 class="text-sm font-bold p-5 border-b border-slate-800 text-white flex items-center gap-2">
+            <i class="fa-solid fa-money-bill-trend-up text-lime-400"></i> Flujo Mensual
+        </h3>
+        <div class="overflow-x-auto">
+            <table class="w-full text-right border-collapse text-xs">
+                <thead class="bg-slate-950/50 border-b border-slate-800 text-slate-400 uppercase tracking-wider text-[10px]">
+                    <tr>
+                        <th class="p-3 text-left font-medium">Mes</th>
+                        <th class="p-3 font-medium">Ventas (Bs)</th>
+                        <th class="p-3 font-medium">Compras Terceros (Bs)</th>
+                        <th class="p-3 font-medium">IVA a Pagar (Bs)</th>
+                        <th class="p-3 font-medium text-lime-400">Flujo Disponible (Bs)</th>
+                        <th class="p-3 font-medium text-cyan-400">Facturas Propias (Bs)</th>
+                        <th class="p-3 font-medium">Saldo del Mes (Bs)</th>
+                        <th class="p-3 font-medium text-amber-400">Saldo Acumulado (Bs)</th>
+                    </tr>
+                </thead>
+                <tbody id="tabla-caja" class="divide-y divide-slate-800 text-slate-300 font-mono text-[11px]"></tbody>
+            </table>
+        </div>
+    </div>
+</section>
             <!-- PROYECCIÓN ISLR -->
             <section id="islr" class="modulo hidden max-w-6xl mx-auto space-y-6">
                 <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-2xl flex justify-between items-center gap-3">
@@ -1068,6 +1138,39 @@
                             <span class="text-slate-400">Equivalente en Divisas</span>
                             <span id="islr-impuesto-usd" class="font-mono text-sky-400">$0.00</span>
                         </div>
+                        <!-- RESUMEN DE RESERVAS MENSUALES -->
+<div class="mt-5 pt-4 border-t-2 border-violet-800/50">
+    <h4 class="text-xs font-bold text-violet-400 mb-4 uppercase tracking-wider flex items-center gap-2">
+        <i class="fa-solid fa-piggy-bank"></i> Reserva Mensual Acumulada
+    </h4>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+        <div class="bg-slate-950 border border-slate-800 rounded-xl p-3">
+            <p class="text-[10px] text-slate-500 uppercase mb-1">ISLR Anual Proyectado</p>
+            <p id="islr-sum-meses" class="font-mono font-bold text-slate-200 text-sm">Bs. 0.00</p>
+        </div>
+        <div class="bg-slate-950 border border-violet-800/50 rounded-xl p-3">
+            <p class="text-[10px] text-slate-500 uppercase mb-1">Reservas Ingresadas</p>
+            <p id="islr-sum-reservas-usd" class="font-mono font-bold text-violet-400 text-sm">$0.00</p>
+        </div>
+        <div class="bg-slate-950 border border-violet-800/50 rounded-xl p-3">
+            <p class="text-[10px] text-slate-500 uppercase mb-1">Valor Actual (Bs)</p>
+            <p id="islr-sum-reservas-bs" class="font-mono font-bold text-violet-400 text-sm">Bs. 0.00</p>
+        </div>
+    </div>
+    <div class="mt-3 bg-slate-950 border border-slate-800 rounded-xl p-3">
+        <div class="flex justify-between text-xs mb-2">
+            <span class="text-slate-400">Cobertura de tu reserva sobre el ISLR proyectado:</span>
+            <span id="islr-cobertura" class="font-mono font-bold text-violet-400">0%</span>
+        </div>
+        <div class="w-full bg-slate-900 rounded-full h-2.5 border border-slate-800 overflow-hidden">
+            <div id="islr-barra-cobertura" class="h-full bg-gradient-to-r from-violet-600 to-emerald-500 transition-all duration-500" style="width: 0%"></div>
+        </div>
+        <div class="flex justify-between text-[11px] mt-2">
+            <span class="text-slate-500">Falta por reservar: <span id="islr-falta-usd" class="font-mono text-rose-400 font-bold">$0.00</span></span>
+            <span class="text-slate-500">Excedente: <span id="islr-excedente-usd" class="font-mono text-emerald-400 font-bold">$0.00</span></span>
+        </div>
+    </div>
+</div>
                     </div>
                 </div>
             </section>
@@ -1095,6 +1198,9 @@
         let datosGenerales = { 
             id: 1, tasa: 1, ult_fact: '000000', ult_control: '00-000000', valor_ut: 43,
             gasto_directivo: 0, gasto_nomina: 0, gasto_honorarios: 0, gasto_publicidad: 0, gasto_alquiler: 0,
+            reserva_islr_usd: 0,
+reservas_mensuales: {},
+adelantos_dividendos: {},
             empresa_nombre: 'DAS SOLUCIONES INTEGRALES, C.A.', empresa_rif: 'J-40282664-8',
             empresa_direccion: '', empresa_telefono: ''
         };
@@ -1147,6 +1253,9 @@
                 if (data && data.length > 0) {
                     datosGenerales = data[0];
                     if (datosGenerales.valor_ut === null || datosGenerales.valor_ut === undefined) datosGenerales.valor_ut = 43;
+                    if (!datosGenerales.reservas_mensuales) datosGenerales.reservas_mensuales = {};
+if (!datosGenerales.adelantos_dividendos) datosGenerales.adelantos_dividendos = {};
+if (datosGenerales.reserva_islr_usd === null || datosGenerales.reserva_islr_usd === undefined) datosGenerales.reserva_islr_usd = 0;
                     const camposGastos = ['gasto_directivo', 'gasto_nomina', 'gasto_honorarios', 'gasto_publicidad', 'gasto_alquiler'];
                     camposGastos.forEach(c => { if (datosGenerales[c] === null || datosGenerales[c] === undefined) datosGenerales[c] = 0; });
                 } else {
@@ -1277,6 +1386,7 @@
             if(id === 'presupuestos') { cargarOpcionesPresupuesto(); cargarHistorialPresupuestos(); }
             if(id === 'notas') { cargarOpcionesNotas(); cargarHistorialNotas(); }
 if(id === 'ventas') { 
+    if(id === 'caja') cargarCaja();
     cargarOpcionesVentas(); 
     cargarHistorialVentas(); 
     generarCorrelativosVenta(); 
@@ -1466,136 +1576,331 @@ if (ctxVentas) {
         // ==========================================
         // RESUMEN DE IVA
         // ==========================================
-        async function cargarResumenIVA() {
-            const year = new Date().getFullYear();
-            document.getElementById('iva-year').innerText = year;
+async function cargarResumenIVA() {
+    const year = new Date().getFullYear();
+    document.getElementById('iva-year').innerText = year;
 
-            let dataMeses = Array.from({length: 12}, () => ({ v_base: 0, v_exento: 0, v_iva: 0, v_ret: 0, c_base: 0, c_exento: 0, c_iva: 0 }));
+    let dataMeses = Array.from({length: 12}, () => ({ v_base: 0, v_exento: 0, v_iva: 0, v_ret: 0, c_base: 0, c_exento: 0, c_iva: 0 }));
+    let serviciosPorMes = new Array(12).fill(0);
 
-            try {
-                const { data: cliData } = await db.from('clientes').select('id, contribuyente_especial');
-                const mapEspecial = {};
-                if(cliData) cliData.forEach(c => mapEspecial[c.id] = c.contribuyente_especial);
+    try {
+        const { data: cliData } = await db.from('clientes').select('id, contribuyente_especial');
+        const mapEspecial = {};
+        if(cliData) cliData.forEach(c => mapEspecial[c.id] = c.contribuyente_especial);
 
-                const { data: ventas } = await db.from('ventas').select('*').gte('fecha', `${year}-01-01`).lte('fecha', `${year}-12-31`);
-                if (ventas) {
-                    ventas.forEach(v => {
-                        if (!v.fecha) return;
-                        const fechaObj = new Date(v.fecha);
-                        if (isNaN(fechaObj)) return;
-                        const mes = fechaObj.getMonth();
-                        
-                        const isEspecial = mapEspecial[v.cliente_id] || false;
-                        const iva = parseFloat(v.impuestos) || 0;
-                        const exento = parseFloat(v.monto_exento) || 0;
-                        const total = parseFloat(v.total) || 0;
-                        const base = total - iva - exento;
-                        const ret = isEspecial ? (iva * 0.75) : 0;
-                        
-                        if(mes >= 0 && mes <= 11) {
-                            dataMeses[mes].v_base += base;
-                            dataMeses[mes].v_exento += exento;
-                            dataMeses[mes].v_iva += iva;
-                            dataMeses[mes].v_ret += ret;
-                        }
-                    });
+        const { data: ventas } = await db.from('ventas').select('*').gte('fecha', `${year}-01-01`).lte('fecha', `${year}-12-31`);
+        const mapVentaMes = {};
+        if (ventas) {
+            ventas.forEach(v => {
+                if (!v.fecha) return;
+                const fechaObj = new Date(v.fecha);
+                if (isNaN(fechaObj)) return;
+                const mes = fechaObj.getMonth();
+                mapVentaMes[v.id] = mes;
+                
+                const isEspecial = mapEspecial[v.cliente_id] || false;
+                const iva = parseFloat(v.impuestos) || 0;
+                const exento = parseFloat(v.monto_exento) || 0;
+                const total = parseFloat(v.total) || 0;
+                const base = total - iva - exento;
+                const ret = isEspecial ? (iva * 0.75) : 0;
+                
+                if(mes >= 0 && mes <= 11) {
+                    dataMeses[mes].v_base += base;
+                    dataMeses[mes].v_exento += exento;
+                    dataMeses[mes].v_iva += iva;
+                    dataMeses[mes].v_ret += ret;
                 }
-
-                const { data: compras } = await db.from('compras').select('fecha, subtotal, monto_exento, impuestos').gte('fecha', `${year}-01-01`).lte('fecha', `${year}-12-31`);
-                if (compras) {
-                    compras.forEach(c => {
-                        if (!c.fecha) return;
-                        const fechaObj = new Date(c.fecha);
-                        if (isNaN(fechaObj)) return;
-                        const mes = fechaObj.getMonth();
-                        
-                        const sub = parseFloat(c.subtotal) || 0;
-                        const exento = parseFloat(c.monto_exento) || 0;
-                        const iva = parseFloat(c.impuestos) || 0;
-                        
-                        if(mes >= 0 && mes <= 11) {
-                            dataMeses[mes].c_base += sub;
-                            dataMeses[mes].c_exento += exento;
-                            dataMeses[mes].c_iva += iva;
-                        }
-                    });
-                }
-            } catch (err) { console.warn("Resumen IVA Error:", err); }
-
-            const tbVentas = document.getElementById('tabla-dash-ventas');
-            const tbCompras = document.getElementById('tabla-dash-compras');
-            const tbIva = document.getElementById('tabla-dash-iva');
-            
-            tbVentas.innerHTML = ''; tbCompras.innerHTML = ''; tbIva.innerHTML = '';
-
-            let total_v_base = 0, total_v_exento = 0, total_v_iva = 0, total_v_ret = 0;
-            let total_c_base = 0, total_c_exento = 0, total_c_iva = 0;
-            let total_a_pagar = 0, total_usd = 0;
-
-            const tasaActiva = datosGenerales.tasa || 1;
-
-            dataMeses.forEach((m, i) => {
-                total_v_base += m.v_base; total_v_exento += m.v_exento; total_v_iva += m.v_iva; total_v_ret += m.v_ret;
-                tbVentas.innerHTML += `
-                    <tr class="hover:bg-slate-800/30">
-                        <td class="p-2 font-bold text-white text-left">${nombresMeses[i]}</td>
-                        <td class="p-2">${formatNumber(m.v_base)}</td>
-                        <td class="p-2 text-amber-400">${formatNumber(m.v_exento)}</td>
-                        <td class="p-2">${formatNumber(m.v_iva)}</td>
-                        <td class="p-2">${formatNumber(m.v_ret)}</td>
-                    </tr>`;
-
-                total_c_base += m.c_base; total_c_exento += m.c_exento; total_c_iva += m.c_iva;
-                tbCompras.innerHTML += `
-                    <tr class="hover:bg-slate-800/30">
-                        <td class="p-2 font-bold text-white text-left">${nombresMeses[i]}</td>
-                        <td class="p-2">${formatNumber(m.c_base)}</td>
-                        <td class="p-2 text-amber-400">${formatNumber(m.c_exento)}</td>
-                        <td class="p-2">${formatNumber(m.c_iva)}</td>
-                    </tr>`;
-
-                const a_pagar = m.v_iva - m.c_iva - m.v_ret;
-                const usd = a_pagar / tasaActiva;
-                total_a_pagar += a_pagar; total_usd += usd;
-
-                tbIva.innerHTML += `
-                    <tr class="hover:bg-slate-800/30">
-                        <td class="p-3 font-bold text-white text-left">${nombresMeses[i]}</td>
-                        <td class="p-3">${formatNumber(m.v_iva)}</td>
-                        <td class="p-3">${formatNumber(m.c_iva)}</td>
-                        <td class="p-3">${formatNumber(m.v_ret)}</td>
-                        <td class="p-3 ${a_pagar > 0 ? 'text-rose-400 font-bold' : 'text-emerald-400 font-bold'}">${formatNumber(a_pagar)}</td>
-                        <td class="p-3 text-sky-400">${formatNumber(usd)}</td>
-                    </tr>`;
             });
-
-            tbVentas.innerHTML += `
-                <tr class="bg-emerald-900/40 font-bold text-white border-t border-emerald-900/50">
-                    <td class="p-2 text-left text-emerald-400">TOTAL ${year}</td>
-                    <td class="p-2">${formatNumber(total_v_base)}</td>
-                    <td class="p-2 text-amber-400">${formatNumber(total_v_exento)}</td>
-                    <td class="p-2">${formatNumber(total_v_iva)}</td>
-                    <td class="p-2">${formatNumber(total_v_ret)}</td>
-                </tr>`;
-            
-            tbCompras.innerHTML += `
-                <tr class="bg-orange-900/40 font-bold text-white border-t border-orange-900/50">
-                    <td class="p-2 text-left text-orange-400">TOTAL ${year}</td>
-                    <td class="p-2">${formatNumber(total_c_base)}</td>
-                    <td class="p-2 text-amber-400">${formatNumber(total_c_exento)}</td>
-                    <td class="p-2">${formatNumber(total_c_iva)}</td>
-                </tr>`;
-            
-            tbIva.innerHTML += `
-                <tr class="bg-blue-900/40 font-bold text-white border-t border-blue-900/50">
-                    <td class="p-3 text-left text-blue-400">TOTAL ${year}</td>
-                    <td class="p-3">${formatNumber(total_v_iva)}</td>
-                    <td class="p-3">${formatNumber(total_c_iva)}</td>
-                    <td class="p-3">${formatNumber(total_v_ret)}</td>
-                    <td class="p-3 ${total_a_pagar > 0 ? 'text-rose-400' : 'text-emerald-400'}">${formatNumber(total_a_pagar)}</td>
-                    <td class="p-3 text-sky-400">${formatNumber(total_usd)}</td>
-                </tr>`;
         }
+
+        const ventaIds = ventas ? ventas.map(v => v.id) : [];
+        if (ventaIds.length > 0) {
+            const { data: detalles } = await db.from('venta_detalles')
+                .select('venta_id, producto_id, cantidad, precio_unitario')
+                .in('venta_id', ventaIds);
+            const { data: prods } = await db.from('productos').select('id, tipo');
+            const mapTipo = {};
+            if (prods) prods.forEach(p => mapTipo[p.id] = p.tipo);
+            
+            if (detalles) {
+                detalles.forEach(d => {
+                    if (mapTipo[d.producto_id] === 'Servicio') {
+                        const mes = mapVentaMes[d.venta_id];
+                        if (mes !== undefined && mes >= 0 && mes <= 11) {
+                            serviciosPorMes[mes] += (parseFloat(d.cantidad) || 0) * (parseFloat(d.precio_unitario) || 0);
+                        }
+                    }
+                });
+            }
+        }
+
+        const { data: compras } = await db.from('compras').select('fecha, subtotal, monto_exento, impuestos').gte('fecha', `${year}-01-01`).lte('fecha', `${year}-12-31`);
+        if (compras) {
+            compras.forEach(c => {
+                if (!c.fecha) return;
+                const fechaObj = new Date(c.fecha);
+                if (isNaN(fechaObj)) return;
+                const mes = fechaObj.getMonth();
+                
+                const sub = parseFloat(c.subtotal) || 0;
+                const exento = parseFloat(c.monto_exento) || 0;
+                const iva = parseFloat(c.impuestos) || 0;
+                
+                if(mes >= 0 && mes <= 11) {
+                    dataMeses[mes].c_base += sub;
+                    dataMeses[mes].c_exento += exento;
+                    dataMeses[mes].c_iva += iva;
+                }
+            });
+        }
+    } catch (err) { console.warn("Resumen IVA Error:", err); }
+
+    const tbVentas = document.getElementById('tabla-dash-ventas');
+    const tbCompras = document.getElementById('tabla-dash-compras');
+    const tbIva = document.getElementById('tabla-dash-iva');
+    
+    tbVentas.innerHTML = ''; tbCompras.innerHTML = ''; tbIva.innerHTML = '';
+
+    let total_v_base = 0, total_v_exento = 0, total_v_iva = 0, total_v_ret = 0;
+    let total_c_base = 0, total_c_exento = 0, total_c_iva = 0;
+    let total_a_pagar = 0, total_usd = 0;
+    let totalIslrMes = 0, totalReservaUsd = 0, totalAdelantosBs = 0;
+
+    const tasaActiva = parseFloat(datosGenerales.tasa) || 1;
+    const valorUT = parseFloat(datosGenerales.valor_ut) || 43;
+
+    // Calcular utilidad anual proyectada para determinar la tarifa
+    const ingresosAnuales = dataMeses.reduce((s, m) => s + m.v_base + m.v_exento, 0);
+    const comprasAnuales = dataMeses.reduce((s, m) => s + m.c_base + m.c_exento, 0);
+    const gastosDedAnuales = ['gasto_nomina', 'gasto_honorarios', 'gasto_publicidad', 'gasto_alquiler']
+        .reduce((s, k) => s + (parseFloat(datosGenerales[k]) || 0), 0);
+    const sueldoDirectivoAnual = ingresosAnuales * 0.15;
+    const utilidadAnual = Math.max(0, ingresosAnuales - comprasAnuales - gastosDedAnuales - sueldoDirectivoAnual);
+    const utilidadAnualUT = utilidadAnual / valorUT;
+
+    let tarifaAnual = 0.15, sustraendoAnualUT = 0;
+    if (utilidadAnualUT > 3000) {
+        tarifaAnual = 0.34; sustraendoAnualUT = 500;
+    } else if (utilidadAnualUT > 2000) {
+        tarifaAnual = 0.22; sustraendoAnualUT = 140;
+    }
+
+    const reservas = datosGenerales.reservas_mensuales || {};
+    const adelantos = datosGenerales.adelantos_dividendos || {};
+
+    dataMeses.forEach((m, i) => {
+        total_v_base += m.v_base; total_v_exento += m.v_exento; total_v_iva += m.v_iva; total_v_ret += m.v_ret;
+        tbVentas.innerHTML += `
+            <tr class="hover:bg-slate-800/30">
+                <td class="p-2 font-bold text-white text-left">${nombresMeses[i]}</td>
+                <td class="p-2">${formatNumber(m.v_base)}</td>
+                <td class="p-2 text-amber-400">${formatNumber(m.v_exento)}</td>
+                <td class="p-2">${formatNumber(m.v_iva)}</td>
+                <td class="p-2">${formatNumber(m.v_ret)}</td>
+            </tr>`;
+
+        total_c_base += m.c_base; total_c_exento += m.c_exento; total_c_iva += m.c_iva;
+        tbCompras.innerHTML += `
+            <tr class="hover:bg-slate-800/30">
+                <td class="p-2 font-bold text-white text-left">${nombresMeses[i]}</td>
+                <td class="p-2">${formatNumber(m.c_base)}</td>
+                <td class="p-2 text-amber-400">${formatNumber(m.c_exento)}</td>
+                <td class="p-2">${formatNumber(m.c_iva)}</td>
+            </tr>`;
+
+        const a_pagar = m.v_iva - m.c_iva - m.v_ret;
+        const usd = a_pagar / tasaActiva;
+        total_a_pagar += a_pagar; total_usd += usd;
+
+        const ventasBrutasMes = m.v_base + m.v_exento;
+        const comprasMes = m.c_base + m.c_exento;
+        const sueldoDirectivoMes = ventasBrutasMes * 0.15;
+        const utilidadMes = Math.max(0, ventasBrutasMes - comprasMes - gastosDedAnuales/12 - sueldoDirectivoMes);
+        const utilidadUTMes = utilidadMes / valorUT;
+        
+        const sustraendoMesUT = sustraendoAnualUT / 12;
+        let islrBrutoMes = (utilidadUTMes * tarifaAnual - sustraendoMesUT) * valorUT;
+        if (islrBrutoMes < 0) islrBrutoMes = 0;
+        
+        const retencionServMes = serviciosPorMes[i] * 0.02;
+        const islrEstimadoMes = Math.max(0, islrBrutoMes - retencionServMes);
+        totalIslrMes += islrEstimadoMes;
+
+        const ivaPagarMes = Math.max(0, a_pagar);
+        const disponibleAdelanto = Math.max(0, utilidadMes - islrEstimadoMes - ivaPagarMes);
+
+        const keyMes = `${year}-${String(i+1).padStart(2, '0')}`;
+        const reservaUsd = parseFloat(reservas[keyMes]) || 0;
+        totalReservaUsd += reservaUsd;
+
+        const adelantoGuardado = parseFloat(adelantos[keyMes]) || 0;
+        totalAdelantosBs += adelantoGuardado;
+
+        tbIva.innerHTML += `
+            <tr class="hover:bg-slate-800/30">
+                <td class="p-3 font-bold text-white text-left">${nombresMeses[i]}</td>
+                <td class="p-3">${formatNumber(m.v_iva)}</td>
+                <td class="p-3">${formatNumber(m.c_iva)}</td>
+                <td class="p-3">${formatNumber(m.v_ret)}</td>
+                <td class="p-3 ${a_pagar > 0 ? 'text-rose-400 font-bold' : 'text-emerald-400 font-bold'}">${formatNumber(a_pagar)}</td>
+                <td class="p-3 text-sky-400">${formatNumber(usd)}</td>
+                <td class="p-3 text-violet-400 font-bold">${formatNumber(islrEstimadoMes)}</td>
+                <td class="p-3">
+                    <input type="number" step="0.01" min="0" data-mes="${i}" data-year="${year}"
+                        class="reserva-input w-24 bg-slate-950 border border-violet-700 rounded-lg text-violet-300 px-2 py-1 text-center text-[11px] font-mono font-bold outline-none focus:border-violet-500"
+                        value="${reservaUsd.toFixed(2)}" onchange="guardarReservaMes(this)">
+                </td>
+                <td class="p-3">
+                    <input type="number" step="0.01" min="0" data-mes="${i}" data-year="${year}" data-disponible="${disponibleAdelanto.toFixed(2)}"
+                        class="adelanto-input w-28 bg-slate-950 border border-cyan-700 rounded-lg text-cyan-300 px-2 py-1 text-center text-[11px] font-mono font-bold outline-none focus:border-cyan-500"
+                        value="${adelantoGuardado.toFixed(2)}" onchange="guardarAdelantoMes(this)"
+                        title="Disponible este mes: Bs. ${formatNumber(disponibleAdelanto)}">
+                </td>
+            </tr>`;
+    });
+
+    tbVentas.innerHTML += `
+        <tr class="bg-emerald-900/40 font-bold text-white border-t border-emerald-900/50">
+            <td class="p-2 text-left text-emerald-400">TOTAL ${year}</td>
+            <td class="p-2">${formatNumber(total_v_base)}</td>
+            <td class="p-2 text-amber-400">${formatNumber(total_v_exento)}</td>
+            <td class="p-2">${formatNumber(total_v_iva)}</td>
+            <td class="p-2">${formatNumber(total_v_ret)}</td>
+        </tr>`;
+    
+    tbCompras.innerHTML += `
+        <tr class="bg-orange-900/40 font-bold text-white border-t border-orange-900/50">
+            <td class="p-2 text-left text-orange-400">TOTAL ${year}</td>
+            <td class="p-2">${formatNumber(total_c_base)}</td>
+            <td class="p-2 text-amber-400">${formatNumber(total_c_exento)}</td>
+            <td class="p-2">${formatNumber(total_c_iva)}</td>
+        </tr>`;
+    
+    tbIva.innerHTML += `
+        <tr class="bg-violet-900/40 font-bold text-white border-t-2 border-violet-700/50">
+            <td class="p-3 text-left text-violet-400">TOTAL ${year}</td>
+            <td class="p-3">${formatNumber(total_v_iva)}</td>
+            <td class="p-3">${formatNumber(total_c_iva)}</td>
+            <td class="p-3">${formatNumber(total_v_ret)}</td>
+            <td class="p-3 ${total_a_pagar > 0 ? 'text-rose-400' : 'text-emerald-400'}">${formatNumber(total_a_pagar)}</td>
+            <td class="p-3 text-sky-400">${formatNumber(total_usd)}</td>
+            <td class="p-3 text-violet-300">${formatNumber(totalIslrMes)}</td>
+            <td class="p-3 text-violet-300">$${formatNumber(totalReservaUsd)}</td>
+            <td class="p-3 text-cyan-300">${formatNumber(totalAdelantosBs)}</td>
+        </tr>`;
+
+    if (document.getElementById('islr') && !document.getElementById('islr').classList.contains('hidden')) {
+        const islrAnualReal = parseFloat(document.getElementById('islr-impuesto').innerText.replace(/[^\d,.-]/g, '').replace(/\./g, '').replace(',', '.')) || 0;
+        actualizarResumenReservasISLR(islrAnualReal, totalReservaUsd, tasaActiva);
+    }
+}
+        function calcularTarifaISLR(utilidadUT, valorUT) {
+    let islr = 0;
+    if (utilidadUT <= 2000) {
+        islr = utilidadUT * 0.15 * valorUT;
+    } else if (utilidadUT <= 3000) {
+        islr = ((utilidadUT * 0.22) - 140) * valorUT;
+    } else {
+        islr = ((utilidadUT * 0.34) - 500) * valorUT;
+    }
+    return Math.max(0, islr);
+}
+
+async function guardarReservaMes(input) {
+    const mes = parseInt(input.dataset.mes);
+    const year = parseInt(input.dataset.year);
+    const valor = parseFloat(input.value) || 0;
+    
+    const key = `${year}-${String(mes+1).padStart(2, '0')}`;
+    const reservas = datosGenerales.reservas_mensuales || {};
+    reservas[key] = valor;
+    
+    const { error } = await db.from('datos').update({ reservas_mensuales: reservas }).eq('id', datosGenerales.id || 1);
+    
+    if (error) {
+        alert("Error al guardar reserva: " + error.message);
+        return;
+    }
+    
+    datosGenerales.reservas_mensuales = reservas;
+    
+    const tasaActiva = parseFloat(datosGenerales.tasa) || 1;
+    let sumaReservas = 0;
+    Object.values(reservas).forEach(v => sumaReservas += parseFloat(v) || 0);
+    
+    const islrAnualReal = parseFloat(document.getElementById('islr-impuesto')?.innerText.replace(/[^\d,.-]/g, '').replace(/\./g, '').replace(',', '.')) || 0;
+    actualizarResumenReservasISLR(islrAnualReal, sumaReservas, tasaActiva);
+    
+    input.classList.add('border-emerald-500');
+    setTimeout(() => input.classList.remove('border-emerald-500'), 800);
+}
+
+async function guardarAdelantoMes(input) {
+    const mes = parseInt(input.dataset.mes);
+    const year = parseInt(input.dataset.year);
+    const valor = parseFloat(input.value) || 0;
+    const disponible = parseFloat(input.dataset.disponible) || 0;
+    
+    const key = `${year}-${String(mes+1).padStart(2, '0')}`;
+    const adelantos = datosGenerales.adelantos_dividendos || {};
+    adelantos[key] = valor;
+    
+    if (valor > disponible + 0.01) {
+        const exceso = valor - disponible;
+        input.classList.add('border-rose-500');
+        alert(`⚠️ Excedes el disponible por Bs. ${formatNumber(exceso)}.\n\nDisponible este mes: Bs. ${formatNumber(disponible)}\nEste exceso podría generar un dividendo gravado del 34%.`);
+    } else {
+        input.classList.remove('border-rose-500');
+    }
+    
+    const { error } = await db.from('datos').update({ adelantos_dividendos: adelantos }).eq('id', datosGenerales.id || 1);
+    
+    if (error) {
+        alert("Error al guardar adelanto: " + error.message);
+        return;
+    }
+    
+    datosGenerales.adelantos_dividendos = adelantos;
+    
+    const filaTotal = document.querySelector('#tabla-dash-iva tr.bg-violet-900\\/40');
+    if (filaTotal) {
+        const celdaTotal = filaTotal.querySelector('td:last-child');
+        if (celdaTotal) {
+            const sumaTotal = Object.values(adelantos).reduce((s, v) => s + (parseFloat(v) || 0), 0);
+            celdaTotal.innerText = formatNumber(sumaTotal);
+        }
+    }
+    
+    input.classList.add('border-emerald-500');
+    setTimeout(() => input.classList.remove('border-emerald-500'), 800);
+}
+
+function actualizarResumenReservasISLR(islrAnualBs, reservaTotalUsd, tasaActiva) {
+    const el1 = document.getElementById('islr-sum-meses');
+    const el2 = document.getElementById('islr-sum-reservas-usd');
+    const el3 = document.getElementById('islr-sum-reservas-bs');
+    const el4 = document.getElementById('islr-cobertura');
+    const el5 = document.getElementById('islr-barra-cobertura');
+    const el6 = document.getElementById('islr-falta-usd');
+    const el7 = document.getElementById('islr-excedente-usd');
+    
+    if (!el1) return;
+    
+    const reservaBs = reservaTotalUsd * tasaActiva;
+    const islrUsdProyectado = islrAnualBs / tasaActiva;
+    const cobertura = islrUsdProyectado > 0 ? Math.min(100, (reservaTotalUsd / islrUsdProyectado) * 100) : 0;
+    const faltaUsd = Math.max(0, islrUsdProyectado - reservaTotalUsd);
+    const excedenteUsd = Math.max(0, reservaTotalUsd - islrUsdProyectado);
+    
+    el1.innerText = `Bs. ${formatNumber(islrAnualBs)}`;
+    el2.innerText = `$${formatNumber(reservaTotalUsd)}`;
+    el3.innerText = `Bs. ${formatNumber(reservaBs)}`;
+    el4.innerText = `${cobertura.toFixed(1)}%`;
+    el5.style.width = `${cobertura}%`;
+    el6.innerText = `$${formatNumber(faltaUsd)}`;
+    el7.innerText = `$${formatNumber(excedenteUsd)}`;
+}
 
         // ==========================================
         // PROYECCIÓN ISLR
@@ -1731,6 +2036,11 @@ islrData.compras = compras ? compras.reduce((s, c) => {
             document.getElementById('islr-impuesto').innerText = `Bs. ${formatNumber(impuestoFinal)}`;
             document.getElementById('islr-impuesto-usd').innerText = `$${formatNumber(impuestoUsd)}`;
         }
+        // --- Actualizar bloque de reservas ---
+const reservas = datosGenerales.reservas_mensuales || {};
+let sumaReservas = 0;
+Object.values(reservas).forEach(v => sumaReservas += parseFloat(v) || 0);
+actualizarResumenReservasISLR(impuestoFinal, sumaReservas, tasaCambio);
 
         function aplicar15Directivo() {
             const ingresos = islrData.ingresos || 0;
@@ -2487,19 +2797,21 @@ async function cargarProductos() {
             btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Guardando...';
             btn.disabled = true;
 
-            const nuevaCompra = {
-                descripcion: nombreProv,
-                fecha: document.getElementById('comp-fecha').value,
-                subtotal: parseFloat(document.getElementById('comp-subtotal').value),
-                monto_exento: parseFloat(document.getElementById('comp-exento').value) || 0,
-                impuestos: parseFloat(document.getElementById('comp-iva').value),
-                total: parseFloat(document.getElementById('comp-total').value)
-            };
+const nuevaCompra = {
+    descripcion: nombreProv,
+    fecha: document.getElementById('comp-fecha').value,
+    subtotal: parseFloat(document.getElementById('comp-subtotal').value),
+    monto_exento: parseFloat(document.getElementById('comp-exento').value) || 0,
+    impuestos: parseFloat(document.getElementById('comp-iva').value),
+    total: parseFloat(document.getElementById('comp-total').value),
+    es_factura_personal: document.getElementById('comp-es-personal').checked
+};
 
             const { error } = await db.from('compras').insert([nuevaCompra]);
             if (error) alert("Error guardando compra. " + error.message);
             else {
                 document.getElementById('form-compra').reset();
+                document.getElementById('comp-es-personal').checked = false;
                 document.getElementById('comp-exento').value = 0;
                 cargarHistorialCompras();
                 cargarResumenIVA();
@@ -2994,6 +3306,113 @@ cargarResumenIVA();
 
             } catch (err) { console.error("Error en CxC", err); }
         }
+
+        async function cargarCaja() {
+    const year = new Date().getFullYear();
+    document.getElementById('caja-year').innerText = year;
+
+    let dataMeses = Array.from({length: 12}, () => ({ 
+        ventas: 0, comprasTerceros: 0, ivaPagar: 0, facturasPropias: 0 
+    }));
+
+    try {
+        const { data: ventas } = await db.from('ventas')
+            .select('fecha, total, impuestos, monto_exento, cliente_id')
+            .gte('fecha', `${year}-01-01`).lte('fecha', `${year}-12-31`);
+
+        const { data: cliData } = await db.from('clientes').select('id, contribuyente_especial');
+        const mapEspecial = {};
+        if(cliData) cliData.forEach(c => mapEspecial[c.id] = c.contribuyente_especial);
+
+        if (ventas) {
+            ventas.forEach(v => {
+                if (!v.fecha) return;
+                const fechaObj = new Date(v.fecha);
+                if (isNaN(fechaObj)) return;
+                const mes = fechaObj.getMonth();
+                if (mes < 0 || mes > 11) return;
+
+                const total = parseFloat(v.total) || 0;
+                dataMeses[mes].ventas += total;
+
+                const iva = parseFloat(v.impuestos) || 0;
+                const isEspecial = mapEspecial[v.cliente_id] || false;
+                const ret = isEspecial ? (iva * 0.75) : 0;
+                dataMeses[mes].ivaPagar += (iva - ret);
+            });
+        }
+
+        const { data: compras } = await db.from('compras')
+            .select('fecha, subtotal, monto_exento, impuestos, es_factura_personal')
+            .gte('fecha', `${year}-01-01`).lte('fecha', `${year}-12-31`);
+
+        if (compras) {
+            compras.forEach(c => {
+                if (!c.fecha) return;
+                const fechaObj = new Date(c.fecha);
+                if (isNaN(fechaObj)) return;
+                const mes = fechaObj.getMonth();
+                if (mes < 0 || mes > 11) return;
+
+                const sub = parseFloat(c.subtotal) || 0;
+                const exento = parseFloat(c.monto_exento) || 0;
+                const iva = parseFloat(c.impuestos) || 0;
+                const totalCompra = sub + exento + iva;
+
+                if (c.es_factura_personal) {
+                    dataMeses[mes].facturasPropias += totalCompra;
+                } else {
+                    dataMeses[mes].comprasTerceros += totalCompra;
+                    dataMeses[mes].ivaPagar -= iva;
+                }
+            });
+        }
+    } catch (err) { console.warn("Caja Error:", err); }
+
+    const tbody = document.getElementById('tabla-caja');
+    tbody.innerHTML = '';
+
+    let totalVentas = 0, totalFlujo = 0, totalPersonal = 0, saldoAcumulado = 0;
+
+    dataMeses.forEach((m, i) => {
+        const flujoDisponible = m.ventas - m.comprasTerceros - Math.max(0, m.ivaPagar);
+        const saldoMes = flujoDisponible - m.facturasPropias;
+        saldoAcumulado += saldoMes;
+
+        totalVentas += m.ventas;
+        totalFlujo += flujoDisponible;
+        totalPersonal += m.facturasPropias;
+
+        tbody.innerHTML += `
+            <tr class="hover:bg-slate-800/30">
+                <td class="p-3 font-bold text-white text-left">${nombresMeses[i]}</td>
+                <td class="p-3">${formatNumber(m.ventas)}</td>
+                <td class="p-3">${formatNumber(m.comprasTerceros)}</td>
+                <td class="p-3">${formatNumber(Math.max(0, m.ivaPagar))}</td>
+                <td class="p-3 text-lime-400 font-bold">${formatNumber(flujoDisponible)}</td>
+                <td class="p-3 text-cyan-400">${formatNumber(m.facturasPropias)}</td>
+                <td class="p-3 ${saldoMes >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${formatNumber(saldoMes)}</td>
+                <td class="p-3 text-amber-400 font-bold">${formatNumber(saldoAcumulado)}</td>
+            </tr>`;
+    });
+
+    tbody.innerHTML += `
+        <tr class="bg-lime-900/40 font-bold text-white border-t-2 border-lime-700/50">
+            <td class="p-3 text-left text-lime-400">TOTAL ${year}</td>
+            <td class="p-3">${formatNumber(totalVentas)}</td>
+            <td class="p-3">-</td>
+            <td class="p-3">-</td>
+            <td class="p-3 text-lime-300">${formatNumber(totalFlujo)}</td>
+            <td class="p-3 text-cyan-300">${formatNumber(totalPersonal)}</td>
+            <td class="p-3">-</td>
+            <td class="p-3 text-amber-300">${formatNumber(saldoAcumulado)}</td>
+        </tr>`;
+
+    document.getElementById('caja-total-ventas').innerText = `Bs. ${formatNumber(totalVentas)}`;
+    document.getElementById('caja-total-flujo').innerText = `Bs. ${formatNumber(totalFlujo)}`;
+    document.getElementById('caja-total-personal').innerText = `Bs. ${formatNumber(totalPersonal)}`;
+    document.getElementById('caja-total-saldo').innerText = `Bs. ${formatNumber(saldoAcumulado)}`;
+}
 
         async function marcarComoPagado(id, tipo) {
             if (!confirm('¿Desea registrar esta cuenta como pagada?')) return;
