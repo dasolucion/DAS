@@ -3234,40 +3234,34 @@ cargarResumenIVA();
         
         let listadoMixto = [];
 
-        if(resVentas.data) {
-            resVentas.data.forEach(v => {
-                const cliInfo = mapClientes[v.cliente_id] || {};
-                const isEspecial = cliInfo.contribuyente_especial || false;
-                const ivaTotal = parseFloat(v.impuestos) || 0;
-                const montoExento = parseFloat(v.monto_exento) || 0;
-                
-                // IVA retenido por el cliente (75% si es contribuyente especial)
-                const retIva = isEspecial ? (ivaTotal * 0.75) : 0;
-                const ivaRecibido = ivaTotal - retIva;
-                
-                // Base = Total factura − IVA − Exento (solo la parte gravada neta)
-                const baseImponible = v.total - ivaTotal - montoExento;
-                
-                // Retención ISLR (2% de servicios, ya guardada en el registro)
-                const islrRetenido = parseFloat(v.retencion_islr) || 0;
-                
-                // Base neta a cobrar = Base + Exento − Ret IVA − Ret ISLR
-                const baseNetaCobrar = baseImponible + montoExento - retIva - islrRetenido;
-                
-                // Total a cobrar real = base neta + IVA recibido
-                const totalCobrarBs = baseNetaCobrar + ivaRecibido;
-                const porCobrarUsd = totalCobrarBs / (datosGenerales.tasa || 1); 
+if(resVentas.data) {
+    resVentas.data.forEach(v => {
+        const cliInfo = mapClientes[v.cliente_id] || {};
+        const isEspecial = cliInfo.contribuyente_especial || false;
+        const ivaTotal = parseFloat(v.impuestos) || 0;
+        
+        // Retención de IVA: 75% si es contribuyente especial, 0% si no lo es
+        const retIva = isEspecial ? (ivaTotal * 0.75) : 0;
+        const ivaRecibido = ivaTotal - retIva;
+        
+        // Retención ISLR (2% servicios)
+        const islrRetenido = parseFloat(v.retencion_islr) || 0;
+        
+        // Base Neta a Cobrar = Total factura − Retención IVA − Retención ISLR
+        // (es lo que efectivamente vas a recibir)
+        const baseNetaCobrar = v.total - retIva - islrRetenido;
+        const porCobrarUsd = baseNetaCobrar / (datosGenerales.tasa || 1); 
 
-                listadoMixto.push({
-                    id: v.id, tipo: 'venta',
-                    fecha: v.fecha || v.created_at,
-                    cliente: cliInfo.descripcion || 'Desconocido',
-                    baseNetaBs: baseNetaCobrar,
-                    ivaRecibidoBs: ivaRecibido,
-                    cobrarUsd: porCobrarUsd
-                });
-            });
-        }
+        listadoMixto.push({
+            id: v.id, tipo: 'venta',
+            fecha: v.fecha || v.created_at,
+            cliente: cliInfo.descripcion || 'Desconocido',
+            baseNetaBs: baseNetaCobrar,
+            ivaRecibidoBs: ivaRecibido,
+            cobrarUsd: porCobrarUsd
+        });
+    });
+}
 
         if(resNotas.data) {
             resNotas.data.forEach(n => {
