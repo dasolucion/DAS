@@ -3246,13 +3246,13 @@ cargarResumenIVA();
                 const ivaRecibido = ivaTotal - retIva;
                 
                 // Base = Total factura − IVA − Exento (solo la parte gravada neta)
-                const subtotalBs = v.total - ivaTotal - montoExento;
+                const baseImponible = v.total - ivaTotal - montoExento;
                 
                 // Retención ISLR (2% de servicios, ya guardada en el registro)
                 const islrRetenido = parseFloat(v.retencion_islr) || 0;
                 
                 // Base neta a cobrar = Base + Exento − Ret IVA − Ret ISLR
-                const baseNetaCobrar = subtotalBs + montoExento - retIva - islrRetenido;
+                const baseNetaCobrar = baseImponible + montoExento - retIva - islrRetenido;
                 
                 // Total a cobrar real = base neta + IVA recibido
                 const totalCobrarBs = baseNetaCobrar + ivaRecibido;
