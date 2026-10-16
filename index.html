@@ -94,7 +94,7 @@
                     <label class="block text-xs font-medium text-slate-300 mb-1">Usuario</label>
                     <div class="relative">
                         <i class="fa-solid fa-user absolute left-3 top-3 text-slate-500 text-xs"></i>
-                        <input type="text" id="login-usuario" class="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-3 py-2.5 text-xs text-white outline-none focus:border-sky-500 transition" placeholder="Usuario" required autocomplete="username">
+                        <input type="text" id="login-usuario" class="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-3 py-2.5 text-xs text-white outline-none focus:border-sky-500 transition" placeholder="Usuario (admin)" required autocomplete="username">
                     </div>
                 </div>
 
@@ -266,7 +266,7 @@
                                         <th class="p-2 font-medium">Retención (75%)</th>
                                     </tr>
                                 </thead>
-                                <tbody id="tabla-dash-ventas" class="divide-y divide-emerald-900/20 text-slate-300 font-mono text-[11px]"></tbody>
+                                <tbody id="tabla-dash-ventas" class="divide-y border-slate-800 text-slate-300 font-mono text-[11px]"></tbody>
                             </table>
                         </div>
                     </div>
@@ -282,7 +282,7 @@
                                         <th class="p-2 font-medium">IVA</th>
                                     </tr>
                                 </thead>
-                                <tbody id="tabla-dash-compras" class="divide-y divide-orange-900/20 text-slate-300 font-mono text-[11px]"></tbody>
+                                <tbody id="tabla-dash-compras" class="divide-y border-slate-800 text-slate-300 font-mono text-[11px]"></tbody>
                             </table>
                         </div>
                     </div>
@@ -308,7 +308,7 @@
                                     <th class="p-3 font-medium text-cyan-400">Adelanto Div. (Bs)</th>
                                 </tr>
                             </thead>
-                            <tbody id="tabla-dash-iva" class="divide-y divide-blue-900/20 text-slate-300 font-mono text-[11px]"></tbody>
+                            <tbody id="tabla-dash-iva" class="divide-y border-slate-800 text-slate-300 font-mono text-[11px]"></tbody>
                         </table>
                     </div>
                 </div>
@@ -1329,26 +1329,37 @@
             const pantallaLogin = document.getElementById('pantalla-login');
             if (sesion === 'activa') {
                 pantallaLogin.classList.add('hidden');
+                pantallaLogin.classList.remove('flex');
+                pantallaLogin.style.display = 'none';
             } else {
                 pantallaLogin.classList.remove('hidden');
+                pantallaLogin.classList.add('flex');
+                pantallaLogin.style.display = 'flex';
             }
         }
 
         function procesarLogin(e) {
-            e.preventDefault();
+            if (e) e.preventDefault();
             const u = document.getElementById('login-usuario').value.trim();
             const p = document.getElementById('login-password').value.trim();
             const errorBox = document.getElementById('login-error');
 
-            if (u === AUTH_CONFIG.usuario && p === AUTH_CONFIG.password) {
+            if (u.toLowerCase() === AUTH_CONFIG.usuario.toLowerCase() && p === AUTH_CONFIG.password) {
                 sessionStorage.setItem('das_auth', 'activa');
                 sessionStorage.setItem('das_user', u);
-                document.getElementById('label-usuario-activo').innerText = u;
-                document.getElementById('pantalla-login').classList.add('hidden');
-                errorBox.classList.add('hidden');
+                
+                const lbl = document.getElementById('label-usuario-activo');
+                if (lbl) lbl.innerText = u;
+
+                const pantallaLogin = document.getElementById('pantalla-login');
+                pantallaLogin.classList.add('hidden');
+                pantallaLogin.classList.remove('flex');
+                pantallaLogin.style.display = 'none';
+
+                if (errorBox) errorBox.classList.add('hidden');
                 document.getElementById('form-login').reset();
             } else {
-                errorBox.classList.remove('hidden');
+                if (errorBox) errorBox.classList.remove('hidden');
             }
         }
 
@@ -1356,7 +1367,12 @@
             if (confirm("¿Deseas cerrar tu sesión?")) {
                 sessionStorage.removeItem('das_auth');
                 sessionStorage.removeItem('das_user');
-                document.getElementById('pantalla-login').classList.remove('hidden');
+                const pantallaLogin = document.getElementById('pantalla-login');
+                pantallaLogin.classList.remove('hidden');
+                pantallaLogin.classList.add('flex');
+                pantallaLogin.style.display = 'flex';
+                document.getElementById('login-usuario').value = '';
+                document.getElementById('login-password').value = '';
             }
         }
 
@@ -1607,7 +1623,6 @@
             const empresaRif = datosGenerales.empresa_rif || 'J-40282664-8';
             const empresaDir = datosGenerales.empresa_direccion || 'Caracas, Venezuela';
             
-            // Dividir dirección en 2 renglones como en factura_pdf.html
             const palabrasDir = empresaDir.split(' ');
             const mitad = Math.ceil(palabrasDir.length / 2);
             const dir1 = palabrasDir.slice(0, mitad).join(' ');
@@ -1617,7 +1632,6 @@
             const textoTipo = esPresupuesto ? 'PRESUPUESTO' : 'NOTA DE ENTREGA';
             const etiquetaNum = esPresupuesto ? 'PRESUPUESTO Nº:' : 'CONTROL Nº:';
 
-            // Filas de la tabla (con formato exacto de factura_pdf)
             let filasHTML = '';
             items.forEach(it => {
                 const descFinal = it.llevaIVA ? it.descripcion : `${it.descripcion}\n[EXENTO]`;
@@ -3335,7 +3349,6 @@
                         : '<span class="bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 px-2 py-1 rounded-md text-[10px] font-bold">Pagado</span>';
 
                     const arrayDetalles = mapDetalles[n.id] || [];
-                    const stringDetalles = arrayDetalles.length > 0 ? arrayDetalles.join(',const arrayDetalles = mapDetalles[n.id] || [];
                     const stringDetalles = arrayDetalles.length > 0 ? arrayDetalles.join(', ') : 'Sin artículos';
 
                     const rawDate = n.fecha || n.created_at;
@@ -4018,7 +4031,10 @@
         window.onload = async () => {
             verificarSesion();
             const uGuardado = sessionStorage.getItem('das_user');
-            if (uGuardado) document.getElementById('label-usuario-activo').innerText = uGuardado;
+            if (uGuardado) {
+                const lbl = document.getElementById('label-usuario-activo');
+                if (lbl) lbl.innerText = uGuardado;
+            }
             await cargarDatosGenerales(); 
             mostrarModulo('dashboard'); 
             obtenerTasaBCV(true); 
