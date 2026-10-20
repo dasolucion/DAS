@@ -111,7 +111,7 @@
             </form>
 
             <div class="mt-6 text-center text-[10px] text-slate-600 font-mono">
-                DAS SOLUCIONES INTEGRALES &bull; v2.3
+                DAS SOLUCIONES INTEGRALES &bull; v2.4
             </div>
         </div>
     </div>
@@ -243,7 +243,7 @@
                     </div>
                     <div>
                         <h2 class="text-xl font-bold text-white tracking-tight">Resumen de IVA <span id="iva-year" class="text-blue-400"></span></h2>
-                        <p class="text-xs text-slate-400">Resumen contable y fiscal mensual</p>
+                        <p class="text-xs text-slate-400">Bases imponibles y exentos calculados netos de descuento</p>
                     </div>
                 </div>
 
@@ -257,7 +257,6 @@
                                         <th class="p-2 text-left font-medium">Mes</th>
                                         <th class="p-2 font-medium">Base Gravada</th>
                                         <th class="p-2 font-medium text-amber-400">Exento</th>
-                                        <th class="p-2 font-medium text-rose-400">Descuento</th>
                                         <th class="p-2 font-medium">IVA</th>
                                         <th class="p-2 font-medium">Retención (75%)</th>
                                     </tr>
@@ -918,7 +917,7 @@
                             <i class="fa-solid fa-clock-rotate-left text-emerald-400"></i> Historial de Ventas
                         </h3>
                         <div id="ventas-resumen-filtro" class="text-[11px] font-mono text-slate-400 bg-slate-950/60 border border-slate-800 px-3 py-1 rounded-xl">
-                            Cargando...
+                            0 facturas | Bs. 0,00 | $0,00
                         </div>
                     </div>
 
@@ -1414,6 +1413,21 @@
 
         function formatNumber(num) {
             return parseFloat(num || 0).toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
+        function normalizarFechaYMD(fechaRaw) {
+            if (!fechaRaw) return '';
+            const str = String(fechaRaw).trim();
+            if (str.includes('T')) return str.split('T')[0];
+            if (/^\d{4}-\d{2}-\d{2}$/.test(str)) return str;
+            const d = new Date(str);
+            if (!isNaN(d.getTime())) {
+                const y = d.getFullYear();
+                const m = String(d.getMonth() + 1).padStart(2, '0');
+                const dia = String(d.getDate()).padStart(2, '0');
+                return `${y}-${m}-${dia}`;
+            }
+            return '';
         }
 
         async function obtenerTasaBCV(silencioso = false) {
@@ -2007,173 +2021,7 @@
         }
 
         // ==========================================
-        // DASHBOARD
-        // ==========================================
-        async function cargarDashboard() {
-            const year = new Date().getFullYear();
-            document.getElementById('dash-year').innerText = year;
-            try {
-                await cargarGraficasDashboard(year);
-            } catch (err) {
-                console.warn("Error cargando dashboard:", err);
-            }
-        }
-
-        async function cargarGraficasDashboard(year) {
-            try {
-                const hoy = new Date();
-                const ventasData = [];
-                const comprasData = [];
-                const labelsMeses = [];
-
-                for (let i = 2; i >= 0; i--) {
-                    const fecha = new Date(hoy.getFullYear(), hoy.getMonth() - i, 1);
-                    const año = fecha.getFullYear();
-                    const mes = fecha.getMonth();
-                    const inicio = `${año}-${String(mes + 1).padStart(2, '0')}-01`;
-                    const fin = new Date(año, mes + 1, 0).toISOString().split('T')[0];
-                    
-                    labelsMeses.push(nombresMeses[mes]);
-                    
-                    const { data: vData } = await db.from('ventas').select('total').gte('fecha', inicio).lte('fecha', fin);
-                    const totalV = vData ? vData.reduce((sum, v) => sum + parseFloat(v.total || 0), 0) : 0;
-                    ventasData.push(totalV);
-
-                    const { data: cData } = await db.from('compras').select('total').gte('fecha', inicio).lte('fecha', fin);
-                    const totalC = cData ? cData.reduce((sum, c) => sum + parseFloat(c.total || 0), 0) : 0;
-                    comprasData.push(totalC);
-                }
-
-                const ctxVentas = document.getElementById('graficaVentas3Meses');
-                if (ctxVentas) {
-                    if (chartVentas3Meses) chartVentas3Meses.destroy();
-                    chartVentas3Meses = new Chart(ctxVentas, {
-                        type: 'bar',
-                        data: {
-                            labels: labelsMeses,
-                            datasets: [
-                                {
-                                    label: 'Ventas (Bs)',
-                                    data: ventasData,
-                                    backgroundColor: 'rgba(168, 85, 247, 0.7)',
-                                    borderColor: 'rgba(168, 85, 247, 1)',
-                                    borderWidth: 1,
-                                    borderRadius: 8
-                                },
-                                {
-                                    label: 'Compras (Bs)',
-                                    data: comprasData,
-                                    backgroundColor: 'rgba(249, 115, 22, 0.7)',
-                                    borderColor: 'rgba(249, 115, 22, 1)',
-                                    borderWidth: 1,
-                                    borderRadius: 8
-                                }
-                            ]
-                        },
-                        options: {
-                            responsive: true, maintainAspectRatio: false,
-                            plugins: {
-                                legend: { display: true, labels: { color: '#cbd5e1', font: { size: 11 } } }
-                            },
-                            scales: {
-                                y: { beginAtZero: true, ticks: { color: '#94a3b8' }, grid: { color: 'rgba(51, 65, 85, 0.3)' } },
-                                x: { ticks: { color: '#94a3b8' }, grid: { display: false } }
-                            }
-                        }
-                    });
-                }
-
-                const { data: ventas } = await db.from('ventas').select('cliente_id, total');
-                const { data: clientes } = await db.from('clientes').select('id, descripcion');
-                const mapClientes = {};
-                if (clientes) clientes.forEach(c => mapClientes[c.id] = c.descripcion);
-                
-                const ventasPorCliente = {};
-                if (ventas) {
-                    ventas.forEach(v => {
-                        const nombre = mapClientes[v.cliente_id] || 'Desconocido';
-                        if (!ventasPorCliente[nombre]) ventasPorCliente[nombre] = 0;
-                        ventasPorCliente[nombre] += parseFloat(v.total || 0);
-                    });
-                }
-                
-                const topClientes = Object.entries(ventasPorCliente).sort((a, b) => b[1] - a[1]).slice(0, 5);
-                
-                const ctxClientes = document.getElementById('graficaTopClientes');
-                if (ctxClientes) {
-                    if (chartTopClientes) chartTopClientes.destroy();
-                    chartTopClientes = new Chart(ctxClientes, {
-                        type: 'bar',
-                        data: {
-                            labels: topClientes.map(c => c[0].length > 20 ? c[0].substring(0, 20) + '...' : c[0]),
-                            datasets: [{
-                                label: 'Ventas (Bs)',
-                                data: topClientes.map(c => c[1]),
-                                backgroundColor: 'rgba(16, 185, 129, 0.6)',
-                                borderColor: 'rgba(16, 185, 129, 1)',
-                                borderWidth: 1, borderRadius: 8
-                            }]
-                        },
-                        options: {
-                            responsive: true, maintainAspectRatio: false,
-                            plugins: { legend: { display: false } },
-                            scales: {
-                                y: { beginAtZero: true, ticks: { color: '#94a3b8' }, grid: { color: 'rgba(51, 65, 85, 0.3)' } },
-                                x: { ticks: { color: '#94a3b8', maxRotation: 45 }, grid: { display: false } }
-                            }
-                        }
-                    });
-                }
-
-                const { data: detalles } = await db.from('venta_detalles').select('producto_id, cantidad, precio_unitario');
-                const { data: productos } = await db.from('productos').select('id, descripcion');
-                const mapProductos = {};
-                if (productos) productos.forEach(p => mapProductos[p.id] = p.descripcion);
-                
-                const ventasPorProducto = {};
-                if (detalles) {
-                    detalles.forEach(d => {
-                        const nombre = mapProductos[d.producto_id] || 'Desconocido';
-                        const total = parseFloat(d.cantidad || 0) * parseFloat(d.precio_unitario || 0);
-                        if (!ventasPorProducto[nombre]) ventasPorProducto[nombre] = 0;
-                        ventasPorProducto[nombre] += total;
-                    });
-                }
-                
-                const topProductos = Object.entries(ventasPorProducto).sort((a, b) => b[1] - a[1]).slice(0, 5);
-                
-                const ctxProductos = document.getElementById('graficaTopProductos');
-                if (ctxProductos) {
-                    if (chartTopProductos) chartTopProductos.destroy();
-                    chartTopProductos = new Chart(ctxProductos, {
-                        type: 'bar',
-                        data: {
-                            labels: topProductos.map(p => p[0].length > 25 ? p[0].substring(0, 25) + '...' : p[0]),
-                            datasets: [{
-                                label: 'Ventas (Bs)',
-                                data: topProductos.map(p => p[1]),
-                                backgroundColor: 'rgba(14, 165, 233, 0.6)',
-                                borderColor: 'rgba(14, 165, 233, 1)',
-                                borderWidth: 1, borderRadius: 8
-                            }]
-                        },
-                        options: {
-                            responsive: true, maintainAspectRatio: false,
-                            plugins: { legend: { display: false } },
-                            scales: {
-                                y: { beginAtZero: true, ticks: { color: '#94a3b8' }, grid: { color: 'rgba(51, 65, 85, 0.3)' } },
-                                x: { ticks: { color: '#94a3b8', maxRotation: 45 }, grid: { display: false } }
-                            }
-                        }
-                    });
-                }
-            } catch (err) {
-                console.warn("Error en gráficas:", err);
-            }
-        }
-
-        // ==========================================
-        // RESUMEN DE IVA (CORREGIDO DESCUENTO Y EXENTO)
+        // RESUMEN DE IVA (SIN DESCUENTO EN EXENTO NI BASE)
         // ==========================================
         async function cargarResumenIVA() {
             const year = new Date().getFullYear();
@@ -2182,7 +2030,6 @@
             let dataMeses = Array.from({length: 12}, () => ({ 
                 v_base: 0, 
                 v_exento: 0, 
-                v_descuento: 0, 
                 v_iva: 0, 
                 v_ret: 0, 
                 c_base: 0, 
@@ -2208,21 +2055,30 @@
                         
                         const isEspecial = mapEspecial[v.cliente_id] || false;
                         const iva = parseFloat(v.impuestos) || 0;
-                        const exento = parseFloat(v.monto_exento) || 0;
+                        const exentoBruto = parseFloat(v.monto_exento) || 0;
                         const descuento = parseFloat(v.descuento) || 0;
                         const total = parseFloat(v.total) || 0;
 
-                        // Cálculo exacto: total = baseGravadaBruta + exento + iva - descuento
-                        // Por tanto, la Base Gravada Bruta = total + descuento - iva - exento
-                        // Y la Base Gravada Neta = Base Gravada Bruta - descuento
-                        const baseBruta = Math.max(0, total + descuento - iva - exento);
-                        const baseNeta = Math.max(0, baseBruta - descuento);
+                        // Base Gravada Bruta antes del descuento
+                        const gravadoBruto = Math.max(0, total + descuento - iva - exentoBruto);
+                        const sumaBases = gravadoBruto + exentoBruto;
+
+                        let baseNeta = gravadoBruto;
+                        let exentoNeto = exentoBruto;
+
+                        // Descontar proporcionalmente para que ambos montos salgan netos sin descuento
+                        if (descuento > 0 && sumaBases > 0) {
+                            const ratioGravado = gravadoBruto / sumaBases;
+                            const ratioExento = exentoBruto / sumaBases;
+                            baseNeta = Math.max(0, gravadoBruto - (descuento * ratioGravado));
+                            exentoNeto = Math.max(0, exentoBruto - (descuento * ratioExento));
+                        }
+
                         const ret = isEspecial ? (iva * 0.75) : 0;
                         
                         if(mes >= 0 && mes <= 11) {
                             dataMeses[mes].v_base += baseNeta;
-                            dataMeses[mes].v_exento += exento; // EXENTO PURO, NO SUMA EL DESCUENTO
-                            dataMeses[mes].v_descuento += descuento;
+                            dataMeses[mes].v_exento += exentoNeto;
                             dataMeses[mes].v_iva += iva;
                             dataMeses[mes].v_ret += ret;
                         }
@@ -2277,7 +2133,7 @@
             
             tbVentas.innerHTML = ''; tbCompras.innerHTML = ''; tbIva.innerHTML = '';
 
-            let total_v_base = 0, total_v_exento = 0, total_v_descuento = 0, total_v_iva = 0, total_v_ret = 0;
+            let total_v_base = 0, total_v_exento = 0, total_v_iva = 0, total_v_ret = 0;
             let total_c_base = 0, total_c_exento = 0, total_c_iva = 0;
             let total_a_pagar = 0, total_usd = 0;
             let totalIslrMes = 0, totalReservaUsd = 0, totalAdelantosBs = 0;
@@ -2285,7 +2141,6 @@
             const tasaActiva = parseFloat(datosGenerales.tasa) || 1;
             const valorUT = parseFloat(datosGenerales.valor_ut) || 43;
 
-            // Ingresos anuales con base neta (descuento ya deducido de la base gravada)
             const ingresosAnuales = dataMeses.reduce((s, m) => s + m.v_base + m.v_exento, 0);
             const comprasAnuales = dataMeses.reduce((s, m) => s + m.c_base + m.c_exento, 0);
             const gastosDedAnuales = ['gasto_nomina', 'gasto_honorarios', 'gasto_publicidad', 'gasto_alquiler']
@@ -2307,7 +2162,6 @@
             dataMeses.forEach((m, i) => {
                 total_v_base += m.v_base; 
                 total_v_exento += m.v_exento; 
-                total_v_descuento += m.v_descuento;
                 total_v_iva += m.v_iva; 
                 total_v_ret += m.v_ret;
 
@@ -2316,7 +2170,6 @@
                         <td class="p-2 font-bold text-white text-left">${nombresMeses[i]}</td>
                         <td class="p-2">${formatNumber(m.v_base)}</td>
                         <td class="p-2 text-amber-400">${formatNumber(m.v_exento)}</td>
-                        <td class="p-2 text-rose-400 font-mono">${m.v_descuento > 0 ? '-' + formatNumber(m.v_descuento) : '0,00'}</td>
                         <td class="p-2">${formatNumber(m.v_iva)}</td>
                         <td class="p-2">${formatNumber(m.v_ret)}</td>
                     </tr>`;
@@ -2386,7 +2239,6 @@
                     <td class="p-2 text-left text-emerald-400">TOTAL ${year}</td>
                     <td class="p-2">${formatNumber(total_v_base)}</td>
                     <td class="p-2 text-amber-400">${formatNumber(total_v_exento)}</td>
-                    <td class="p-2 text-rose-400 font-mono">${total_v_descuento > 0 ? '-' + formatNumber(total_v_descuento) : '0,00'}</td>
                     <td class="p-2">${formatNumber(total_v_iva)}</td>
                     <td class="p-2">${formatNumber(total_v_ret)}</td>
                 </tr>`;
@@ -2704,7 +2556,7 @@
             
             mapClientesGlobal = {};
             data.forEach(c => {
-                mapClientesGlobal[c.id] = c.descripcion;
+                mapClientesGlobal[c.id] = c.descripcion || 'Sin nombre';
                 const badge = c.contribuyente_especial 
                     ? '<span class="bg-sky-500/10 text-sky-400 border border-sky-500/20 px-2 py-1 rounded-md text-[10px] font-bold">Sí</span>' 
                     : '<span class="bg-slate-800 text-slate-400 border border-slate-700 px-2 py-1 rounded-md text-[10px]">No</span>';
@@ -3312,23 +3164,416 @@
         });
 
         // ==========================================
+        // COMPRAS
+        // ==========================================
+        async function cargarOpcionesCompras() {
+            try {
+                const { data: provs } = await db.from('proveedores').select('id, descripcion').order('descripcion');
+                const selectProv = document.getElementById('comp-prov');
+                selectProv.innerHTML = '<option value="">Seleccione un Proveedor...</option>';
+                if(provs) provs.forEach(p => selectProv.innerHTML += `<option value="${p.id}">${p.descripcion}</option>`);
+            } catch(e) { console.warn("No hay tabla proveedores."); }
+        }
+
+        function calcularTotalCompra() {
+            const sub = parseFloat(document.getElementById('comp-subtotal').value) || 0;
+            const exento = parseFloat(document.getElementById('comp-exento').value) || 0;
+            const porc = parseFloat(document.getElementById('comp-iva-porc').value) || 0;
+            
+            const iva = sub * (porc / 100);
+            
+            document.getElementById('comp-iva').value = iva.toFixed(2);
+            document.getElementById('comp-total').value = (sub + exento + iva).toFixed(2);
+        }
+
+        document.getElementById('form-compra').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const selectProv = document.getElementById('comp-prov');
+            const nombreProv = selectProv.options[selectProv.selectedIndex].text; 
+
+            const btn = document.querySelector('#form-compra button[type="submit"]');
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Guardando...';
+            btn.disabled = true;
+
+            const nuevaCompra = {
+                descripcion: nombreProv,
+                fecha: document.getElementById('comp-fecha').value,
+                subtotal: parseFloat(document.getElementById('comp-subtotal').value),
+                monto_exento: parseFloat(document.getElementById('comp-exento').value) || 0,
+                impuestos: parseFloat(document.getElementById('comp-iva').value),
+                total: parseFloat(document.getElementById('comp-total').value),
+                es_factura_personal: document.getElementById('comp-es-personal').checked
+            };
+
+            const { error } = await db.from('compras').insert([nuevaCompra]);
+            if (error) alert("Error guardando compra. " + error.message);
+            else {
+                document.getElementById('form-compra').reset();
+                document.getElementById('comp-es-personal').checked = false;
+                document.getElementById('comp-exento').value = 0;
+                cargarHistorialCompras();
+                cargarResumenIVA();
+                if(document.getElementById('islr') && !document.getElementById('islr').classList.contains('hidden')) {
+                    cargarProyeccionISLR();
+                }
+            }
+            btn.innerHTML = originalHTML;
+            btn.disabled = false;
+        });
+
+        async function cargarHistorialCompras() {
+            try {
+                const { data, error } = await db.from('compras').select('*').order('fecha', { ascending: false });
+                if (error) throw error;
+                const tbody = document.getElementById('tabla-historial-compras');
+                tbody.innerHTML = '';
+                data.forEach(c => {
+                    tbody.innerHTML += `
+                        <tr class="hover:bg-slate-800/50 transition border-b border-slate-800">
+                            <td class="p-4 text-slate-400 font-mono text-[11px]">${new Date(c.fecha).toLocaleDateString()}</td>
+                            <td class="p-4 font-medium text-white">${c.descripcion}</td>
+                            <td class="p-4 font-mono text-slate-400 text-[11px]">Bs. ${formatNumber(c.subtotal)}</td>
+                            <td class="p-4 font-mono text-amber-400 text-[11px]">Bs. ${formatNumber(c.monto_exento || 0)}</td>
+                            <td class="p-4 font-mono text-slate-400 text-[11px]">Bs. ${formatNumber(c.impuestos)}</td>
+                            <td class="p-4 font-mono font-bold text-orange-400 text-[11px]">Bs. ${formatNumber(c.total)}</td>
+                            <td class="p-4 text-right">
+                                <button onclick="eliminarCompra('${c.id}')" class="text-rose-400 hover:text-rose-300 font-medium px-2"><i class="fa-solid fa-trash"></i></button>
+                            </td>
+                        </tr>`;
+                });
+            } catch (err) { console.warn("No existe tabla compras."); }
+        }
+
+        async function eliminarCompra(id) {
+            if (!confirm('¿Eliminar registro de compra?')) return;
+            const { error } = await db.from('compras').delete().eq('id', id);
+            if (error) alert('Error: ' + error.message);
+            else { cargarHistorialCompras(); cargarResumenIVA(); }
+        }
+
+        // ==========================================
         // VENTAS & FILTROS DE BÚSQUEDA
         // ==========================================
+        let carritoVentas = [];
+        let subtotalVenta = 0, impuestosVenta = 0, totalFacturaVenta = 0, islrVenta = 0, totalCobrarVenta = 0;
+
+        function generarCorrelativosVenta() {
+            const campoFecha = document.getElementById('venta-fecha');
+            if (campoFecha && !campoFecha.value) {
+                campoFecha.value = new Date().toISOString().split('T')[0];
+            }
+            
+            const matchFactura = String(datosGenerales.ult_fact || '').match(/(\d+)$/);
+            const lastFacturaNum = matchFactura ? parseInt(matchFactura[1], 10) : 0;
+            
+            const controlParts = String(datosGenerales.ult_control || '').split('-');
+            const lastControlStr = controlParts.length > 1 ? controlParts.pop() : String(datosGenerales.ult_control);
+            const lastControlNum = parseInt(lastControlStr.replace(/\D/g, ''), 10) || 0;
+            
+            const nextFactura = lastFacturaNum + 1;
+            const nextControl = lastControlNum + 1;
+
+            document.getElementById('venta-factura').value = String(nextFactura).padStart(6, '0');
+            document.getElementById('venta-control').value = '00-' + String(nextControl).padStart(6, '0');
+        }
+
+        async function cargarOpcionesVentas() {
+            const { data: clientes } = await db.from('clientes').select('id, descripcion').order('descripcion');
+            const selectCliente = document.getElementById('venta-cliente');
+            selectCliente.innerHTML = '<option value="">Seleccione un Cliente...</option>';
+            if(clientes) {
+                clientes.forEach(c => {
+                    selectCliente.innerHTML += `<option value="${c.id}">${c.descripcion}</option>`;
+                    mapClientesGlobal[c.id] = c.descripcion;
+                });
+            }
+            actualizarSelectFiltroClientes();
+
+            const { data: productos } = await db.from('productos').select('id, descripcion, precio, tipo, lleva_iva').order('descripcion');
+            const selectProducto = document.getElementById('venta-producto');
+            selectProducto.innerHTML = '<option value="">Seleccione Prod/Servicio...</option>';
+            if(productos) {
+                productos.forEach(p => {
+                    const descCorta = p.descripcion ? p.descripcion.replace(/\n/g, ' / ').substring(0, 70) + (p.descripcion.length > 70 ? '...' : '') : 'Sin nombre';
+                    const descEncoded = p.descripcion ? encodeURIComponent(p.descripcion) : encodeURIComponent('Sin nombre');
+                    const llevaIVA = p.lleva_iva !== false;
+                    const badgeExento = llevaIVA ? '' : ' [EXENTO]';
+                    selectProducto.innerHTML += `<option value="${p.id}" data-precio="${p.precio}" data-nombre="${descEncoded}" data-tipo="${p.tipo || 'Producto'}" data-lleva-iva="${llevaIVA}">${descCorta}${badgeExento} - $${parseFloat(p.precio).toFixed(2)}</option>`;
+                });
+            }
+        }
+
+        async function actualizarPrecioSugeridoVenta() {
+            const select = document.getElementById('venta-producto');
+            const inputPrecio = document.getElementById('venta-precio-editable');
+            if (!select || !inputPrecio) return;
+
+            const opt = select.options[select.selectedIndex];
+            if (!opt || !opt.value) {
+                inputPrecio.value = '';
+                return;
+            }
+
+            const id = opt.value;
+            let precioBase = parseFloat(opt.getAttribute('data-precio')) || 0;
+
+            if (id === 'fb062513-0f9c-4bff-8984-bcceeba631d7') {
+                const clienteId = document.getElementById('venta-cliente').value;
+                if (clienteId) {
+                    const { data: clienteData, error: errCli } = await db.from('clientes').select('observaciones').eq('id', clienteId).single();
+                    if (!errCli && clienteData && clienteData.observaciones) {
+                        const montoObs = parseFloat(clienteData.observaciones);
+                        if (!isNaN(montoObs)) precioBase = montoObs;
+                    }
+                }
+            }
+
+            const tasaVenta = parseFloat(document.getElementById('input-tasa-venta').value) || 1;
+            const precioBs = precioBase * tasaVenta;
+            inputPrecio.value = precioBs.toFixed(2);
+        }
+
+        document.getElementById('venta-producto').addEventListener('change', () => {
+            actualizarPrecioSugeridoVenta();
+            const inpCant = document.getElementById('venta-cantidad');
+            if (inpCant) inpCant.value = '1';
+        });
+        document.getElementById('venta-cliente').addEventListener('change', actualizarPrecioSugeridoVenta);
+        document.getElementById('input-tasa-venta').addEventListener('input', actualizarPrecioSugeridoVenta);
+
+        document.getElementById('btn-add-venta').addEventListener('click', async () => {
+            const select = document.getElementById('venta-producto');
+            const opt = select.options[select.selectedIndex];
+            if (!opt.value) return alert('Seleccione un producto/servicio.');
+
+            const id = opt.value;
+            const nombre = decodeURIComponent(opt.getAttribute('data-nombre'));
+            const tipoItem = opt.getAttribute('data-tipo');
+            const llevaIVA = opt.getAttribute('data-lleva-iva') === 'true';
+
+            const inputPrecio = document.getElementById('venta-precio-editable');
+            let precioBs = parseFloat(inputPrecio.value);
+
+            const inputCantidad = document.getElementById('venta-cantidad');
+            let cantidad = parseInt(inputCantidad.value) || 1;
+            if (cantidad < 1) cantidad = 1;
+
+            if (isNaN(precioBs) || precioBs <= 0) {
+                let precioBase = parseFloat(opt.getAttribute('data-precio')) || 0;
+
+                if (id === 'fb062513-0f9c-4bff-8984-bcceeba631d7') { 
+                    const clienteId = document.getElementById('venta-cliente').value;
+                    if (!clienteId) return alert('Por favor, seleccione un cliente primero para asignar el monto de sus observaciones.');
+                    
+                    const { data: clienteData, error: errCli } = await db.from('clientes').select('observaciones').eq('id', clienteId).single();
+                    if (errCli || !clienteData || !clienteData.observaciones) return alert('El cliente seleccionado no tiene observaciones registradas.');
+                    
+                    const montoObs = parseFloat(clienteData.observaciones);
+                    if (!isNaN(montoObs)) precioBase = montoObs;
+                }
+
+                const tasaVenta = parseFloat(document.getElementById('input-tasa-venta').value) || 1;
+                precioBs = precioBase * tasaVenta;
+            }
+
+            const existe = carritoVentas.find(i => i.id === id && i.precio === precioBs);
+            if (existe) {
+                existe.cantidad += cantidad;
+            } else {
+                carritoVentas.push({ id, nombre, precio: precioBs, cantidad: cantidad, tipo: tipoItem, llevaIVA });
+            }
+            
+            renderCarritoVentas();
+            
+            select.value = '';
+            inputPrecio.value = '';
+            inputCantidad.value = '1';
+        });
+
+        function renderCarritoVentas() {
+            const lista = document.getElementById('lista-articulos-venta');
+            lista.innerHTML = '';
+            subtotalVenta = 0;
+            let subtotalServicios = 0;
+            let subtotalGravado = 0, subtotalExento = 0;
+
+            if(carritoVentas.length === 0) {
+                lista.innerHTML = '<p class="text-slate-500 text-xs italic">No hay productos agregados a la venta.</p>';
+                actualizarTotalesVenta(0, 0, 0);
+                return;
+            }
+            carritoVentas.forEach((item, index) => {
+                const totalItem = item.precio * item.cantidad;
+                subtotalVenta += totalItem;
+                
+                if (item.llevaIVA === false) {
+                    subtotalExento += totalItem;
+                } else {
+                    subtotalGravado += totalItem;
+                    if (item.tipo === 'Servicio') subtotalServicios += totalItem;
+                }
+                
+                const badgeTipo = item.tipo === 'Servicio' 
+                    ? `<span class="bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 px-1 rounded text-[8px] uppercase tracking-wider font-bold inline-block ml-1">Serv</span>`
+                    : '';
+                const badgeExento = item.llevaIVA === false
+                    ? `<span class="bg-amber-500/10 text-amber-400 border border-amber-500/20 px-1 rounded text-[8px] uppercase tracking-wider font-bold inline-block ml-1">Exento</span>`
+                    : '';
+
+                lista.innerHTML += `
+                    <div class="flex justify-between items-start bg-slate-900 p-3 rounded-xl border border-slate-800 mb-2">
+                        <span class="font-medium text-slate-200 whitespace-pre-wrap leading-relaxed">
+                            <span class="text-emerald-400 font-bold">${item.cantidad}x</span> ${item.nombre} ${badgeTipo}${badgeExento}
+                            <span class="text-[10px] text-slate-500 ml-1 block mt-1">(Bs. ${formatNumber(item.precio)} c/u)</span>
+                        </span>
+                        <div class="flex items-center space-x-4 pl-4">
+                            <span class="font-mono font-bold text-emerald-400">Bs. ${formatNumber(totalItem)}</span>
+                            <button type="button" class="text-rose-400 hover:text-rose-300 font-bold" onclick="quitarCarritoVenta(${index})"><i class="fa-solid fa-xmark"></i></button>
+                        </div>
+                    </div>`;
+            });
+            actualizarTotalesVenta(subtotalServicios, subtotalGravado, subtotalExento);
+        }
+
+        function quitarCarritoVenta(index) { carritoVentas.splice(index, 1); renderCarritoVentas(); }
+
+        function actualizarTotalesVenta(subServicios = null, subGravado = null, subExento = null) {
+            const porc = parseFloat(document.getElementById('calc-impuesto-porcentaje-venta').value) || 0;
+            const descuento = parseFloat(document.getElementById('calc-descuento-venta').value) || 0;
+            
+            if (subGravado === null || subExento === null || subServicios === null) {
+                subGravado = 0; subExento = 0; subServicios = 0;
+                carritoVentas.forEach(i => {
+                    const t = i.precio * i.cantidad;
+                    if (i.llevaIVA === false) subExento += t;
+                    else {
+                        subGravado += t;
+                        if (i.tipo === 'Servicio') subServicios += t;
+                    }
+                });
+            }
+
+            const baseCalculo = subGravado + subExento;
+            impuestosVenta = subGravado * (porc / 100);
+            totalFacturaVenta = baseCalculo + impuestosVenta - descuento;
+            if (totalFacturaVenta < 0) totalFacturaVenta = 0;
+            
+            islrVenta = subServicios * 0.02; 
+            totalCobrarVenta = totalFacturaVenta - islrVenta;
+            if (totalCobrarVenta < 0) totalCobrarVenta = 0;
+
+            document.getElementById('calc-subtotal-gravado-venta').innerText = formatNumber(subGravado);
+            document.getElementById('calc-subtotal-exento-venta').innerText = formatNumber(subExento);
+            document.getElementById('calc-impuesto-monto-venta').innerText = formatNumber(impuestosVenta);
+            document.getElementById('calc-descuento-monto-venta').innerText = "- " + formatNumber(descuento);
+            document.getElementById('calc-factura-total-venta').innerText = formatNumber(totalFacturaVenta);
+            document.getElementById('calc-islr-monto-venta').innerText = "-" + formatNumber(islrVenta);
+            document.getElementById('calc-total-cobrar-venta').innerText = formatNumber(totalCobrarVenta);
+        }
+
+        document.getElementById('calc-descuento-venta').addEventListener('input', () => {
+            actualizarTotalesVenta();
+        });
+
+        document.getElementById('form-venta').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const clienteId = document.getElementById('venta-cliente').value;
+            const esCxC = document.getElementById('venta-cxc').checked;
+            const numFactura = document.getElementById('venta-factura').value;
+            const numControl = document.getElementById('venta-control').value;
+            
+            const tasaUsada = parseFloat(document.getElementById('input-tasa-venta').value) || 1;
+            const fechaFactura = document.getElementById('venta-fecha').value;
+
+            if (!clienteId || carritoVentas.length === 0) return alert('Seleccione cliente y agregue productos.');
+
+            const btn = document.querySelector('#form-venta button[type="submit"]');
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Procesando...';
+            btn.disabled = true;
+
+            const montoExento = carritoVentas.reduce((s, i) => i.llevaIVA === false ? s + (i.precio * i.cantidad) : s, 0);
+            const descuentoVenta = parseFloat(document.getElementById('calc-descuento-venta').value) || 0;
+
+            const payload = { 
+                cliente_id: clienteId, 
+                impuestos: impuestosVenta, 
+                monto_exento: montoExento,
+                descuento: descuentoVenta,
+                total: totalFacturaVenta, 
+                retencion_islr: islrVenta, 
+                cxc: esCxC, 
+                factura: numFactura, 
+                control: numControl,
+                tasa: tasaUsada,
+                fecha: fechaFactura
+            };
+
+            const { data, error } = await db.from('ventas').insert([payload]).select();
+            
+            if (error) { 
+                btn.innerHTML = originalHTML; btn.disabled = false; 
+                return alert('Error. Detalle: ' + error.message); 
+            }
+
+            if (data && data.length > 0) {
+                const ventaId = data[0].id;
+                const detalles = carritoVentas.map(i => ({ venta_id: ventaId, producto_id: i.id, cantidad: i.cantidad, precio_unitario: i.precio }));
+                await db.from('venta_detalles').insert(detalles);
+            }
+
+            await db.from('datos').update({ ult_fact: numFactura, ult_control: numControl }).eq('id', datosGenerales.id || 1);
+            datosGenerales.ult_fact = numFactura;
+            datosGenerales.ult_control = numControl;
+            actualizarVistasDatosLocales();
+
+            carritoVentas = [];
+            renderCarritoVentas();
+            document.getElementById('form-venta').reset();
+            document.getElementById('calc-impuesto-porcentaje-venta').value = "16";
+            document.getElementById('calc-descuento-venta').value = "0";
+            document.getElementById('venta-fecha').value = new Date().toISOString().split('T')[0];
+            document.getElementById('venta-cxc').checked = true;
+
+            cargarHistorialVentas();
+            cargarCxC();
+            generarCorrelativosVenta(); 
+            cargarDashboard();
+            cargarResumenIVA();
+
+            if(document.getElementById('islr') && !document.getElementById('islr').classList.contains('hidden')) {
+                cargarProyeccionISLR();
+            }
+
+            btn.innerHTML = originalHTML;
+            btn.disabled = false;
+        });
+
+        function imprimirVenta(idFactura) {
+            window.open(`factura_pdf.html?id=${idFactura}`, '_blank');
+        }
+
         function actualizarSelectFiltroClientes() {
             const selectFiltro = document.getElementById('filtro-venta-cliente');
             if (!selectFiltro) return;
             const valSeleccionado = selectFiltro.value;
             selectFiltro.innerHTML = '<option value="">Todos los clientes...</option>';
-            Object.entries(mapClientesGlobal).sort((a,b) => a[1].localeCompare(b[1])).forEach(([id, desc]) => {
-                selectFiltro.innerHTML += `<option value="${id}">${desc}</option>`;
-            });
+            Object.entries(mapClientesGlobal)
+                .sort((a,b) => a[1].localeCompare(b[1]))
+                .forEach(([id, desc]) => {
+                    selectFiltro.innerHTML += `<option value="${id}">${desc}</option>`;
+                });
             selectFiltro.value = valSeleccionado;
         }
 
         async function cargarHistorialVentas() {
-            const { data: cliData } = await db.from('clientes').select('id, descripcion');
-            mapClientesGlobal = {};
-            if(cliData) cliData.forEach(c => mapClientesGlobal[c.id] = c.descripcion);
+            if (Object.keys(mapClientesGlobal).length === 0) {
+                const { data: cliData } = await db.from('clientes').select('id, descripcion').order('descripcion');
+                if (cliData) {
+                    cliData.forEach(c => mapClientesGlobal[c.id] = c.descripcion || 'Sin nombre');
+                }
+            }
             actualizarSelectFiltroClientes();
 
             const { data, error } = await db.from('ventas').select('*').order('fecha', { ascending: false });
@@ -3338,16 +3583,16 @@
         }
 
         function aplicarFiltrosVentas() {
-            const clienteFiltro = document.getElementById('filtro-venta-cliente').value;
-            const fechaDesde = document.getElementById('filtro-venta-desde').value;
-            const fechaHasta = document.getElementById('filtro-venta-hasta').value;
+            const clienteFiltro = document.getElementById('filtro-venta-cliente') ? document.getElementById('filtro-venta-cliente').value : '';
+            const fechaDesde = document.getElementById('filtro-venta-desde') ? document.getElementById('filtro-venta-desde').value : '';
+            const fechaHasta = document.getElementById('filtro-venta-hasta') ? document.getElementById('filtro-venta-hasta').value : '';
 
             let filtradas = ventasHistorialCache.filter(v => {
                 if (clienteFiltro && v.cliente_id !== clienteFiltro) return false;
 
-                const fechaStr = (v.fecha || v.created_at || '').split('T')[0];
-                if (fechaDesde && fechaStr < fechaDesde) return false;
-                if (fechaHasta && fechaStr > fechaHasta) return false;
+                const fNormal = normalizarFechaYMD(v.fecha || v.created_at);
+                if (fechaDesde && fNormal && fNormal < fechaDesde) return false;
+                if (fechaHasta && fNormal && fNormal > fechaHasta) return false;
 
                 return true;
             });
@@ -3356,14 +3601,15 @@
         }
 
         function limpiarFiltrosVentas() {
-            document.getElementById('filtro-venta-cliente').value = '';
-            document.getElementById('filtro-venta-desde').value = '';
-            document.getElementById('filtro-venta-hasta').value = '';
+            if (document.getElementById('filtro-venta-cliente')) document.getElementById('filtro-venta-cliente').value = '';
+            if (document.getElementById('filtro-venta-desde')) document.getElementById('filtro-venta-desde').value = '';
+            if (document.getElementById('filtro-venta-hasta')) document.getElementById('filtro-venta-hasta').value = '';
             aplicarFiltrosVentas();
         }
 
         function renderTablaVentas(lista) {
             const tbody = document.getElementById('tabla-ventas');
+            if (!tbody) return;
             tbody.innerHTML = '';
 
             let totalBsFiltro = 0;
@@ -3408,8 +3654,241 @@
                 `${lista.length} facturas | Bs. ${formatNumber(totalBsFiltro)} | $${formatNumber(totalUsdFiltro)}`;
         }
 
+        async function eliminarVenta(id) {
+            if (!confirm('¿Eliminar venta?')) return;
+            const { error } = await db.from('ventas').delete().eq('id', id);
+            if (error) alert('Error: ' + error.message);
+            else {
+                cargarHistorialVentas();
+                cargarCxC();
+                cargarDashboard();
+                cargarResumenIVA();
+            }
+        }
+
         // ==========================================
-        // INICIALIZACIÓN
+        // CUENTAS POR COBRAR (CxC)
+        // ==========================================
+        async function cargarCxC() {
+            try {
+                const { data: clientesData } = await db.from('clientes').select('id, descripcion, contribuyente_especial');
+                const mapClientes = {};
+                if(clientesData) clientesData.forEach(c => mapClientes[c.id] = c);
+
+                const [resVentas, resNotas] = await Promise.all([
+                    db.from('ventas').select('*').eq('cxc', true),
+                    db.from('notas_entrega').select('*').eq('cxc', true)
+                ]);
+                
+                let listadoMixto = [];
+
+                if(resVentas.data) {
+                    resVentas.data.forEach(v => {
+                        const cliInfo = mapClientes[v.cliente_id] || {};
+                        const isEspecial = cliInfo.contribuyente_especial || false;
+                        const ivaTotal = parseFloat(v.impuestos) || 0;
+                        
+                        const retIva = isEspecial ? (ivaTotal * 0.75) : 0;
+                        const ivaRecibido = ivaTotal - retIva;
+                        const islrRetenido = parseFloat(v.retencion_islr) || 0;
+                        
+                        const baseNetaCobrar = v.total - retIva - islrRetenido;
+                        const porCobrarUsd = baseNetaCobrar / (datosGenerales.tasa || 1); 
+
+                        listadoMixto.push({
+                            id: v.id, tipo: 'venta',
+                            fecha: v.fecha || v.created_at,
+                            cliente: cliInfo.descripcion || 'Desconocido',
+                            baseNetaBs: baseNetaCobrar,
+                            ivaRecibidoBs: ivaRecibido,
+                            cobrarUsd: porCobrarUsd
+                        });
+                    });
+                }
+
+                if(resNotas.data) {
+                    resNotas.data.forEach(n => {
+                        const cliInfo = mapClientes[n.cliente_id] || {};
+                        listadoMixto.push({
+                            id: n.id, tipo: 'nota',
+                            fecha: n.fecha || n.created_at,
+                            cliente: cliInfo.descripcion || 'Desconocido',
+                            baseNetaBs: null,
+                            ivaRecibidoBs: null,
+                            cobrarUsd: n.total_usd
+                        });
+                    });
+                }
+
+                listadoMixto.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+
+                const tbody = document.getElementById('tabla-cxc');
+                tbody.innerHTML = '';
+                
+                let granTotalUsd = 0;
+
+                if(listadoMixto.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-slate-500 italic text-xs">No hay cuentas por cobrar pendientes.</td></tr>`;
+                    document.getElementById('total-cxc-usd').innerText = `$0.00`;
+                    return;
+                }
+
+                listadoMixto.forEach(item => {
+                    granTotalUsd += item.cobrarUsd;
+                    
+                    const badgeTipo = item.tipo === 'venta' 
+                        ? '<span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded text-[10px] font-bold">Venta</span>'
+                        : '<span class="bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 px-2 py-0.5 rounded text-[10px] font-bold">Nota</span>';
+
+                    const valBaseNeta = item.baseNetaBs !== null ? `Bs. ${formatNumber(item.baseNetaBs)}` : '-';
+                    const valIvaRecibido = item.ivaRecibidoBs !== null ? `Bs. ${formatNumber(item.ivaRecibidoBs)}` : '-';
+
+                    tbody.innerHTML += `
+                        <tr class="hover:bg-slate-800/50 transition border-b border-slate-800">
+                            <td class="p-4">${badgeTipo}</td>
+                            <td class="p-4 text-slate-400 font-mono text-[11px]">${new Date(item.fecha).toLocaleDateString('es-VE')}</td>
+                            <td class="p-4 font-medium text-white">${item.cliente}</td>
+                            <td class="p-4 font-mono font-bold text-amber-400 text-[11px]">${valBaseNeta}</td>
+                            <td class="p-4 font-mono font-bold text-violet-400 text-[11px]">${valIvaRecibido}</td>
+                            <td class="p-4 font-mono font-bold text-sky-400 text-[11px]">$${formatNumber(item.cobrarUsd)}</td>
+                            <td class="p-4 text-right">
+                                <button onclick="marcarComoPagado('${item.id}', '${item.tipo}')" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded-lg text-[10px] font-bold transition shadow-lg shadow-emerald-600/20 flex items-center justify-end gap-1 float-right">
+                                    <i class="fa-solid fa-check"></i> Marcar Pagado
+                                </button>
+                            </td>
+                        </tr>`;
+                });
+                
+                document.getElementById('total-cxc-usd').innerText = `$${formatNumber(granTotalUsd)}`;
+
+            } catch (err) { console.error("Error en CxC", err); }
+        }
+
+        async function marcarComoPagado(id, tipo) {
+            if (!confirm('¿Desea registrar esta cuenta como pagada?')) return;
+            const tabla = tipo === 'venta' ? 'ventas' : 'notas_entrega';
+            const { error } = await db.from(tabla).update({ cxc: false }).eq('id', id);
+            
+            if (error) alert('Error al actualizar: ' + error.message);
+            else {
+                cargarCxC();
+                if(tipo === 'venta') cargarHistorialVentas();
+                if(tipo === 'nota') cargarHistorialNotas();
+            }
+        }
+
+        // ==========================================
+        // CAJA & FLUJO DE EFECTIVO
+        // ==========================================
+        async function cargarCaja() {
+            const year = new Date().getFullYear();
+            document.getElementById('caja-year').innerText = year;
+
+            let dataMeses = Array.from({length: 12}, () => ({ 
+                ventas: 0, comprasTerceros: 0, ivaPagar: 0, facturasPropias: 0 
+            }));
+
+            try {
+                const { data: ventas } = await db.from('ventas')
+                    .select('fecha, total, impuestos, monto_exento, cliente_id')
+                    .gte('fecha', `${year}-01-01`).lte('fecha', `${year}-12-31`);
+
+                const { data: cliData } = await db.from('clientes').select('id, contribuyente_especial');
+                const mapEspecial = {};
+                if(cliData) cliData.forEach(c => mapEspecial[c.id] = c.contribuyente_especial);
+
+                if (ventas) {
+                    ventas.forEach(v => {
+                        if (!v.fecha) return;
+                        const fechaObj = new Date(v.fecha);
+                        if (isNaN(fechaObj)) return;
+                        const mes = fechaObj.getMonth();
+                        if (mes < 0 || mes > 11) return;
+
+                        const total = parseFloat(v.total) || 0;
+                        dataMeses[mes].ventas += total;
+
+                        const iva = parseFloat(v.impuestos) || 0;
+                        const isEspecial = mapEspecial[v.cliente_id] || false;
+                        const ret = isEspecial ? (iva * 0.75) : 0;
+                        dataMeses[mes].ivaPagar += (iva - ret);
+                    });
+                }
+
+                const { data: compras } = await db.from('compras')
+                    .select('fecha, subtotal, monto_exento, impuestos, es_factura_personal')
+                    .gte('fecha', `${year}-01-01`).lte('fecha', `${year}-12-31`);
+
+                if (compras) {
+                    compras.forEach(c => {
+                        if (!c.fecha) return;
+                        const fechaObj = new Date(c.fecha);
+                        if (isNaN(fechaObj)) return;
+                        const mes = fechaObj.getMonth();
+                        if (mes < 0 || mes > 11) return;
+
+                        const sub = parseFloat(c.subtotal) || 0;
+                        const exento = parseFloat(c.monto_exento) || 0;
+                        const iva = parseFloat(c.impuestos) || 0;
+                        const totalCompra = sub + exento + iva;
+
+                        if (c.es_factura_personal) {
+                            dataMeses[mes].facturasPropias += totalCompra;
+                        } else {
+                            dataMeses[mes].comprasTerceros += totalCompra;
+                            dataMeses[mes].ivaPagar -= iva;
+                        }
+                    });
+                }
+            } catch (err) { console.warn("Caja Error:", err); }
+
+            const tbody = document.getElementById('tabla-caja');
+            tbody.innerHTML = '';
+
+            let totalVentas = 0, totalFlujo = 0, totalPersonal = 0, saldoAcumulado = 0;
+
+            dataMeses.forEach((m, i) => {
+                const flujoDisponible = m.ventas - m.comprasTerceros - Math.max(0, m.ivaPagar);
+                const saldoMes = flujoDisponible - m.facturasPropias;
+                saldoAcumulado += saldoMes;
+
+                totalVentas += m.ventas;
+                totalFlujo += flujoDisponible;
+                totalPersonal += m.facturasPropias;
+
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-800/30">
+                        <td class="p-3 font-bold text-white text-left">${nombresMeses[i]}</td>
+                        <td class="p-3">${formatNumber(m.ventas)}</td>
+                        <td class="p-3">${formatNumber(m.comprasTerceros)}</td>
+                        <td class="p-3">${formatNumber(Math.max(0, m.ivaPagar))}</td>
+                        <td class="p-3 text-lime-400 font-bold">${formatNumber(flujoDisponible)}</td>
+                        <td class="p-3 text-cyan-400">${formatNumber(m.facturasPropias)}</td>
+                        <td class="p-3 ${saldoMes >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${formatNumber(saldoMes)}</td>
+                        <td class="p-3 text-amber-400 font-bold">${formatNumber(saldoAcumulado)}</td>
+                    </tr>`;
+            });
+
+            tbody.innerHTML += `
+                <tr class="bg-lime-900/40 font-bold text-white border-t-2 border-lime-700/50">
+                    <td class="p-3 text-left text-lime-400">TOTAL ${year}</td>
+                    <td class="p-3">${formatNumber(totalVentas)}</td>
+                    <td class="p-3">-</td>
+                    <td class="p-3">-</td>
+                    <td class="p-3 text-lime-300">${formatNumber(totalFlujo)}</td>
+                    <td class="p-3 text-cyan-300">${formatNumber(totalPersonal)}</td>
+                    <td class="p-3">-</td>
+                    <td class="p-3 text-amber-300">${formatNumber(saldoAcumulado)}</td>
+                </tr>`;
+
+            document.getElementById('caja-total-ventas').innerText = `Bs. ${formatNumber(totalVentas)}`;
+            document.getElementById('caja-total-flujo').innerText = `Bs. ${formatNumber(totalFlujo)}`;
+            document.getElementById('caja-total-personal').innerText = `Bs. ${formatNumber(totalPersonal)}`;
+            document.getElementById('caja-total-saldo').innerText = `Bs. ${formatNumber(saldoAcumulado)}`;
+        }
+
+        // ==========================================
+        // INICIALIZACIÓN GENERAL
         // ==========================================
         window.onload = async () => {
             verificarSesion();
