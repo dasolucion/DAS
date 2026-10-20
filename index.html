@@ -14,9 +14,6 @@
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: #475569; }
 
-        /* ==============================================================
-           ESTILOS EXACTOS TIPO FACTURA (A5 Horizontal: 210mm x 148mm)
-           ============================================================== */
         .doc-factura-hoja {
             width: 210mm;
             min-height: 148mm;
@@ -76,9 +73,7 @@
 </head>
 <body class="bg-slate-950 text-slate-100 font-sans h-screen overflow-hidden flex antialiased selection:bg-sky-500 selection:text-white">
 
-    <!-- ==========================================
-         PANTALLA DE LOGIN
-         ========================================== -->
+    <!-- LOGIN -->
     <div id="pantalla-login" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950 px-4">
         <div class="w-full max-w-sm bg-slate-900 border border-slate-800 rounded-3xl p-8 shadow-2xl relative">
             <div class="flex flex-col items-center text-center mb-6">
@@ -94,7 +89,7 @@
                     <label class="block text-xs font-medium text-slate-300 mb-1">Usuario</label>
                     <div class="relative">
                         <i class="fa-solid fa-user absolute left-3 top-3 text-slate-500 text-xs"></i>
-                        <input type="text" id="login-usuario" class="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-3 py-2.5 text-xs text-white outline-none focus:border-sky-500 transition" placeholder="Usuario (admin)" required autocomplete="username">
+                        <input type="text" id="login-usuario" class="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-3 py-2.5 text-xs text-white outline-none focus:border-sky-500 transition" placeholder="Usuario" required autocomplete="username">
                     </div>
                 </div>
 
@@ -116,7 +111,7 @@
             </form>
 
             <div class="mt-6 text-center text-[10px] text-slate-600 font-mono">
-                DAS SOLUCIONES INTEGRALES &bull; v2.2
+                DAS SOLUCIONES INTEGRALES &bull; v2.3
             </div>
         </div>
     </div>
@@ -262,11 +257,12 @@
                                         <th class="p-2 text-left font-medium">Mes</th>
                                         <th class="p-2 font-medium">Base Gravada</th>
                                         <th class="p-2 font-medium text-amber-400">Exento</th>
+                                        <th class="p-2 font-medium text-rose-400">Descuento</th>
                                         <th class="p-2 font-medium">IVA</th>
                                         <th class="p-2 font-medium">Retención (75%)</th>
                                     </tr>
                                 </thead>
-                                <tbody id="tabla-dash-ventas" class="divide-y border-slate-800 text-slate-300 font-mono text-[11px]"></tbody>
+                                <tbody id="tabla-dash-ventas" class="divide-y divide-emerald-900/20 text-slate-300 font-mono text-[11px]"></tbody>
                             </table>
                         </div>
                     </div>
@@ -282,7 +278,7 @@
                                         <th class="p-2 font-medium">IVA</th>
                                     </tr>
                                 </thead>
-                                <tbody id="tabla-dash-compras" class="divide-y border-slate-800 text-slate-300 font-mono text-[11px]"></tbody>
+                                <tbody id="tabla-dash-compras" class="divide-y divide-orange-900/20 text-slate-300 font-mono text-[11px]"></tbody>
                             </table>
                         </div>
                     </div>
@@ -308,7 +304,7 @@
                                     <th class="p-3 font-medium text-cyan-400">Adelanto Div. (Bs)</th>
                                 </tr>
                             </thead>
-                            <tbody id="tabla-dash-iva" class="divide-y border-slate-800 text-slate-300 font-mono text-[11px]"></tbody>
+                            <tbody id="tabla-dash-iva" class="divide-y divide-blue-900/20 text-slate-300 font-mono text-[11px]"></tbody>
                         </table>
                     </div>
                 </div>
@@ -331,7 +327,6 @@
                         <i class="fa-solid fa-sliders text-indigo-400"></i> Configuraciones Generales
                     </h3>
                     <form id="form-parametros" onsubmit="guardarDatosGenerales(event)" class="grid grid-cols-1 md:grid-cols-3 gap-5">
-                        
                         <div>
                             <div class="flex justify-between items-end mb-1">
                                 <label class="block text-xs font-bold text-indigo-400">Tasa de Cambio (Bs/$)</label>
@@ -410,8 +405,8 @@
                     </h3>
                     <form id="form-producto" class="grid grid-cols-1 md:grid-cols-4 gap-5">
                         <div class="md:col-span-4 lg:col-span-2">
-                            <label class="block text-xs font-medium text-slate-300 mb-1">Descripción del Ítem (Soporta múltiples líneas)</label>
-                            <textarea id="prod-desc" rows="5" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-sky-500 transition resize-y" placeholder="Ej: Impresión 3D Figura Personalizada&#10;- Color: Rojo Vivo&#10;- Altura: 15cm" required></textarea>
+                            <label class="block text-xs font-medium text-slate-300 mb-1">Descripción del Ítem</label>
+                            <textarea id="prod-desc" rows="5" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-sky-500 transition resize-y" placeholder="Ej: Impresión 3D..." required></textarea>
                         </div>
 
                         <div class="md:col-span-4 lg:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-5">
@@ -432,7 +427,7 @@
                             </div>
                             <div class="md:col-span-3 flex items-center gap-3 pt-2">
                                 <input type="checkbox" id="prod-lleva-iva" class="w-4 h-4 bg-slate-950 border-slate-700 rounded accent-sky-500 cursor-pointer" checked>
-                                <label for="prod-lleva-iva" class="text-xs font-medium text-slate-300 cursor-pointer">¿Este ítem lleva IVA? <span class="text-slate-500">(Desmarcar si es exento)</span></label>
+                                <label for="prod-lleva-iva" class="text-xs font-medium text-slate-300 cursor-pointer">¿Este ítem lleva IVA?</label>
                             </div>
                             <div class="md:col-span-3 flex items-end justify-end mt-2">
                                 <button type="submit" class="w-full md:w-auto bg-sky-600 hover:bg-sky-500 text-white font-bold px-6 py-2.5 rounded-xl transition shadow-lg shadow-sky-600/20 text-xs flex items-center justify-center gap-2">
@@ -480,7 +475,7 @@
                     </h3>
                     <form id="form-cliente" class="grid grid-cols-1 md:grid-cols-2 gap-5">
                         <div>
-                            <label class="block text-xs font-medium text-slate-300 mb-1">Razón Social / Descripción</label>
+                            <label class="block text-xs font-medium text-slate-300 mb-1">Razón Social</label>
                             <input type="text" id="cli-desc" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-sky-500 transition" required>
                         </div>
                         <div>
@@ -505,14 +500,14 @@
                         </div>
                         <div class="md:col-span-2">
                             <label class="block text-xs font-medium text-slate-300 mb-1">Observaciones</label>
-                            <input type="text" id="cli-obs" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-sky-500 transition" placeholder="Observaciones o monto personalizado">
+                            <input type="text" id="cli-obs" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-sky-500 transition">
                         </div>
                         <div class="flex items-center space-x-3 md:col-span-2 pt-2">
                             <input type="checkbox" id="cli-especial" class="w-4 h-4 bg-slate-950 border-slate-700 rounded accent-sky-500 cursor-pointer">
                             <label for="cli-especial" class="text-xs font-medium text-slate-300 cursor-pointer">¿Es Contribuyente Especial?</label>
                         </div>
                         <div class="md:col-span-2 flex gap-3 pt-2">
-                            <button type="submit" class="bg-sky-600 hover:bg-sky-500 text-white font-bold px-6 py-2.5 rounded-xl transition shadow-lg shadow-sky-600/20 text-xs flex items-center gap-2">
+                            <button type="submit" class="bg-sky-600 hover:bg-sky-500 text-white font-bold px-6 py-2.5 rounded-xl transition text-xs flex items-center gap-2">
                                 <i class="fa-solid fa-save"></i> Guardar Cliente
                             </button>
                         </div>
@@ -546,7 +541,7 @@
                     </div>
                     <div>
                         <h2 class="text-xl font-bold text-white tracking-tight">Gestión de Proveedores</h2>
-                        <p class="text-xs text-slate-400">Directorio de proveedores para el módulo de compras</p>
+                        <p class="text-xs text-slate-400">Directorio de proveedores</p>
                     </div>
                 </div>
                 
@@ -556,7 +551,7 @@
                     </h3>
                     <form id="form-proveedor" class="grid grid-cols-1 md:grid-cols-2 gap-5">
                         <div>
-                            <label class="block text-xs font-medium text-slate-300 mb-1">Razón Social / Descripción</label>
+                            <label class="block text-xs font-medium text-slate-300 mb-1">Razón Social</label>
                             <input type="text" id="prov-desc" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-teal-500 transition" required>
                         </div>
                         <div>
@@ -581,10 +576,10 @@
                         </div>
                         <div class="md:col-span-2">
                             <label class="block text-xs font-medium text-slate-300 mb-1">Observaciones</label>
-                            <input type="text" id="prov-obs" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-teal-500 transition" placeholder="Detalles extra...">
+                            <input type="text" id="prov-obs" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-teal-500 transition">
                         </div>
                         <div class="md:col-span-2 flex gap-3 pt-2">
-                            <button type="submit" class="bg-teal-600 hover:bg-teal-500 text-white font-bold px-6 py-2.5 rounded-xl transition shadow-lg shadow-teal-600/20 text-xs flex items-center gap-2">
+                            <button type="submit" class="bg-teal-600 hover:bg-teal-500 text-white font-bold px-6 py-2.5 rounded-xl transition text-xs flex items-center gap-2">
                                 <i class="fa-solid fa-save"></i> Guardar Proveedor
                             </button>
                         </div>
@@ -854,7 +849,7 @@
                             </div>
                             <div class="col-span-6 md:col-span-2">
                                 <label class="block text-xs font-medium text-emerald-400 mb-1">Precio (Bs)</label>
-                                <input type="number" step="0.01" id="venta-precio-editable" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-emerald-400 font-mono font-bold outline-none focus:border-emerald-500 transition" placeholder="0.00" title="Editable antes de agregar">
+                                <input type="number" step="0.01" id="venta-precio-editable" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-emerald-400 font-mono font-bold outline-none focus:border-emerald-500 transition" placeholder="0.00">
                             </div>
                             <div class="col-span-3 md:col-span-1">
                                 <label class="block text-xs font-medium text-slate-300 mb-1">Cant.</label>
@@ -862,7 +857,7 @@
                             </div>
                             <div class="col-span-3 md:col-span-1">
                                 <label class="block text-xs font-medium text-slate-300 mb-1">&nbsp;</label>
-                                <button type="button" id="btn-add-venta" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold py-2.5 rounded-xl border border-slate-700 transition text-xs shadow-sm" title="Agregar al detalle">
+                                <button type="button" id="btn-add-venta" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold py-2.5 rounded-xl border border-slate-700 transition text-xs shadow-sm">
                                     <i class="fa-solid fa-plus"></i>
                                 </button>
                             </div>
@@ -916,10 +911,43 @@
                     </form>
                 </div>
 
+                <!-- HISTORIAL DE VENTAS CON FILTRO -->
                 <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl no-print">
-                    <h3 class="text-sm font-bold p-5 border-b border-slate-800 text-white flex items-center gap-2">
-                        <i class="fa-solid fa-clock-rotate-left text-emerald-400"></i> Historial de Ventas
-                    </h3>
+                    <div class="p-5 border-b border-slate-800 flex flex-wrap items-center justify-between gap-3">
+                        <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                            <i class="fa-solid fa-clock-rotate-left text-emerald-400"></i> Historial de Ventas
+                        </h3>
+                        <div id="ventas-resumen-filtro" class="text-[11px] font-mono text-slate-400 bg-slate-950/60 border border-slate-800 px-3 py-1 rounded-xl">
+                            Cargando...
+                        </div>
+                    </div>
+
+                    <!-- BARRA DE FILTROS -->
+                    <div class="p-4 bg-slate-950/60 border-b border-slate-800 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 items-end">
+                        <div>
+                            <label class="block text-[10px] font-semibold uppercase tracking-wider text-slate-400 mb-1">Filtrar por Cliente</label>
+                            <select id="filtro-venta-cliente" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2 text-xs text-white outline-none focus:border-emerald-500 transition" onchange="aplicarFiltrosVentas()">
+                                <option value="">Todos los clientes...</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-semibold uppercase tracking-wider text-slate-400 mb-1">Fecha Desde</label>
+                            <input type="date" id="filtro-venta-desde" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2 text-xs text-white outline-none focus:border-emerald-500 font-mono transition" onchange="aplicarFiltrosVentas()">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-semibold uppercase tracking-wider text-slate-400 mb-1">Fecha Hasta</label>
+                            <input type="date" id="filtro-venta-hasta" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2 text-xs text-white outline-none focus:border-emerald-500 font-mono transition" onchange="aplicarFiltrosVentas()">
+                        </div>
+                        <div class="flex gap-2">
+                            <button type="button" onclick="aplicarFiltrosVentas()" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 px-3 rounded-xl transition text-xs flex items-center justify-center gap-1.5 shadow-sm">
+                                <i class="fa-solid fa-filter"></i> Filtrar
+                            </button>
+                            <button type="button" onclick="limpiarFiltrosVentas()" class="bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white font-bold py-2 px-3 rounded-xl border border-slate-700 transition text-xs" title="Limpiar filtros">
+                                <i class="fa-solid fa-rotate-left"></i>
+                            </button>
+                        </div>
+                    </div>
+
                     <div class="overflow-x-auto">
                         <table class="w-full text-left border-collapse text-xs">
                             <thead class="bg-slate-950 border-b border-slate-800 text-slate-400 uppercase tracking-wider text-[10px]">
@@ -1249,7 +1277,7 @@
                             <span id="islr-impuesto-usd" class="font-mono text-sky-400">$0.00</span>
                         </div>
 
-                        <!-- RESUMEN DE RESERVAS MENSUALES -->
+                        <!-- RESERVAS MENSUALES -->
                         <div class="mt-5 pt-4 border-t-2 border-violet-800/50">
                             <h4 class="text-xs font-bold text-violet-400 mb-4 uppercase tracking-wider flex items-center gap-2">
                                 <i class="fa-solid fa-piggy-bank"></i> Reserva Mensual Acumulada
@@ -1270,7 +1298,7 @@
                             </div>
                             <div class="mt-3 bg-slate-950 border border-slate-800 rounded-xl p-3">
                                 <div class="flex justify-between text-xs mb-2">
-                                    <span class="text-slate-400">Cobertura de tu reserva sobre el ISLR proyectado:</span>
+                                    <span class="text-slate-400">Cobertura de tu reserva:</span>
                                     <span id="islr-cobertura" class="font-mono font-bold text-violet-400">0%</span>
                                 </div>
                                 <div class="w-full bg-slate-900 rounded-full h-2.5 border border-slate-800 overflow-hidden">
@@ -1292,7 +1320,7 @@
     <!-- Overlay móvil -->
     <div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-30 hidden md:hidden"></div>
 
-    <!-- MODAL DE IMPRESIÓN (ESTILO IDÉNTICO A FACTURA_PDF EN DIVISAS) -->
+    <!-- MODAL IMPRESIÓN (ESTILO FACTURA EN DIVISAS) -->
     <div id="modal-impresion" class="fixed inset-0 z-50 hidden flex-col items-center justify-start p-2 sm:p-6 bg-slate-950/80 backdrop-blur-sm overflow-y-auto">
         <div id="modal-impresion-toolbar" class="no-print w-full max-w-[210mm] flex items-center justify-between bg-slate-900 border border-slate-800 p-3 rounded-2xl mb-4 shadow-2xl">
             <div class="flex items-center gap-2 text-xs font-semibold text-slate-300">
@@ -1309,57 +1337,40 @@
             </div>
         </div>
 
-        <!-- Hoja de Papel con Estilos Factura Exactos -->
-        <div id="documento-impresion-papel" class="doc-factura-hoja shadow-2xl">
-            <!-- Inyectado dinámicamente -->
-        </div>
+        <div id="documento-impresion-papel" class="doc-factura-hoja shadow-2xl"></div>
     </div>
 
     <script>
         // ==========================================
-        // LOGIN / SEGURIDAD LOCAL
+        // SEGURIDAD / LOGIN
         // ==========================================
-        const AUTH_CONFIG = {
-            usuario: 'admin',
-            password: 'admin123'
-        };
+        const AUTH_CONFIG = { usuario: 'admin', password: 'admin123' };
 
         function verificarSesion() {
             const sesion = sessionStorage.getItem('das_auth');
             const pantallaLogin = document.getElementById('pantalla-login');
             if (sesion === 'activa') {
                 pantallaLogin.classList.add('hidden');
-                pantallaLogin.classList.remove('flex');
-                pantallaLogin.style.display = 'none';
             } else {
                 pantallaLogin.classList.remove('hidden');
-                pantallaLogin.classList.add('flex');
-                pantallaLogin.style.display = 'flex';
             }
         }
 
         function procesarLogin(e) {
-            if (e) e.preventDefault();
+            e.preventDefault();
             const u = document.getElementById('login-usuario').value.trim();
             const p = document.getElementById('login-password').value.trim();
             const errorBox = document.getElementById('login-error');
 
-            if (u.toLowerCase() === AUTH_CONFIG.usuario.toLowerCase() && p === AUTH_CONFIG.password) {
+            if (u === AUTH_CONFIG.usuario && p === AUTH_CONFIG.password) {
                 sessionStorage.setItem('das_auth', 'activa');
                 sessionStorage.setItem('das_user', u);
-                
-                const lbl = document.getElementById('label-usuario-activo');
-                if (lbl) lbl.innerText = u;
-
-                const pantallaLogin = document.getElementById('pantalla-login');
-                pantallaLogin.classList.add('hidden');
-                pantallaLogin.classList.remove('flex');
-                pantallaLogin.style.display = 'none';
-
-                if (errorBox) errorBox.classList.add('hidden');
+                document.getElementById('label-usuario-activo').innerText = u;
+                document.getElementById('pantalla-login').classList.add('hidden');
+                errorBox.classList.add('hidden');
                 document.getElementById('form-login').reset();
             } else {
-                if (errorBox) errorBox.classList.remove('hidden');
+                errorBox.classList.remove('hidden');
             }
         }
 
@@ -1367,17 +1378,12 @@
             if (confirm("¿Deseas cerrar tu sesión?")) {
                 sessionStorage.removeItem('das_auth');
                 sessionStorage.removeItem('das_user');
-                const pantallaLogin = document.getElementById('pantalla-login');
-                pantallaLogin.classList.remove('hidden');
-                pantallaLogin.classList.add('flex');
-                pantallaLogin.style.display = 'flex';
-                document.getElementById('login-usuario').value = '';
-                document.getElementById('login-password').value = '';
+                document.getElementById('pantalla-login').classList.remove('hidden');
             }
         }
 
         // ==========================================
-        // CONFIGURACIÓN Y SUPABASE
+        // SUPABASE & CONFIGURACIÓN GENERAL
         // ==========================================
         const { createClient } = supabase;
         const supabaseUrl = 'https://frlaldgtcoykntmgxqmh.supabase.co';
@@ -1392,9 +1398,7 @@
         let datosGenerales = { 
             id: 1, tasa: 1, ult_fact: '000000', ult_control: '00-000000', valor_ut: 43,
             gasto_directivo: 0, gasto_nomina: 0, gasto_honorarios: 0, gasto_publicidad: 0, gasto_alquiler: 0,
-            reserva_islr_usd: 0,
-            reservas_mensuales: {},
-            adelantos_dividendos: {},
+            reserva_islr_usd: 0, reservas_mensuales: {}, adelantos_dividendos: {},
             empresa_nombre: 'DAS SOLUCIONES INTEGRALES, C.A.', empresa_rif: 'J-40282664-8',
             empresa_direccion: '', empresa_telefono: ''
         };
@@ -1405,6 +1409,8 @@
         let chartTopProductos = null;
 
         let islrData = { ingresos: 0, costoVentas: 0, compras: 0, retenciones: 0 };
+        let ventasHistorialCache = [];
+        let mapClientesGlobal = {};
 
         function formatNumber(num) {
             return parseFloat(num || 0).toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -1432,7 +1438,7 @@
                              actualizarVistasDatosLocales();
                          }
                     }
-                    if(!silencioso) alert(`Tasa BCV obtenida exitosamente: Bs. ${nuevaTasa.toFixed(2)} y fue actualizada en el sistema.`);
+                    if(!silencioso) alert(`Tasa BCV obtenida exitosamente: Bs. ${nuevaTasa.toFixed(2)}`);
                 }
                 if(btnIcon) btnIcon.classList.remove('fa-spin');
             } catch (error) {
@@ -1652,7 +1658,6 @@
 
             return `
                 <div style="width: 100%; box-sizing: border-box;">
-                    <!-- CABECERA IDÉNTICA -->
                     <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; width: 100%;">
                         <div style="width: 80px; flex-shrink: 0;">
                             <img src="https://dasolucion.github.io/DAS/logo.png" alt="DAS Logo" style="height: 65px;" onerror="this.style.display='none'">
@@ -1669,7 +1674,6 @@
                         </div>
                     </div>
 
-                    <!-- INFO CLIENTE Y DOCUMENTO -->
                     <div style="display: flex; justify-content: space-between; margin-bottom: 8px; width: 100%;">
                         <div style="width: 56%;">
                             <div style="display: flex; margin-bottom: 2px; align-items: baseline;">
@@ -1717,7 +1721,6 @@
                         </div>
                     </div>
 
-                    <!-- TABLA EXACTA DE ARTÍCULOS -->
                     <table style="width: 100%; border-collapse: collapse; margin-bottom: 8px;">
                         <thead>
                             <tr>
@@ -1734,7 +1737,6 @@
                         </tbody>
                     </table>
 
-                    <!-- TOTALES Y NOTAS IDÉNTICAS A FACTURA_PDF -->
                     <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-top: 4px; width: 100%;">
                         <div style="width: 54%; font-weight: bold; font-size: 9px; text-align: left;">
                             <p style="margin: 0 0 3px 0;">Notas:</p>
@@ -1768,7 +1770,6 @@
                         </div>
                     </div>
 
-                    <!-- FOOTER Y ORIGINAL -->
                     <div class="disclaimer texto-azul" style="text-align: center; font-size: 7.5px; color: #64748b; margin-top: 12px; line-height: 1.2; width: 100%;">
                         DOCUMENTO ADMINISTRATIVO EMITIDO EN DIVISAS SEGÚN CONVENIO CAMBIARIO N° 1 DEL BANCO CENTRAL DE VENEZUELA.<br>
                         TASA OFICIAL APLICABLE AL MOMENTO DE LA CANCELACIÓN EN MONEDA NACIONAL.
@@ -1781,7 +1782,7 @@
         }
 
         // ==========================================
-        // IMPRIMIR PRESUPUESTO GUARDADO O ACTUAL
+        // IMPRIMIR PRESUPUESTOS Y NOTAS
         // ==========================================
         async function imprimirPresupuesto(id) {
             try {
@@ -1903,9 +1904,6 @@
             abrirModalImpresion(html, 'Vista Previa Presupuesto');
         }
 
-        // ==========================================
-        // IMPRIMIR NOTAS DE ENTREGA
-        // ==========================================
         async function imprimirNota(id) {
             try {
                 const { data: nota, error: notaErr } = await db.from('notas_entrega').select('*').eq('id', id).single();
@@ -2075,10 +2073,7 @@
                         options: {
                             responsive: true, maintainAspectRatio: false,
                             plugins: {
-                                legend: { 
-                                    display: true,
-                                    labels: { color: '#cbd5e1', font: { size: 11 } }
-                                }
+                                legend: { display: true, labels: { color: '#cbd5e1', font: { size: 11 } } }
                             },
                             scales: {
                                 y: { beginAtZero: true, ticks: { color: '#94a3b8' }, grid: { color: 'rgba(51, 65, 85, 0.3)' } },
@@ -2178,13 +2173,22 @@
         }
 
         // ==========================================
-        // RESUMEN DE IVA
+        // RESUMEN DE IVA (CORREGIDO DESCUENTO Y EXENTO)
         // ==========================================
         async function cargarResumenIVA() {
             const year = new Date().getFullYear();
             document.getElementById('iva-year').innerText = year;
 
-            let dataMeses = Array.from({length: 12}, () => ({ v_base: 0, v_exento: 0, v_iva: 0, v_ret: 0, c_base: 0, c_exento: 0, c_iva: 0 }));
+            let dataMeses = Array.from({length: 12}, () => ({ 
+                v_base: 0, 
+                v_exento: 0, 
+                v_descuento: 0, 
+                v_iva: 0, 
+                v_ret: 0, 
+                c_base: 0, 
+                c_exento: 0, 
+                c_iva: 0 
+            }));
             let serviciosPorMes = new Array(12).fill(0);
 
             try {
@@ -2205,13 +2209,20 @@
                         const isEspecial = mapEspecial[v.cliente_id] || false;
                         const iva = parseFloat(v.impuestos) || 0;
                         const exento = parseFloat(v.monto_exento) || 0;
+                        const descuento = parseFloat(v.descuento) || 0;
                         const total = parseFloat(v.total) || 0;
-                        const base = total - iva - exento;
+
+                        // Cálculo exacto: total = baseGravadaBruta + exento + iva - descuento
+                        // Por tanto, la Base Gravada Bruta = total + descuento - iva - exento
+                        // Y la Base Gravada Neta = Base Gravada Bruta - descuento
+                        const baseBruta = Math.max(0, total + descuento - iva - exento);
+                        const baseNeta = Math.max(0, baseBruta - descuento);
                         const ret = isEspecial ? (iva * 0.75) : 0;
                         
                         if(mes >= 0 && mes <= 11) {
-                            dataMeses[mes].v_base += base;
-                            dataMeses[mes].v_exento += exento;
+                            dataMeses[mes].v_base += baseNeta;
+                            dataMeses[mes].v_exento += exento; // EXENTO PURO, NO SUMA EL DESCUENTO
+                            dataMeses[mes].v_descuento += descuento;
                             dataMeses[mes].v_iva += iva;
                             dataMeses[mes].v_ret += ret;
                         }
@@ -2266,7 +2277,7 @@
             
             tbVentas.innerHTML = ''; tbCompras.innerHTML = ''; tbIva.innerHTML = '';
 
-            let total_v_base = 0, total_v_exento = 0, total_v_iva = 0, total_v_ret = 0;
+            let total_v_base = 0, total_v_exento = 0, total_v_descuento = 0, total_v_iva = 0, total_v_ret = 0;
             let total_c_base = 0, total_c_exento = 0, total_c_iva = 0;
             let total_a_pagar = 0, total_usd = 0;
             let totalIslrMes = 0, totalReservaUsd = 0, totalAdelantosBs = 0;
@@ -2274,6 +2285,7 @@
             const tasaActiva = parseFloat(datosGenerales.tasa) || 1;
             const valorUT = parseFloat(datosGenerales.valor_ut) || 43;
 
+            // Ingresos anuales con base neta (descuento ya deducido de la base gravada)
             const ingresosAnuales = dataMeses.reduce((s, m) => s + m.v_base + m.v_exento, 0);
             const comprasAnuales = dataMeses.reduce((s, m) => s + m.c_base + m.c_exento, 0);
             const gastosDedAnuales = ['gasto_nomina', 'gasto_honorarios', 'gasto_publicidad', 'gasto_alquiler']
@@ -2293,12 +2305,18 @@
             const adelantos = datosGenerales.adelantos_dividendos || {};
 
             dataMeses.forEach((m, i) => {
-                total_v_base += m.v_base; total_v_exento += m.v_exento; total_v_iva += m.v_iva; total_v_ret += m.v_ret;
+                total_v_base += m.v_base; 
+                total_v_exento += m.v_exento; 
+                total_v_descuento += m.v_descuento;
+                total_v_iva += m.v_iva; 
+                total_v_ret += m.v_ret;
+
                 tbVentas.innerHTML += `
                     <tr class="hover:bg-slate-800/30">
                         <td class="p-2 font-bold text-white text-left">${nombresMeses[i]}</td>
                         <td class="p-2">${formatNumber(m.v_base)}</td>
                         <td class="p-2 text-amber-400">${formatNumber(m.v_exento)}</td>
+                        <td class="p-2 text-rose-400 font-mono">${m.v_descuento > 0 ? '-' + formatNumber(m.v_descuento) : '0,00'}</td>
                         <td class="p-2">${formatNumber(m.v_iva)}</td>
                         <td class="p-2">${formatNumber(m.v_ret)}</td>
                     </tr>`;
@@ -2368,6 +2386,7 @@
                     <td class="p-2 text-left text-emerald-400">TOTAL ${year}</td>
                     <td class="p-2">${formatNumber(total_v_base)}</td>
                     <td class="p-2 text-amber-400">${formatNumber(total_v_exento)}</td>
+                    <td class="p-2 text-rose-400 font-mono">${total_v_descuento > 0 ? '-' + formatNumber(total_v_descuento) : '0,00'}</td>
                     <td class="p-2">${formatNumber(total_v_iva)}</td>
                     <td class="p-2">${formatNumber(total_v_ret)}</td>
                 </tr>`;
@@ -2409,14 +2428,9 @@
             reservas[key] = valor;
             
             const { error } = await db.from('datos').update({ reservas_mensuales: reservas }).eq('id', datosGenerales.id || 1);
-            
-            if (error) {
-                alert("Error al guardar reserva: " + error.message);
-                return;
-            }
+            if (error) return alert("Error al guardar reserva: " + error.message);
             
             datosGenerales.reservas_mensuales = reservas;
-            
             const tasaActiva = parseFloat(datosGenerales.tasa) || 1;
             let sumaReservas = 0;
             Object.values(reservas).forEach(v => sumaReservas += parseFloat(v) || 0);
@@ -2441,20 +2455,15 @@
             if (valor > disponible + 0.01) {
                 const exceso = valor - disponible;
                 input.classList.add('border-rose-500');
-                alert(`⚠️ Excedes el disponible por Bs. ${formatNumber(exceso)}.\n\nDisponible este mes: Bs. ${formatNumber(disponible)}\nEste exceso podría generar un dividendo gravado del 34%.`);
+                alert(`⚠️ Excedes el disponible por Bs. ${formatNumber(exceso)}.`);
             } else {
                 input.classList.remove('border-rose-500');
             }
             
             const { error } = await db.from('datos').update({ adelantos_dividendos: adelantos }).eq('id', datosGenerales.id || 1);
-            
-            if (error) {
-                alert("Error al guardar adelanto: " + error.message);
-                return;
-            }
+            if (error) return alert("Error al guardar adelanto: " + error.message);
             
             datosGenerales.adelantos_dividendos = adelantos;
-            
             const filaTotal = document.querySelector('#tabla-dash-iva tr.bg-violet-900\\/40');
             if (filaTotal) {
                 const celdaTotal = filaTotal.querySelector('td:last-child');
@@ -2534,9 +2543,7 @@
                     
                     if (prod) {
                         islrData.costoVentas += (parseFloat(prod.costo) || 0) * cant;
-                        if (prod.tipo === 'Servicio') {
-                            subtotalServicios += cant * precioUnit;
-                        }
+                        if (prod.tipo === 'Servicio') subtotalServicios += cant * precioUnit;
                     }
                 });
 
@@ -2558,7 +2565,6 @@
                 }
 
                 recalcularISLR();
-
             } catch (err) {
                 console.error("Error calculando ISLR:", err);
             }
@@ -2579,19 +2585,6 @@
                 const input = document.getElementById('gasto-' + c);
                 if (input) gastosManuales += parseFloat(input.value) || 0;
             });
-
-            const inputDirectivo = document.getElementById('gasto-directivo');
-            if (inputDirectivo) {
-                const sueldoDirectivo = parseFloat(inputDirectivo.value) || 0;
-                const tope15 = ingresos * 0.15;
-                if (sueldoDirectivo > tope15 + 0.01) {
-                    inputDirectivo.classList.add('border-rose-500');
-                    inputDirectivo.title = `Excede el tope del 15% (Bs. ${formatNumber(tope15)})`;
-                } else {
-                    inputDirectivo.classList.remove('border-rose-500');
-                    inputDirectivo.title = '';
-                }
-            }
 
             const totalDeducible = costoVentas + compras + gastosManuales;
             const enriquecimiento = Math.max(0, ingresos - totalDeducible);
@@ -2653,10 +2646,8 @@
             });
 
             const { error } = await db.from('datos').update(payload).eq('id', datosGenerales.id || 1);
-            
-            if (error) {
-                alert("Error al guardar gastos: " + error.message);
-            } else {
+            if (error) alert("Error al guardar gastos: " + error.message);
+            else {
                 Object.keys(payload).forEach(k => datosGenerales[k] = payload[k]);
                 alert("✅ Gastos deducibles guardados correctamente.");
             }
@@ -2685,7 +2676,7 @@
 
             if (editandoClienteId) {
                 const { error } = await db.from('clientes').update(nuevoCliente).eq('id', editandoClienteId);
-                if (error) alert("Error al actualizar: " + error.message);
+                if (error) alert("Error: " + error.message);
                 else {
                     editandoClienteId = null;
                     document.getElementById('form-cliente-titulo').innerHTML = '<i class="fa-solid fa-user-plus text-sky-400"></i> Registrar Nuevo Cliente';
@@ -2710,7 +2701,10 @@
             if (error) { console.error(error); return; }
             const tbody = document.getElementById('tabla-clientes');
             tbody.innerHTML = '';
+            
+            mapClientesGlobal = {};
             data.forEach(c => {
+                mapClientesGlobal[c.id] = c.descripcion;
                 const badge = c.contribuyente_especial 
                     ? '<span class="bg-sky-500/10 text-sky-400 border border-sky-500/20 px-2 py-1 rounded-md text-[10px] font-bold">Sí</span>' 
                     : '<span class="bg-slate-800 text-slate-400 border border-slate-700 px-2 py-1 rounded-md text-[10px]">No</span>';
@@ -2728,6 +2722,7 @@
                         </td>
                     </tr>`;
             });
+            actualizarSelectFiltroClientes();
         }
 
         async function editarCliente(id) {
@@ -3316,470 +3311,82 @@
             btn.disabled = false;
         });
 
-        async function cargarHistorialNotas() {
-            try {
-                const { data: cliData } = await db.from('clientes').select('id, descripcion');
-                const mapCli = {};
-                if(cliData) cliData.forEach(c => mapCli[c.id] = c.descripcion);
-
-                const { data: prodData } = await db.from('productos').select('id, descripcion');
-                const mapProd = {};
-                if(prodData) prodData.forEach(p => mapProd[p.id] = p.descripcion);
-
-                const { data: detData } = await db.from('nota_entrega_detalles').select('*');
-                const mapDetalles = {};
-                if(detData) {
-                    detData.forEach(d => {
-                        if(!mapDetalles[d.nota_id]) mapDetalles[d.nota_id] = [];
-                        const nombreProd = mapProd[d.producto_id] ? mapProd[d.producto_id].replace(/\n/g, ' ') : 'Producto desc.';
-                        mapDetalles[d.nota_id].push(`${d.cantidad}x ${nombreProd}`);
-                    });
-                }
-
-                const { data, error } = await db.from('notas_entrega').select('*').order('fecha', { ascending: false });
-                if (error) throw error;
-                
-                const tbody = document.getElementById('tabla-notas');
-                tbody.innerHTML = '';
-                
-                data.forEach(n => {
-                    const nombreCliente = mapCli[n.cliente_id] || 'Desconocido';
-                    const estadoCxC = n.cxc 
-                        ? '<span class="bg-amber-500/10 text-amber-400 border border-amber-500/20 px-2 py-1 rounded-md text-[10px] font-bold">Pendiente (CxC)</span>' 
-                        : '<span class="bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 px-2 py-1 rounded-md text-[10px] font-bold">Pagado</span>';
-
-                    const arrayDetalles = mapDetalles[n.id] || [];
-                    const stringDetalles = arrayDetalles.length > 0 ? arrayDetalles.join(', ') : 'Sin artículos';
-
-                    const rawDate = n.fecha || n.created_at;
-                    const dateObj = new Date(rawDate);
-                    const fechaStr = isNaN(dateObj) ? '-' : dateObj.toLocaleDateString('es-VE', { year: 'numeric', month: '2-digit', day: '2-digit' });
-
-                    tbody.innerHTML += `
-                        <tr class="hover:bg-slate-800/50 transition border-b border-slate-800">
-                            <td class="p-4 text-slate-400 font-mono text-[11px]">${fechaStr}</td>
-                            <td class="p-4 font-medium text-white">${nombreCliente}</td>
-                            <td class="p-4 text-slate-400 text-[10px] max-w-[150px] truncate cursor-help" title="${stringDetalles}">${stringDetalles}</td>
-                            <td class="p-4 font-mono font-bold text-cyan-400 text-[11px]">$${formatNumber(n.total_usd)}</td>
-                            <td class="p-4">${estadoCxC}</td>
-                            <td class="p-4 text-right space-x-2">
-                                <button onclick="imprimirNota('${n.id}')" class="text-cyan-400 hover:text-cyan-300 font-medium px-2" title="Imprimir Soporte ($)"><i class="fa-solid fa-print"></i></button>
-                                <button onclick="eliminarNota('${n.id}')" class="text-rose-400 hover:text-rose-300 font-medium px-2" title="Eliminar"><i class="fa-solid fa-trash"></i></button>
-                            </td>
-                        </tr>`;
-                });
-            } catch(e) { console.warn("Error en notas:", e); }
-        }
-
-        async function eliminarNota(id) {
-            if (!confirm('¿Eliminar nota de entrega?')) return;
-            const { error } = await db.from('notas_entrega').delete().eq('id', id);
-            if (error) alert('Error: ' + error.message);
-            else { cargarHistorialNotas(); cargarCxC(); }
-        }
-
         // ==========================================
-        // COMPRAS
+        // VENTAS & FILTROS DE BÚSQUEDA
         // ==========================================
-        async function cargarOpcionesCompras() {
-            try {
-                const { data: provs } = await db.from('proveedores').select('id, descripcion').order('descripcion');
-                const selectProv = document.getElementById('comp-prov');
-                selectProv.innerHTML = '<option value="">Seleccione un Proveedor...</option>';
-                if(provs) provs.forEach(p => selectProv.innerHTML += `<option value="${p.id}">${p.descripcion}</option>`);
-            } catch(e) { console.warn("No hay tabla proveedores."); }
-        }
-
-        function calcularTotalCompra() {
-            const sub = parseFloat(document.getElementById('comp-subtotal').value) || 0;
-            const exento = parseFloat(document.getElementById('comp-exento').value) || 0;
-            const porc = parseFloat(document.getElementById('comp-iva-porc').value) || 0;
-            
-            const iva = sub * (porc / 100);
-            
-            document.getElementById('comp-iva').value = iva.toFixed(2);
-            document.getElementById('comp-total').value = (sub + exento + iva).toFixed(2);
-        }
-
-        document.getElementById('form-compra').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const selectProv = document.getElementById('comp-prov');
-            const nombreProv = selectProv.options[selectProv.selectedIndex].text; 
-
-            const btn = document.querySelector('#form-compra button[type="submit"]');
-            const originalHTML = btn.innerHTML;
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Guardando...';
-            btn.disabled = true;
-
-            const nuevaCompra = {
-                descripcion: nombreProv,
-                fecha: document.getElementById('comp-fecha').value,
-                subtotal: parseFloat(document.getElementById('comp-subtotal').value),
-                monto_exento: parseFloat(document.getElementById('comp-exento').value) || 0,
-                impuestos: parseFloat(document.getElementById('comp-iva').value),
-                total: parseFloat(document.getElementById('comp-total').value),
-                es_factura_personal: document.getElementById('comp-es-personal').checked
-            };
-
-            const { error } = await db.from('compras').insert([nuevaCompra]);
-            if (error) alert("Error guardando compra. " + error.message);
-            else {
-                document.getElementById('form-compra').reset();
-                document.getElementById('comp-es-personal').checked = false;
-                document.getElementById('comp-exento').value = 0;
-                cargarHistorialCompras();
-                cargarResumenIVA();
-                if(document.getElementById('islr') && !document.getElementById('islr').classList.contains('hidden')) {
-                    cargarProyeccionISLR();
-                }
-            }
-            btn.innerHTML = originalHTML;
-            btn.disabled = false;
-        });
-
-        async function cargarHistorialCompras() {
-            try {
-                const { data, error } = await db.from('compras').select('*').order('fecha', { ascending: false });
-                if (error) throw error;
-                const tbody = document.getElementById('tabla-historial-compras');
-                tbody.innerHTML = '';
-                data.forEach(c => {
-                    tbody.innerHTML += `
-                        <tr class="hover:bg-slate-800/50 transition border-b border-slate-800">
-                            <td class="p-4 text-slate-400 font-mono text-[11px]">${new Date(c.fecha).toLocaleDateString()}</td>
-                            <td class="p-4 font-medium text-white">${c.descripcion}</td>
-                            <td class="p-4 font-mono text-slate-400 text-[11px]">Bs. ${formatNumber(c.subtotal)}</td>
-                            <td class="p-4 font-mono text-amber-400 text-[11px]">Bs. ${formatNumber(c.monto_exento || 0)}</td>
-                            <td class="p-4 font-mono text-slate-400 text-[11px]">Bs. ${formatNumber(c.impuestos)}</td>
-                            <td class="p-4 font-mono font-bold text-orange-400 text-[11px]">Bs. ${formatNumber(c.total)}</td>
-                            <td class="p-4 text-right">
-                                <button onclick="eliminarCompra('${c.id}')" class="text-rose-400 hover:text-rose-300 font-medium px-2"><i class="fa-solid fa-trash"></i></button>
-                            </td>
-                        </tr>`;
-                });
-            } catch (err) { console.warn("No existe tabla compras."); }
-        }
-
-        async function eliminarCompra(id) {
-            if (!confirm('¿Eliminar registro de compra?')) return;
-            const { error } = await db.from('compras').delete().eq('id', id);
-            if (error) alert('Error: ' + error.message);
-            else { cargarHistorialCompras(); cargarResumenIVA(); }
-        }
-
-        // ==========================================
-        // VENTAS
-        // ==========================================
-        let carritoVentas = [];
-        let subtotalVenta = 0, impuestosVenta = 0, totalFacturaVenta = 0, islrVenta = 0, totalCobrarVenta = 0;
-
-        function generarCorrelativosVenta() {
-            const campoFecha = document.getElementById('venta-fecha');
-            if (campoFecha && !campoFecha.value) {
-                campoFecha.value = new Date().toISOString().split('T')[0];
-            }
-            
-            const matchFactura = String(datosGenerales.ult_fact || '').match(/(\d+)$/);
-            const lastFacturaNum = matchFactura ? parseInt(matchFactura[1], 10) : 0;
-            
-            const controlParts = String(datosGenerales.ult_control || '').split('-');
-            const lastControlStr = controlParts.length > 1 ? controlParts.pop() : String(datosGenerales.ult_control);
-            const lastControlNum = parseInt(lastControlStr.replace(/\D/g, ''), 10) || 0;
-            
-            const nextFactura = lastFacturaNum + 1;
-            const nextControl = lastControlNum + 1;
-
-            document.getElementById('venta-factura').value = String(nextFactura).padStart(6, '0');
-            document.getElementById('venta-control').value = '00-' + String(nextControl).padStart(6, '0');
-        }
-
-        async function cargarOpcionesVentas() {
-            const { data: clientes } = await db.from('clientes').select('id, descripcion').order('descripcion');
-            const selectCliente = document.getElementById('venta-cliente');
-            selectCliente.innerHTML = '<option value="">Seleccione un Cliente...</option>';
-            if(clientes) clientes.forEach(c => selectCliente.innerHTML += `<option value="${c.id}">${c.descripcion}</option>`);
-
-            const { data: productos } = await db.from('productos').select('id, descripcion, precio, tipo, lleva_iva').order('descripcion');
-            const selectProducto = document.getElementById('venta-producto');
-            selectProducto.innerHTML = '<option value="">Seleccione Prod/Servicio...</option>';
-            if(productos) {
-                productos.forEach(p => {
-                    const descCorta = p.descripcion ? p.descripcion.replace(/\n/g, ' / ').substring(0, 70) + (p.descripcion.length > 70 ? '...' : '') : 'Sin nombre';
-                    const descEncoded = p.descripcion ? encodeURIComponent(p.descripcion) : encodeURIComponent('Sin nombre');
-                    const llevaIVA = p.lleva_iva !== false;
-                    const badgeExento = llevaIVA ? '' : ' [EXENTO]';
-                    selectProducto.innerHTML += `<option value="${p.id}" data-precio="${p.precio}" data-nombre="${descEncoded}" data-tipo="${p.tipo || 'Producto'}" data-lleva-iva="${llevaIVA}">${descCorta}${badgeExento} - $${parseFloat(p.precio).toFixed(2)}</option>`;
-                });
-            }
-        }
-
-        async function actualizarPrecioSugeridoVenta() {
-            const select = document.getElementById('venta-producto');
-            const inputPrecio = document.getElementById('venta-precio-editable');
-            if (!select || !inputPrecio) return;
-
-            const opt = select.options[select.selectedIndex];
-            if (!opt || !opt.value) {
-                inputPrecio.value = '';
-                return;
-            }
-
-            const id = opt.value;
-            let precioBase = parseFloat(opt.getAttribute('data-precio')) || 0;
-
-            if (id === 'fb062513-0f9c-4bff-8984-bcceeba631d7') {
-                const clienteId = document.getElementById('venta-cliente').value;
-                if (clienteId) {
-                    const { data: clienteData, error: errCli } = await db.from('clientes').select('observaciones').eq('id', clienteId).single();
-                    if (!errCli && clienteData && clienteData.observaciones) {
-                        const montoObs = parseFloat(clienteData.observaciones);
-                        if (!isNaN(montoObs)) precioBase = montoObs;
-                    }
-                }
-            }
-
-            const tasaVenta = parseFloat(document.getElementById('input-tasa-venta').value) || 1;
-            const precioBs = precioBase * tasaVenta;
-            inputPrecio.value = precioBs.toFixed(2);
-        }
-
-        document.getElementById('venta-producto').addEventListener('change', () => {
-            actualizarPrecioSugeridoVenta();
-            const inpCant = document.getElementById('venta-cantidad');
-            if (inpCant) inpCant.value = '1';
-        });
-        document.getElementById('venta-cliente').addEventListener('change', actualizarPrecioSugeridoVenta);
-        document.getElementById('input-tasa-venta').addEventListener('input', actualizarPrecioSugeridoVenta);
-
-        document.getElementById('btn-add-venta').addEventListener('click', async () => {
-            const select = document.getElementById('venta-producto');
-            const opt = select.options[select.selectedIndex];
-            if (!opt.value) return alert('Seleccione un producto/servicio.');
-
-            const id = opt.value;
-            const nombre = decodeURIComponent(opt.getAttribute('data-nombre'));
-            const tipoItem = opt.getAttribute('data-tipo');
-            const llevaIVA = opt.getAttribute('data-lleva-iva') === 'true';
-
-            const inputPrecio = document.getElementById('venta-precio-editable');
-            let precioBs = parseFloat(inputPrecio.value);
-
-            const inputCantidad = document.getElementById('venta-cantidad');
-            let cantidad = parseInt(inputCantidad.value) || 1;
-            if (cantidad < 1) cantidad = 1;
-
-            if (isNaN(precioBs) || precioBs <= 0) {
-                let precioBase = parseFloat(opt.getAttribute('data-precio')) || 0;
-
-                if (id === 'fb062513-0f9c-4bff-8984-bcceeba631d7') { 
-                    const clienteId = document.getElementById('venta-cliente').value;
-                    if (!clienteId) return alert('Por favor, seleccione un cliente primero para asignar el monto de sus observaciones.');
-                    
-                    const { data: clienteData, error: errCli } = await db.from('clientes').select('observaciones').eq('id', clienteId).single();
-                    if (errCli || !clienteData || !clienteData.observaciones) return alert('El cliente seleccionado no tiene observaciones registradas.');
-                    
-                    const montoObs = parseFloat(clienteData.observaciones);
-                    if (!isNaN(montoObs)) precioBase = montoObs;
-                }
-
-                const tasaVenta = parseFloat(document.getElementById('input-tasa-venta').value) || 1;
-                precioBs = precioBase * tasaVenta;
-            }
-
-            const existe = carritoVentas.find(i => i.id === id && i.precio === precioBs);
-            if (existe) {
-                existe.cantidad += cantidad;
-            } else {
-                carritoVentas.push({ id, nombre, precio: precioBs, cantidad: cantidad, tipo: tipoItem, llevaIVA });
-            }
-            
-            renderCarritoVentas();
-            
-            select.value = '';
-            inputPrecio.value = '';
-            inputCantidad.value = '1';
-        });
-
-        function renderCarritoVentas() {
-            const lista = document.getElementById('lista-articulos-venta');
-            lista.innerHTML = '';
-            subtotalVenta = 0;
-            let subtotalServicios = 0;
-            let subtotalGravado = 0, subtotalExento = 0;
-
-            if(carritoVentas.length === 0) {
-                lista.innerHTML = '<p class="text-slate-500 text-xs italic">No hay productos agregados a la venta.</p>';
-                actualizarTotalesVenta(0, 0, 0);
-                return;
-            }
-            carritoVentas.forEach((item, index) => {
-                const totalItem = item.precio * item.cantidad;
-                subtotalVenta += totalItem;
-                
-                if (item.llevaIVA === false) {
-                    subtotalExento += totalItem;
-                } else {
-                    subtotalGravado += totalItem;
-                    if (item.tipo === 'Servicio') subtotalServicios += totalItem;
-                }
-                
-                const badgeTipo = item.tipo === 'Servicio' 
-                    ? `<span class="bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 px-1 rounded text-[8px] uppercase tracking-wider font-bold inline-block ml-1">Serv</span>`
-                    : '';
-                const badgeExento = item.llevaIVA === false
-                    ? `<span class="bg-amber-500/10 text-amber-400 border border-amber-500/20 px-1 rounded text-[8px] uppercase tracking-wider font-bold inline-block ml-1">Exento</span>`
-                    : '';
-
-                lista.innerHTML += `
-                    <div class="flex justify-between items-start bg-slate-900 p-3 rounded-xl border border-slate-800 mb-2">
-                        <span class="font-medium text-slate-200 whitespace-pre-wrap leading-relaxed">
-                            <span class="text-emerald-400 font-bold">${item.cantidad}x</span> ${item.nombre} ${badgeTipo}${badgeExento}
-                            <span class="text-[10px] text-slate-500 ml-1 block mt-1">(Bs. ${formatNumber(item.precio)} c/u)</span>
-                        </span>
-                        <div class="flex items-center space-x-4 pl-4">
-                            <span class="font-mono font-bold text-emerald-400">Bs. ${formatNumber(totalItem)}</span>
-                            <button type="button" class="text-rose-400 hover:text-rose-300 font-bold" onclick="quitarCarritoVenta(${index})"><i class="fa-solid fa-xmark"></i></button>
-                        </div>
-                    </div>`;
+        function actualizarSelectFiltroClientes() {
+            const selectFiltro = document.getElementById('filtro-venta-cliente');
+            if (!selectFiltro) return;
+            const valSeleccionado = selectFiltro.value;
+            selectFiltro.innerHTML = '<option value="">Todos los clientes...</option>';
+            Object.entries(mapClientesGlobal).sort((a,b) => a[1].localeCompare(b[1])).forEach(([id, desc]) => {
+                selectFiltro.innerHTML += `<option value="${id}">${desc}</option>`;
             });
-            actualizarTotalesVenta(subtotalServicios, subtotalGravado, subtotalExento);
-        }
-
-        function quitarCarritoVenta(index) { carritoVentas.splice(index, 1); renderCarritoVentas(); }
-
-        function actualizarTotalesVenta(subServicios = null, subGravado = null, subExento = null) {
-            const porc = parseFloat(document.getElementById('calc-impuesto-porcentaje-venta').value) || 0;
-            const descuento = parseFloat(document.getElementById('calc-descuento-venta').value) || 0;
-            
-            if (subGravado === null || subExento === null || subServicios === null) {
-                subGravado = 0; subExento = 0; subServicios = 0;
-                carritoVentas.forEach(i => {
-                    const t = i.precio * i.cantidad;
-                    if (i.llevaIVA === false) subExento += t;
-                    else {
-                        subGravado += t;
-                        if (i.tipo === 'Servicio') subServicios += t;
-                    }
-                });
-            }
-
-            const baseCalculo = subGravado + subExento;
-            impuestosVenta = subGravado * (porc / 100);
-            totalFacturaVenta = baseCalculo + impuestosVenta - descuento;
-            if (totalFacturaVenta < 0) totalFacturaVenta = 0;
-            
-            islrVenta = subServicios * 0.02; 
-            totalCobrarVenta = totalFacturaVenta - islrVenta;
-            if (totalCobrarVenta < 0) totalCobrarVenta = 0;
-
-            document.getElementById('calc-subtotal-gravado-venta').innerText = formatNumber(subGravado);
-            document.getElementById('calc-subtotal-exento-venta').innerText = formatNumber(subExento);
-            document.getElementById('calc-impuesto-monto-venta').innerText = formatNumber(impuestosVenta);
-            document.getElementById('calc-descuento-monto-venta').innerText = "- " + formatNumber(descuento);
-            document.getElementById('calc-factura-total-venta').innerText = formatNumber(totalFacturaVenta);
-            document.getElementById('calc-islr-monto-venta').innerText = "-" + formatNumber(islrVenta);
-            document.getElementById('calc-total-cobrar-venta').innerText = formatNumber(totalCobrarVenta);
-        }
-
-        document.getElementById('calc-descuento-venta').addEventListener('input', () => {
-            actualizarTotalesVenta();
-        });
-
-        document.getElementById('form-venta').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const clienteId = document.getElementById('venta-cliente').value;
-            const esCxC = document.getElementById('venta-cxc').checked;
-            const numFactura = document.getElementById('venta-factura').value;
-            const numControl = document.getElementById('venta-control').value;
-            
-            const tasaUsada = parseFloat(document.getElementById('input-tasa-venta').value) || 1;
-            const fechaFactura = document.getElementById('venta-fecha').value;
-
-            if (!clienteId || carritoVentas.length === 0) return alert('Seleccione cliente y agregue productos.');
-
-            const btn = document.querySelector('#form-venta button[type="submit"]');
-            const originalHTML = btn.innerHTML;
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Procesando...';
-            btn.disabled = true;
-
-            const montoExento = carritoVentas.reduce((s, i) => i.llevaIVA === false ? s + (i.precio * i.cantidad) : s, 0);
-            const descuentoVenta = parseFloat(document.getElementById('calc-descuento-venta').value) || 0;
-
-            const payload = { 
-                cliente_id: clienteId, 
-                impuestos: impuestosVenta, 
-                monto_exento: montoExento,
-                descuento: descuentoVenta,
-                total: totalFacturaVenta, 
-                retencion_islr: islrVenta, 
-                cxc: esCxC, 
-                factura: numFactura, 
-                control: numControl,
-                tasa: tasaUsada,
-                fecha: fechaFactura
-            };
-
-            const { data, error } = await db.from('ventas').insert([payload]).select();
-            
-            if (error) { 
-                btn.innerHTML = originalHTML; btn.disabled = false; 
-                return alert('Error. Detalle: ' + error.message); 
-            }
-
-            if (data && data.length > 0) {
-                const ventaId = data[0].id;
-                const detalles = carritoVentas.map(i => ({ venta_id: ventaId, producto_id: i.id, cantidad: i.cantidad, precio_unitario: i.precio }));
-                await db.from('venta_detalles').insert(detalles);
-            }
-
-            await db.from('datos').update({ ult_fact: numFactura, ult_control: numControl }).eq('id', datosGenerales.id || 1);
-            datosGenerales.ult_fact = numFactura;
-            datosGenerales.ult_control = numControl;
-            actualizarVistasDatosLocales();
-
-            carritoVentas = [];
-            renderCarritoVentas();
-            document.getElementById('form-venta').reset();
-            document.getElementById('calc-impuesto-porcentaje-venta').value = "16";
-            document.getElementById('calc-descuento-venta').value = "0";
-            document.getElementById('venta-fecha').value = new Date().toISOString().split('T')[0];
-            document.getElementById('venta-cxc').checked = true;
-
-            cargarHistorialVentas();
-            cargarCxC();
-            generarCorrelativosVenta(); 
-            cargarDashboard();
-            cargarResumenIVA();
-
-            if(document.getElementById('islr') && !document.getElementById('islr').classList.contains('hidden')) {
-                cargarProyeccionISLR();
-            }
-
-            btn.innerHTML = originalHTML;
-            btn.disabled = false;
-        });
-
-        function imprimirVenta(idFactura) {
-            window.open(`factura_pdf.html?id=${idFactura}`, '_blank');
+            selectFiltro.value = valSeleccionado;
         }
 
         async function cargarHistorialVentas() {
             const { data: cliData } = await db.from('clientes').select('id, descripcion');
-            const mapCli = {};
-            if(cliData) cliData.forEach(c => mapCli[c.id] = c.descripcion);
+            mapClientesGlobal = {};
+            if(cliData) cliData.forEach(c => mapClientesGlobal[c.id] = c.descripcion);
+            actualizarSelectFiltroClientes();
 
             const { data, error } = await db.from('ventas').select('*').order('fecha', { ascending: false });
             if (error) return console.error(error);
+            ventasHistorialCache = data || [];
+            aplicarFiltrosVentas();
+        }
+
+        function aplicarFiltrosVentas() {
+            const clienteFiltro = document.getElementById('filtro-venta-cliente').value;
+            const fechaDesde = document.getElementById('filtro-venta-desde').value;
+            const fechaHasta = document.getElementById('filtro-venta-hasta').value;
+
+            let filtradas = ventasHistorialCache.filter(v => {
+                if (clienteFiltro && v.cliente_id !== clienteFiltro) return false;
+
+                const fechaStr = (v.fecha || v.created_at || '').split('T')[0];
+                if (fechaDesde && fechaStr < fechaDesde) return false;
+                if (fechaHasta && fechaStr > fechaHasta) return false;
+
+                return true;
+            });
+
+            renderTablaVentas(filtradas);
+        }
+
+        function limpiarFiltrosVentas() {
+            document.getElementById('filtro-venta-cliente').value = '';
+            document.getElementById('filtro-venta-desde').value = '';
+            document.getElementById('filtro-venta-hasta').value = '';
+            aplicarFiltrosVentas();
+        }
+
+        function renderTablaVentas(lista) {
             const tbody = document.getElementById('tabla-ventas');
             tbody.innerHTML = '';
-            data.forEach(v => {
-                const nombreCliente = mapCli[v.cliente_id] || 'Desconocido';
+
+            let totalBsFiltro = 0;
+            let totalUsdFiltro = 0;
+
+            if (lista.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" class="p-8 text-center text-slate-500 italic text-xs">No se encontraron ventas con los filtros aplicados.</td></tr>`;
+                document.getElementById('ventas-resumen-filtro').innerText = '0 facturas | Bs. 0,00 | $0,00';
+                return;
+            }
+
+            lista.forEach(v => {
+                const nombreCliente = mapClientesGlobal[v.cliente_id] || 'Desconocido';
                 const estadoCxC = v.cxc 
                     ? '<span class="bg-amber-500/10 text-amber-400 border border-amber-500/20 px-2 py-1 rounded-md text-[10px] font-bold">Pendiente (CxC)</span>' 
                     : '<span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-1 rounded-md text-[10px] font-bold">Pagado</span>';
                 
                 const tasaReal = v.tasa && v.tasa > 0 ? v.tasa : 1;
-                const totalUsd = v.total / tasaReal;
+                const totalBs = parseFloat(v.total) || 0;
+                const totalUsd = totalBs / tasaReal;
+
+                totalBsFiltro += totalBs;
+                totalUsdFiltro += totalUsd;
 
                 tbody.innerHTML += `
                     <tr class="hover:bg-slate-800/50 transition border-b border-slate-800">
@@ -3787,7 +3394,7 @@
                         <td class="p-4 font-mono font-medium text-slate-300">${v.factura || '-'}</td>
                         <td class="p-4 font-mono font-medium text-emerald-400">${v.control || '-'}</td>
                         <td class="p-4 font-medium text-white">${nombreCliente}</td>
-                        <td class="p-4 font-mono font-bold text-slate-300 text-[11px]">Bs. ${formatNumber(v.total)}</td>
+                        <td class="p-4 font-mono font-bold text-slate-300 text-[11px]">Bs. ${formatNumber(totalBs)}</td>
                         <td class="p-4 font-mono font-bold text-sky-400 text-[11px]">$${formatNumber(totalUsd)}</td>
                         <td class="p-4">${estadoCxC}</td>
                         <td class="p-4 text-right space-x-2">
@@ -3796,245 +3403,18 @@
                         </td>
                     </tr>`;
             });
-        }
 
-        async function eliminarVenta(id) {
-            if (!confirm('¿Eliminar venta?')) return;
-            const { error } = await db.from('ventas').delete().eq('id', id);
-            if (error) alert('Error: ' + error.message);
-            else {
-                cargarHistorialVentas();
-                cargarCxC();
-                cargarDashboard();
-                cargarResumenIVA();
-            }
+            document.getElementById('ventas-resumen-filtro').innerText = 
+                `${lista.length} facturas | Bs. ${formatNumber(totalBsFiltro)} | $${formatNumber(totalUsdFiltro)}`;
         }
 
         // ==========================================
-        // CUENTAS POR COBRAR (CxC)
+        // INICIALIZACIÓN
         // ==========================================
-        async function cargarCxC() {
-            try {
-                const { data: clientesData } = await db.from('clientes').select('id, descripcion, contribuyente_especial');
-                const mapClientes = {};
-                if(clientesData) clientesData.forEach(c => mapClientes[c.id] = c);
-
-                const [resVentas, resNotas] = await Promise.all([
-                    db.from('ventas').select('*').eq('cxc', true),
-                    db.from('notas_entrega').select('*').eq('cxc', true)
-                ]);
-                
-                let listadoMixto = [];
-
-                if(resVentas.data) {
-                    resVentas.data.forEach(v => {
-                        const cliInfo = mapClientes[v.cliente_id] || {};
-                        const isEspecial = cliInfo.contribuyente_especial || false;
-                        const ivaTotal = parseFloat(v.impuestos) || 0;
-                        
-                        const retIva = isEspecial ? (ivaTotal * 0.75) : 0;
-                        const ivaRecibido = ivaTotal - retIva;
-                        const islrRetenido = parseFloat(v.retencion_islr) || 0;
-                        
-                        const baseNetaCobrar = v.total - retIva - islrRetenido;
-                        const porCobrarUsd = baseNetaCobrar / (datosGenerales.tasa || 1); 
-
-                        listadoMixto.push({
-                            id: v.id, tipo: 'venta',
-                            fecha: v.fecha || v.created_at,
-                            cliente: cliInfo.descripcion || 'Desconocido',
-                            baseNetaBs: baseNetaCobrar,
-                            ivaRecibidoBs: ivaRecibido,
-                            cobrarUsd: porCobrarUsd
-                        });
-                    });
-                }
-
-                if(resNotas.data) {
-                    resNotas.data.forEach(n => {
-                        const cliInfo = mapClientes[n.cliente_id] || {};
-                        listadoMixto.push({
-                            id: n.id, tipo: 'nota',
-                            fecha: n.fecha || n.created_at,
-                            cliente: cliInfo.descripcion || 'Desconocido',
-                            baseNetaBs: null,
-                            ivaRecibidoBs: null,
-                            cobrarUsd: n.total_usd
-                        });
-                    });
-                }
-
-                listadoMixto.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
-
-                const tbody = document.getElementById('tabla-cxc');
-                tbody.innerHTML = '';
-                
-                let granTotalUsd = 0;
-
-                if(listadoMixto.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-slate-500 italic text-xs">No hay cuentas por cobrar pendientes.</td></tr>`;
-                    document.getElementById('total-cxc-usd').innerText = `$0.00`;
-                    return;
-                }
-
-                listadoMixto.forEach(item => {
-                    granTotalUsd += item.cobrarUsd;
-                    
-                    const badgeTipo = item.tipo === 'venta' 
-                        ? '<span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded text-[10px] font-bold">Venta</span>'
-                        : '<span class="bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 px-2 py-0.5 rounded text-[10px] font-bold">Nota</span>';
-
-                    const valBaseNeta = item.baseNetaBs !== null ? `Bs. ${formatNumber(item.baseNetaBs)}` : '-';
-                    const valIvaRecibido = item.ivaRecibidoBs !== null ? `Bs. ${formatNumber(item.ivaRecibidoBs)}` : '-';
-
-                    tbody.innerHTML += `
-                        <tr class="hover:bg-slate-800/50 transition border-b border-slate-800">
-                            <td class="p-4">${badgeTipo}</td>
-                            <td class="p-4 text-slate-400 font-mono text-[11px]">${new Date(item.fecha).toLocaleDateString('es-VE')}</td>
-                            <td class="p-4 font-medium text-white">${item.cliente}</td>
-                            <td class="p-4 font-mono font-bold text-amber-400 text-[11px]">${valBaseNeta}</td>
-                            <td class="p-4 font-mono font-bold text-violet-400 text-[11px]">${valIvaRecibido}</td>
-                            <td class="p-4 font-mono font-bold text-sky-400 text-[11px]">$${formatNumber(item.cobrarUsd)}</td>
-                            <td class="p-4 text-right">
-                                <button onclick="marcarComoPagado('${item.id}', '${item.tipo}')" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded-lg text-[10px] font-bold transition shadow-lg shadow-emerald-600/20 flex items-center justify-end gap-1 float-right">
-                                    <i class="fa-solid fa-check"></i> Marcar Pagado
-                                </button>
-                            </td>
-                        </tr>`;
-                });
-                
-                document.getElementById('total-cxc-usd').innerText = `$${formatNumber(granTotalUsd)}`;
-
-            } catch (err) { console.error("Error en CxC", err); }
-        }
-
-        async function cargarCaja() {
-            const year = new Date().getFullYear();
-            document.getElementById('caja-year').innerText = year;
-
-            let dataMeses = Array.from({length: 12}, () => ({ 
-                ventas: 0, comprasTerceros: 0, ivaPagar: 0, facturasPropias: 0 
-            }));
-
-            try {
-                const { data: ventas } = await db.from('ventas')
-                    .select('fecha, total, impuestos, monto_exento, cliente_id')
-                    .gte('fecha', `${year}-01-01`).lte('fecha', `${year}-12-31`);
-
-                const { data: cliData } = await db.from('clientes').select('id, contribuyente_especial');
-                const mapEspecial = {};
-                if(cliData) cliData.forEach(c => mapEspecial[c.id] = c.contribuyente_especial);
-
-                if (ventas) {
-                    ventas.forEach(v => {
-                        if (!v.fecha) return;
-                        const fechaObj = new Date(v.fecha);
-                        if (isNaN(fechaObj)) return;
-                        const mes = fechaObj.getMonth();
-                        if (mes < 0 || mes > 11) return;
-
-                        const total = parseFloat(v.total) || 0;
-                        dataMeses[mes].ventas += total;
-
-                        const iva = parseFloat(v.impuestos) || 0;
-                        const isEspecial = mapEspecial[v.cliente_id] || false;
-                        const ret = isEspecial ? (iva * 0.75) : 0;
-                        dataMeses[mes].ivaPagar += (iva - ret);
-                    });
-                }
-
-                const { data: compras } = await db.from('compras')
-                    .select('fecha, subtotal, monto_exento, impuestos, es_factura_personal')
-                    .gte('fecha', `${year}-01-01`).lte('fecha', `${year}-12-31`);
-
-                if (compras) {
-                    compras.forEach(c => {
-                        if (!c.fecha) return;
-                        const fechaObj = new Date(c.fecha);
-                        if (isNaN(fechaObj)) return;
-                        const mes = fechaObj.getMonth();
-                        if (mes < 0 || mes > 11) return;
-
-                        const sub = parseFloat(c.subtotal) || 0;
-                        const exento = parseFloat(c.monto_exento) || 0;
-                        const iva = parseFloat(c.impuestos) || 0;
-                        const totalCompra = sub + exento + iva;
-
-                        if (c.es_factura_personal) {
-                            dataMeses[mes].facturasPropias += totalCompra;
-                        } else {
-                            dataMeses[mes].comprasTerceros += totalCompra;
-                            dataMeses[mes].ivaPagar -= iva;
-                        }
-                    });
-                }
-            } catch (err) { console.warn("Caja Error:", err); }
-
-            const tbody = document.getElementById('tabla-caja');
-            tbody.innerHTML = '';
-
-            let totalVentas = 0, totalFlujo = 0, totalPersonal = 0, saldoAcumulado = 0;
-
-            dataMeses.forEach((m, i) => {
-                const flujoDisponible = m.ventas - m.comprasTerceros - Math.max(0, m.ivaPagar);
-                const saldoMes = flujoDisponible - m.facturasPropias;
-                saldoAcumulado += saldoMes;
-
-                totalVentas += m.ventas;
-                totalFlujo += flujoDisponible;
-                totalPersonal += m.facturasPropias;
-
-                tbody.innerHTML += `
-                    <tr class="hover:bg-slate-800/30">
-                        <td class="p-3 font-bold text-white text-left">${nombresMeses[i]}</td>
-                        <td class="p-3">${formatNumber(m.ventas)}</td>
-                        <td class="p-3">${formatNumber(m.comprasTerceros)}</td>
-                        <td class="p-3">${formatNumber(Math.max(0, m.ivaPagar))}</td>
-                        <td class="p-3 text-lime-400 font-bold">${formatNumber(flujoDisponible)}</td>
-                        <td class="p-3 text-cyan-400">${formatNumber(m.facturasPropias)}</td>
-                        <td class="p-3 ${saldoMes >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${formatNumber(saldoMes)}</td>
-                        <td class="p-3 text-amber-400 font-bold">${formatNumber(saldoAcumulado)}</td>
-                    </tr>`;
-            });
-
-            tbody.innerHTML += `
-                <tr class="bg-lime-900/40 font-bold text-white border-t-2 border-lime-700/50">
-                    <td class="p-3 text-left text-lime-400">TOTAL ${year}</td>
-                    <td class="p-3">${formatNumber(totalVentas)}</td>
-                    <td class="p-3">-</td>
-                    <td class="p-3">-</td>
-                    <td class="p-3 text-lime-300">${formatNumber(totalFlujo)}</td>
-                    <td class="p-3 text-cyan-300">${formatNumber(totalPersonal)}</td>
-                    <td class="p-3">-</td>
-                    <td class="p-3 text-amber-300">${formatNumber(saldoAcumulado)}</td>
-                </tr>`;
-
-            document.getElementById('caja-total-ventas').innerText = `Bs. ${formatNumber(totalVentas)}`;
-            document.getElementById('caja-total-flujo').innerText = `Bs. ${formatNumber(totalFlujo)}`;
-            document.getElementById('caja-total-personal').innerText = `Bs. ${formatNumber(totalPersonal)}`;
-            document.getElementById('caja-total-saldo').innerText = `Bs. ${formatNumber(saldoAcumulado)}`;
-        }
-
-        async function marcarComoPagado(id, tipo) {
-            if (!confirm('¿Desea registrar esta cuenta como pagada?')) return;
-            const tabla = tipo === 'venta' ? 'ventas' : 'notas_entrega';
-            const { error } = await db.from(tabla).update({ cxc: false }).eq('id', id);
-            
-            if (error) alert('Error al actualizar: ' + error.message);
-            else {
-                cargarCxC();
-                if(tipo === 'venta') cargarHistorialVentas();
-                if(tipo === 'nota') cargarHistorialNotas();
-            }
-        }
-
         window.onload = async () => {
             verificarSesion();
             const uGuardado = sessionStorage.getItem('das_user');
-            if (uGuardado) {
-                const lbl = document.getElementById('label-usuario-activo');
-                if (lbl) lbl.innerText = uGuardado;
-            }
+            if (uGuardado) document.getElementById('label-usuario-activo').innerText = uGuardado;
             await cargarDatosGenerales(); 
             mostrarModulo('dashboard'); 
             obtenerTasaBCV(true); 
