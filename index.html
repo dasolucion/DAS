@@ -236,6 +236,25 @@
                     </h3>
                     <div class="h-64"><canvas id="graficaTopProductos"></canvas></div>
                 </div>
+                                <!-- NUEVO BLOQUE: PRÓXIMOS COMPROMISOS EN DASHBOARD -->
+                <div class="bg-slate-900 border border-fuchsia-900/50 rounded-2xl overflow-hidden shadow-xl">
+                    <h3 class="text-sm font-bold p-5 border-b border-slate-800 text-white flex items-center gap-2">
+                        <i class="fa-solid fa-list-check text-fuchsia-400"></i> Próximos Compromisos y Cobros
+                    </h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse text-xs">
+                            <thead class="bg-slate-950 border-b border-slate-800 text-slate-400 uppercase tracking-wider text-[10px]">
+                                <tr>
+                                    <th class="p-4 font-medium">Vencimiento</th>
+                                    <th class="p-4 font-medium">Cliente</th>
+                                    <th class="p-4 font-medium">Tipo</th>
+                                    <th class="p-4 font-medium">Descripción</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabla-dashboard-compromisos" class="divide-y border-slate-800"></tbody>
+                        </table>
+                    </div>
+                </div>
             </section>
 
             <!-- COMPROMISOS / TAREAS -->
@@ -1556,6 +1575,7 @@
                 const { data, error } = await db.from('datos').select('*').limit(1);
                 if (data && data.length > 0) {
                     datosGenerales = data[0];
+                    
                     if (datosGenerales.valor_ut === null || datosGenerales.valor_ut === undefined) datosGenerales.valor_ut = 43;
                     if (!datosGenerales.reservas_mensuales) datosGenerales.reservas_mensuales = {};
                     if (!datosGenerales.adelantos_dividendos) datosGenerales.adelantos_dividendos = {};
@@ -3240,6 +3260,19 @@
                     nota_id: notaId, producto_id: i.id, cantidad: i.cantidad, precio_unitario: i.precio 
                 }));
                 await db.from('nota_entrega_detalles').insert(detalles);
+                                // CREAR COMPROMISO DE COBRO AUTOMÁTICO
+                if (esCxC) {
+                    const fechaVenc = new Date(fechaFactura);
+                    fechaVenc.setDate(fechaVenc.getDate() + 7); // Sumar 7 días
+                    
+                    await db.from('tareas').insert([{
+                        cliente_id: clienteId,
+                        tipo: 'Cobro',
+                        descripcion: `Cobrar Factura Nº ${numFactura}`,
+                        fecha_vencimiento: fechaVenc.toISOString().split('T')[0],
+                        estado: 'Pendiente'
+                    }]);
+                }
             }
 
             carritoNotas = [];
@@ -3612,6 +3645,19 @@
                 const ventaId = data[0].id;
                 const detalles = carritoVentas.map(i => ({ venta_id: ventaId, producto_id: i.id, cantidad: i.cantidad, precio_unitario: i.precio }));
                 await db.from('venta_detalles').insert(detalles);
+                                // CREAR COMPROMISO DE COBRO AUTOMÁTICO
+                if (esCxC) {
+                    const fechaVenc = new Date(fechaFactura);
+                    fechaVenc.setDate(fechaVenc.getDate() + 7); // Sumar 7 días
+                    
+                    await db.from('tareas').insert([{
+                        cliente_id: clienteId,
+                        tipo: 'Cobro',
+                        descripcion: `Cobrar Factura Nº ${numFactura}`,
+                        fecha_vencimiento: fechaVenc.toISOString().split('T')[0],
+                        estado: 'Pendiente'
+                    }]);
+                }
             }
 
             await db.from('datos').update({ ult_fact: numFactura, ult_control: numControl }).eq('id', datosGenerales.id || 1);
@@ -3857,12 +3903,29 @@
 
         async function marcarComoPagado(id, tipo) {
             if (!confirm('¿Desea registrar esta cuenta como pagada?')) return;
+            
             const tabla = tipo === 'venta' ? 'ventas' : 'notas_entrega';
+            
+            // 1. Obtener datos de la factura para buscar su tarea
+            const { data: doc } = await db.from(tabla).select('factura, cliente_id').eq('id', id).single();
+            
+            // 2. Marcar como pagada
             const { error } = await db.from(tabla).update({ cxc: false }).eq('id', id);
+            
+            // 3. Completar la tarea de cobro asociada
+            if (!error && doc && doc.factura) {
+                await db.from('tareas')
+                    .update({ estado: 'Completada' })
+                    .eq('cliente_id', doc.cliente_id)
+                    .eq('tipo', 'Cobro')
+                    .like('descripcion', `%${doc.factura}%`);
+            }
             
             if (error) alert('Error al actualizar: ' + error.message);
             else {
                 cargarCxC();
+                cargarDashboard();
+                cargarCompromisos();
                 if(tipo === 'venta') cargarHistorialVentas();
                 if(tipo === 'nota') cargarHistorialNotas();
             }
@@ -4054,6 +4117,71 @@ async function eliminarTarea(id) {
     if (error) alert('Error: ' + error.message);
     else cargarCompromisos();
 }
+
+                // ==========================================
+        // DASHBOARD (GRÁFICAS Y COMPROMISOS)
+        // ==========================================
+        async function cargarDashboard() {
+            document.getElementById('dash-year').innerText = new Date().getFullYear();
+            
+            // 1. Cargar Gráficas (Ventas vs Compras)
+            try {
+                const { data: ventas } = await db.from('ventas').select('total, fecha');
+                const { data: compras } = await db.from('compras').select('total, fecha');
+                
+                // Lógica simplificada para gráficas (puedes expandirla luego)
+                const ctxVentas = document.getElementById('graficaVentas3Meses').getContext('2d');
+                const ctxClientes = document.getElementById('graficaTopClientes').getContext('2d');
+                const ctxProductos = document.getElementById('graficaTopProductos').getContext('2d');
+
+                if (chartVentas3Meses) chartVentas3Meses.destroy();
+                if (chartTopClientes) chartTopClientes.destroy();
+                if (chartTopProductos) chartTopProductos.destroy();
+
+                chartVentas3Meses = new Chart(ctxVentas, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Mes Actual'],
+                        datasets: [
+                            { label: 'Ventas ($)', data: [ventas?.reduce((s, v) => s + (v.total / (datosGenerales.tasa || 1)), 0) || 0], backgroundColor: '#10b981' },
+                            { label: 'Compras ($)', data: [compras?.reduce((s, c) => s + (c.total / (datosGenerales.tasa || 1)), 0) || 0], backgroundColor: '#f97316' }
+                        ]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false }
+                });
+                
+                // (Las otras gráficas se pueden mantener igual o dejar un placeholder por ahora)
+            } catch (e) { console.error("Error gráficas", e); }
+
+            // 2. Cargar Próximos Compromisos en la tabla del Dashboard
+            const { data: tareas, error } = await db.from('tareas')
+                .select('*, clientes(descripcion)')
+                .neq('estado', 'Completada')
+                .order('fecha_vencimiento', { ascending: true })
+                .limit(10);
+
+            if (error) return console.error(error);
+            
+            const tbody = document.getElementById('tabla-dashboard-compromisos');
+            tbody.innerHTML = '';
+            
+            if (!tareas || tareas.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-slate-500 italic">No hay compromisos pendientes.</td></tr>';
+                return;
+            }
+
+            tareas.forEach(t => {
+                const fecha = new Date(t.fecha_vencimiento + 'T00:00:00').toLocaleDateString('es-VE');
+                const cliente = t.clientes ? t.clientes.descripcion : 'General';
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-800/50 transition border-b border-slate-800">
+                        <td class="p-4 font-mono text-fuchsia-400 font-bold">${fecha}</td>
+                        <td class="p-4 text-white">${cliente}</td>
+                        <td class="p-4"><span class="bg-slate-800 px-2 py-1 rounded text-[10px]">${t.tipo}</span></td>
+                        <td class="p-4 text-slate-300">${t.descripcion}</td>
+                    </tr>`;
+            });
+        }
         
         // ==========================================
         // INICIALIZACIÓN GENERAL
