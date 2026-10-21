@@ -3293,6 +3293,81 @@
             btn.disabled = false;
         });
 
+                // ==========================================
+        // HISTORIAL DE NOTAS DE ENTREGA (Función Faltante)
+        // ==========================================
+        async function cargarHistorialNotas() {
+            try {
+                // 1. Obtener clientes y notas
+                const { data: cliData } = await db.from('clientes').select('id, descripcion');
+                const mapCli = {};
+                if(cliData) cliData.forEach(c => mapCli[c.id] = c.descripcion);
+
+                const { data: notas, error } = await db.from('notas_entrega').select('*').order('fecha', { ascending: false });
+                if (error) throw error;
+
+                // 2. Obtener detalles y productos para saber qué se entregó
+                const notaIds = notas.map(n => n.id);
+                let detalles = [];
+                let prods = [];
+                if (notaIds.length > 0) {
+                    const { data: detData } = await db.from('nota_entrega_detalles').select('*').in('nota_id', notaIds);
+                    detalles = detData || [];
+                    const { data: prodData } = await db.from('productos').select('id, descripcion');
+                    prods = prodData || [];
+                }
+
+                const mapProds = {};
+                if(prods) prods.forEach(p => mapProds[p.id] = p.descripcion);
+
+                const tbody = document.getElementById('tabla-notas');
+                tbody.innerHTML = '';
+
+                if (notas.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-slate-500 italic text-xs">No hay notas de entrega registradas.</td></tr>`;
+                    return;
+                }
+
+                notas.forEach(n => {
+                    const nombreCliente = mapCli[n.cliente_id] || 'Desconocido';
+                    
+                    // Armar el resumen de artículos
+                    const misDetalles = detalles.filter(d => d.nota_id === n.id);
+                    let detalleTexto = misDetalles.map(d => `${d.cantidad}x ${mapProds[d.producto_id] || 'Ítem'}`).join('<br>');
+                    if(!detalleTexto) detalleTexto = '-';
+
+                    const estadoCxC = n.cxc 
+                        ? '<span class="bg-amber-500/10 text-amber-400 border border-amber-500/20 px-2 py-1 rounded-md text-[10px] font-bold">Pendiente (CxC)</span>' 
+                        : '<span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-1 rounded-md text-[10px] font-bold">Pagado</span>';
+
+                    tbody.innerHTML += `
+                        <tr class="hover:bg-slate-800/50 transition border-b border-slate-800">
+                            <td class="p-4 text-slate-400 font-mono text-[11px]">${new Date(n.fecha || n.created_at).toLocaleDateString()}</td>
+                            <td class="p-4 font-medium text-white">${nombreCliente}</td>
+                            <td class="p-4 text-slate-300 text-[11px] leading-relaxed">${detalleTexto}</td>
+                            <td class="p-4 font-mono font-bold text-cyan-400 text-[11px]">$${formatNumber(n.total_usd)}</td>
+                            <td class="p-4">${estadoCxC}</td>
+                            <td class="p-4 text-right space-x-2">
+                                <button onclick="imprimirNota('${n.id}')" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 hover:text-white px-2.5 py-1.5 rounded-lg text-[10px] font-bold transition shadow-sm" title="Imprimir"><i class="fa-solid fa-print"></i></button>
+                                <button onclick="eliminarNota('${n.id}')" class="text-rose-400 hover:text-rose-300 font-medium px-2"><i class="fa-solid fa-trash"></i></button>
+                            </td>
+                        </tr>`;
+                });
+            } catch (err) {
+                console.error("Error cargando notas:", err);
+            }
+        }
+
+        async function eliminarNota(id) {
+            if (!confirm('¿Eliminar esta nota de entrega?')) return;
+            const { error } = await db.from('notas_entrega').delete().eq('id', id);
+            if (error) alert('Error: ' + error.message);
+            else {
+                cargarHistorialNotas();
+                cargarCxC();
+            }
+        }
+
         // ==========================================
         // COMPRAS
         // ==========================================
@@ -4130,69 +4205,159 @@ async function eliminarTarea(id) {
     else cargarCompromisos();
 }
 
-                // ==========================================
+        // ==========================================
         // DASHBOARD (GRÁFICAS Y COMPROMISOS)
         // ==========================================
         async function cargarDashboard() {
             document.getElementById('dash-year').innerText = new Date().getFullYear();
             
-            // 1. Cargar Gráficas (Ventas vs Compras)
             try {
-                const { data: ventas } = await db.from('ventas').select('total, fecha');
-                const { data: compras } = await db.from('compras').select('total, fecha');
+                // 1. Gráfica Ventas vs Compras (Últimos 3 meses)
+                const hoy = new Date();
+                const hace3Meses = new Date();
+                hace3Meses.setMonth(hoy.getMonth() - 2);
+                hace3Meses.setDate(1); // Desde el día 1 de hace 3 meses
                 
-                // Lógica simplificada para gráficas (puedes expandirla luego)
+                const fechaLimite = hace3Meses.toISOString().split('T')[0];
+
+                const { data: ventas } = await db.from('ventas').select('total, fecha, tasa').gte('fecha', fechaLimite);
+                const { data: compras } = await db.from('compras').select('total, fecha').gte('fecha', fechaLimite);
+
+                const nombresMesesCortos = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+                let labelsMeses = [];
+                let dataVentas = [0, 0, 0];
+                let dataCompras = [0, 0, 0];
+
+                // Calcular los últimos 3 meses
+                for (let i = 2; i >= 0; i--) {
+                    const d = new Date(hoy.getFullYear(), hoy.getMonth() - i, 1);
+                    labelsMeses.push(nombresMesesCortos[d.getMonth()]);
+                }
+
+                // Agrupar ventas
+                if (ventas) {
+                    ventas.forEach(v => {
+                        if (!v.fecha) return;
+                        const fechaV = new Date(v.fecha);
+                        const mesDiff = (hoy.getMonth() - fechaV.getMonth()) + (12 * (hoy.getFullYear() - fechaV.getFullYear()));
+                        if (mesDiff >= 0 && mesDiff <= 2) {
+                            const tasa = v.tasa || datosGenerales.tasa || 1;
+                            dataVentas[2 - mesDiff] += (parseFloat(v.total) / tasa); // Convertir a USD
+                        }
+                    });
+                }
+
+                // Agrupar compras
+                if (compras) {
+                    compras.forEach(c => {
+                        if (!c.fecha) return;
+                        const fechaC = new Date(c.fecha);
+                        const mesDiff = (hoy.getMonth() - fechaC.getMonth()) + (12 * (hoy.getFullYear() - fechaC.getFullYear()));
+                        if (mesDiff >= 0 && mesDiff <= 2) {
+                            dataCompras[2 - mesDiff] += parseFloat(c.total); // Asumiendo que compras se guardan en Bs o ajustando si es USD
+                        }
+                    });
+                }
+
                 const ctxVentas = document.getElementById('graficaVentas3Meses').getContext('2d');
-                const ctxClientes = document.getElementById('graficaTopClientes').getContext('2d');
-                const ctxProductos = document.getElementById('graficaTopProductos').getContext('2d');
-
                 if (chartVentas3Meses) chartVentas3Meses.destroy();
-                if (chartTopClientes) chartTopClientes.destroy();
-                if (chartTopProductos) chartTopProductos.destroy();
-
                 chartVentas3Meses = new Chart(ctxVentas, {
                     type: 'bar',
                     data: {
-                        labels: ['Mes Actual'],
+                        labels: labelsMeses,
                         datasets: [
-                            { label: 'Ventas ($)', data: [ventas?.reduce((s, v) => s + (v.total / (datosGenerales.tasa || 1)), 0) || 0], backgroundColor: '#10b981' },
-                            { label: 'Compras ($)', data: [compras?.reduce((s, c) => s + (c.total / (datosGenerales.tasa || 1)), 0) || 0], backgroundColor: '#f97316' }
+                            { label: 'Ventas ($)', data: dataVentas, backgroundColor: '#10b981' },
+                            { label: 'Compras (Bs)', data: dataCompras, backgroundColor: '#f97316' }
                         ]
                     },
                     options: { responsive: true, maintainAspectRatio: false }
                 });
-                
-                // (Las otras gráficas se pueden mantener igual o dejar un placeholder por ahora)
+
+                // 2. Gráfica Top 5 Clientes
+                const { data: ventasTodas } = await db.from('ventas').select('cliente_id, total, tasa');
+                const { data: clientesData } = await db.from('clientes').select('id, descripcion');
+                const mapClientes = {};
+                if (clientesData) clientesData.forEach(c => mapClientes[c.id] = c.descripcion);
+
+                const ventasPorCliente = {};
+                if (ventasTodas) {
+                    ventasTodas.forEach(v => {
+                        const cliente = mapClientes[v.cliente_id] || 'Desconocido';
+                        const tasa = v.tasa || datosGenerales.tasa || 1;
+                        const montoUsd = parseFloat(v.total) / tasa;
+                        ventasPorCliente[cliente] = (ventasPorCliente[cliente] || 0) + montoUsd;
+                    });
+                }
+
+                const topClientes = Object.entries(ventasPorCliente).sort((a, b) => b[1] - a[1]).slice(0, 5);
+
+                const ctxClientes = document.getElementById('graficaTopClientes').getContext('2d');
+                if (chartTopClientes) chartTopClientes.destroy();
+                chartTopClientes = new Chart(ctxClientes, {
+                    type: 'bar', // Horizontal Bar se ve mejor para clientes
+                    data: {
+                        labels: topClientes.map(c => c[0]),
+                        datasets: [{ label: 'Total ($)', data: topClientes.map(c => c[1]), backgroundColor: '#0ea5e9' }]
+                    },
+                    options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false }
+                });
+
+                // 3. Gráfica Top 5 Productos
+                const { data: detallesVentas } = await db.from('venta_detalles').select('producto_id, cantidad, precio_unitario');
+                const { data: productosData } = await db.from('productos').select('id, descripcion');
+                const mapProductos = {};
+                if (productosData) productosData.forEach(p => mapProductos[p.id] = p.descripcion);
+
+                const ventasPorProducto = {};
+                if (detallesVentas) {
+                    detallesVentas.forEach(d => {
+                        const prod = mapProductos[d.producto_id] || 'Desconocido';
+                        const cant = parseFloat(d.cantidad) || 0;
+                        ventasPorProducto[prod] = (ventasPorProducto[prod] || 0) + cant;
+                    });
+                }
+
+                const topProductos = Object.entries(ventasPorProducto).sort((a, b) => b[1] - a[1]).slice(0, 5);
+
+                const ctxProductos = document.getElementById('graficaTopProductos').getContext('2d');
+                if (chartTopProductos) chartTopProductos.destroy();
+                chartTopProductos = new Chart(ctxProductos, {
+                    type: 'bar', // Horizontal
+                    data: {
+                        labels: topProductos.map(p => p[0]),
+                        datasets: [{ label: 'Cantidad Vendida', data: topProductos.map(p => p[1]), backgroundColor: '#8b5cf6' }]
+                    },
+                    options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false }
+                });
+
             } catch (e) { console.error("Error gráficas", e); }
 
-            // 2. Cargar Próximos Compromisos en la tabla del Dashboard
+            // 4. Próximos Compromisos en la tabla del Dashboard (Esto ya funcionaba bien)
             const { data: tareas, error } = await db.from('tareas')
                 .select('*, clientes(descripcion)')
                 .neq('estado', 'Completada')
                 .order('fecha_vencimiento', { ascending: true })
                 .limit(10);
 
-            if (error) return console.error(error);
-            
-            const tbody = document.getElementById('tabla-dashboard-compromisos');
-            tbody.innerHTML = '';
-            
-            if (!tareas || tareas.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-slate-500 italic">No hay compromisos pendientes.</td></tr>';
-                return;
+            if (!error) {
+                const tbody = document.getElementById('tabla-dashboard-compromisos');
+                tbody.innerHTML = '';
+                if (!tareas || tareas.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-slate-500 italic">No hay compromisos pendientes.</td></tr>';
+                    return;
+                }
+                tareas.forEach(t => {
+                    const fecha = new Date(t.fecha_vencimiento + 'T00:00:00').toLocaleDateString('es-VE');
+                    const cliente = t.clientes ? t.clientes.descripcion : 'General';
+                    tbody.innerHTML += `
+                        <tr class="hover:bg-slate-800/50 transition border-b border-slate-800">
+                            <td class="p-4 font-mono text-fuchsia-400 font-bold">${fecha}</td>
+                            <td class="p-4 text-white">${cliente}</td>
+                            <td class="p-4"><span class="bg-slate-800 px-2 py-1 rounded text-[10px]">${t.tipo}</span></td>
+                            <td class="p-4 text-slate-300">${t.descripcion}</td>
+                        </tr>`;
+                });
             }
-
-            tareas.forEach(t => {
-                const fecha = new Date(t.fecha_vencimiento + 'T00:00:00').toLocaleDateString('es-VE');
-                const cliente = t.clientes ? t.clientes.descripcion : 'General';
-                tbody.innerHTML += `
-                    <tr class="hover:bg-slate-800/50 transition border-b border-slate-800">
-                        <td class="p-4 font-mono text-fuchsia-400 font-bold">${fecha}</td>
-                        <td class="p-4 text-white">${cliente}</td>
-                        <td class="p-4"><span class="bg-slate-800 px-2 py-1 rounded text-[10px]">${t.tipo}</span></td>
-                        <td class="p-4 text-slate-300">${t.descripcion}</td>
-                    </tr>`;
-            });
         }
         
         // ==========================================
