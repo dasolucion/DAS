@@ -3254,26 +3254,27 @@
                 return alert('Error al guardar la nota: ' + error.message); 
             }
 
-            if (data && data.length > 0) {
-                const notaId = data[0].id;
-                const detalles = carritoNotas.map(i => ({ 
-                    nota_id: notaId, producto_id: i.id, cantidad: i.cantidad, precio_unitario: i.precio 
-                }));
-                await db.from('nota_entrega_detalles').insert(detalles);
-                                // CREAR COMPROMISO DE COBRO AUTOMÁTICO
-                if (esCxC) {
-                    const fechaVenc = new Date(fechaFactura);
-                    fechaVenc.setDate(fechaVenc.getDate() + 7); // Sumar 7 días
-                    
-                    await db.from('tareas').insert([{
-                        cliente_id: clienteId,
-                        tipo: 'Cobro',
-                        descripcion: `Cobrar Factura Nº ${numFactura}`,
-                        fecha_vencimiento: fechaVenc.toISOString().split('T')[0],
-                        estado: 'Pendiente'
-                    }]);
+                if (data && data.length > 0) {
+                    const notaId = data[0].id;
+                    const detalles = carritoNotas.map(i => ({ 
+                        nota_id: notaId, producto_id: i.id, cantidad: i.cantidad, precio_unitario: i.precio 
+                    }));
+                    await db.from('nota_entrega_detalles').insert(detalles);
+
+                    // CREAR COMPROMISO DE COBRO AUTOMÁTICO (Corregido)
+                    if (esCxC) {
+                        const fechaVenc = new Date();
+                        fechaVenc.setDate(fechaVenc.getDate() + 7); 
+                        
+                        await db.from('tareas').insert([{
+                            cliente_id: clienteId,
+                            tipo: 'Cobro',
+                            descripcion: `Cobrar Nota ID: ${notaId.substring(0,6).toUpperCase()}`, // Usamos el ID
+                            fecha_vencimiento: fechaVenc.toISOString().split('T')[0],
+                            estado: 'Pendiente'
+                        }]);
+                    }
                 }
-            }
 
             carritoNotas = [];
             renderCarritoNotas();
@@ -3906,19 +3907,26 @@
             
             const tabla = tipo === 'venta' ? 'ventas' : 'notas_entrega';
             
-            // 1. Obtener datos de la factura para buscar su tarea
+            // 1. Obtener datos del documento
             const { data: doc } = await db.from(tabla).select('factura, cliente_id').eq('id', id).single();
             
             // 2. Marcar como pagada
             const { error } = await db.from(tabla).update({ cxc: false }).eq('id', id);
             
-            // 3. Completar la tarea de cobro asociada
-            if (!error && doc && doc.factura) {
+            // 3. Completar la tarea de cobro asociada de forma inteligente
+            if (!error && doc) {
+                let descripcionBusqueda = '';
+                if (tipo === 'venta' && doc.factura) {
+                    descripcionBusqueda = `%${doc.factura}%`; // Busca por número de factura
+                } else {
+                    descripcionBusqueda = `%${id.substring(0,6).toUpperCase()}%`; // Busca por ID de nota
+                }
+
                 await db.from('tareas')
                     .update({ estado: 'Completada' })
                     .eq('cliente_id', doc.cliente_id)
                     .eq('tipo', 'Cobro')
-                    .like('descripcion', `%${doc.factura}%`);
+                    .like('descripcion', descripcionBusqueda);
             }
             
             if (error) alert('Error al actualizar: ' + error.message);
@@ -3930,7 +3938,6 @@
                 if(tipo === 'nota') cargarHistorialNotas();
             }
         }
-
         // ==========================================
         // CAJA & FLUJO DE EFECTIVO
         // ==========================================
