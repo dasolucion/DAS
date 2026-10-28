@@ -3237,7 +3237,7 @@
                     if(!detalleTexto) detalleTexto = '-';
 
                     const estadoCxC = n.cxc 
-                        ? '<span class="bg-amber-500/10 text-amber-400 border border-amber-500/20 px-2 py-1 rounded-md text-[10px] font-bold">Pendiente (CxC)</span>' 
+                        ? '<span class="bg-amber-500/10 text-amber-400 border border-amber-500/20 px-2 py-1 rounded-md text-[10px] font-bold">CxC</span>' 
                         : '<span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-1 rounded-md text-[10px] font-bold">Pagado</span>';
 
                     tbody.innerHTML += `
@@ -3880,7 +3880,7 @@
             lista.forEach(v => {
                 const nombreCliente = mapClientesGlobal[v.cliente_id] || 'Desconocido';
                 const estadoCxC = v.cxc 
-                    ? '<span class="bg-amber-500/10 text-amber-400 border border-amber-500/20 px-2 py-1 rounded-md text-[10px] font-bold">Pendiente (CxC)</span>' 
+                    ? '<span class="bg-amber-500/10 text-amber-400 border border-amber-500/20 px-2 py-1 rounded-md text-[10px] font-bold">CxC</span>' 
                     : '<span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-1 rounded-md text-[10px] font-bold">Pagado</span>';
                 
                 const tasaReal = v.tasa && v.tasa > 0 ? v.tasa : (datosGenerales.tasa || 1);
