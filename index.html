@@ -3916,7 +3916,7 @@ async function enviarAFacturacionDigital(ventaId, numFactura, numControl, fechaF
         };
 
         // 5. Enviar a nuestro Backend local
-        const respuestaBackend = await fetch('http://localhost:3000/api/emitir-factura', {
+        const respuestaBackend = await fetch('https://das-facturacion-backend.onrender.com/api/emitir-factura', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
