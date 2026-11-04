@@ -3729,6 +3729,20 @@
             const detalles = carritoVentas.map(i => ({ venta_id: ventaId, producto_id: i.id, cantidad: i.cantidad, precio_unitario: i.precio }));
             await db.from('venta_detalles').insert(detalles);
 
+                     // --- NUEVO: LLAMADO A FACTURACIÓN DIGITAL ---
+            // Necesitamos el objeto cliente
+            const clienteActual = { 
+                identificacion: clientesData.find(c => c.id === clienteId)?.identificacion,
+                descripcion: clientesData.find(c => c.id === clienteId)?.descripcion,
+                direccion: clientesData.find(c => c.id === clienteId)?.direccion,
+                telefono: clientesData.find(c => c.id === clienteId)?.telefono,
+                correo: clientesData.find(c => c.id === clienteId)?.correo
+            };
+            
+            // Opcional: Guardar el ID de transaccion de TFHKA en Supabase si te lo devuelve
+            await enviarAFacturacionDigital(ventaId, numFactura, numControl, fechaFactura, clienteActual, carritoVentas, {totalFacturaVenta, impuestosVenta}, tasaUsada, "02");
+            // --------------------------------------------
+
             if (esCxC) {
                 const fechaVenc = new Date(fechaFactura + 'T00:00:00');
                 fechaVenc.setDate(fechaVenc.getDate() + 7);
@@ -3778,6 +3792,155 @@
     }
 });
 
+// ==========================================
+// INTEGRACIÓN CON FACTURACIÓN DIGITAL (TFHKA)
+// ==========================================
+
+async function enviarAFacturacionDigital(ventaId, numFactura, numControl, fechaFactura, clienteData, carritoVentas, totales, tasaUsada, formaPago) {
+    try {
+        // 1. Formatear Fecha y Hora para la API
+        const [anio, mes, dia] = fechaFactura.split('-');
+        const fechaFormat = `${dia}/${mes}/${anio}`;
+        
+        const ahora = new Date();
+        let horas = ahora.getHours();
+        const minutos = String(ahora.getMinutes()).padStart(2, '0');
+        const segundos = String(ahora.getSeconds()).padStart(2, '0');
+        const ampm = horas >= 12 ? 'pm' : 'am';
+        horas = horas % 12;
+        horas = horas ? horas : 12;
+        const horaFormat = `${String(horas).padStart(2, '0')}:${minutos}:${segundos} ${ampm}`;
+
+        // 2. Construir Detalles de Items
+        const detallesItems = carritoVentas.map((item, index) => {
+            // TFHKA exige indicador 1 (Bien) o 2 (Servicio)
+            const indicador = item.tipo === 'Servicio' ? '2' : '1';
+            // Código de impuesto: G = 16%, R = 8%, A = 31%, E = Exento
+            const codigoImp = item.llevaIVA ? 'G' : 'E';
+            const tasaIVA = item.llevaIVA ? 16 : 0;
+            const valorIVA = item.llevaIVA ? (item.precio * item.cantidad * 0.16) : 0;
+            const valorTotalItem = (item.precio * item.cantidad) + valorIVA;
+
+            return {
+                "NumeroLinea": String(index + 1),
+                "CodigoCIIU": "9609", // Código genérico de servicios, puedes ajustarlo
+                "CodigoPLU": null,
+                "IndicadorBienoServicio": indicador,
+                "Descripcion": item.nombre,
+                "Cantidad": String(item.cantidad),
+                "UnidadMedida": "ZZ", // ZZ = Unidad genérica
+                "PrecioUnitario": item.precio.toFixed(2),
+                "PrecioItem": (item.precio * item.cantidad).toFixed(2),
+                "CodigoImpuesto": codigoImp,
+                "TasaIVA": tasaIVA.toFixed(2),
+                "ValorIVA": valorIVA.toFixed(2),
+                "ValorTotalItem": valorTotalItem.toFixed(2)
+            };
+        });
+
+        // 3. Construir Totales
+        const baseGravada = carritoVentas.filter(i => i.llevaIVA).reduce((s, i) => s + (i.precio * i.cantidad), 0);
+        const baseExenta = carritoVentas.filter(i => !i.llevaIVA).reduce((s, i) => s + (i.precio * i.cantidad), 0);
+        
+        const subtotal = baseGravada + baseExenta;
+        const totalIVA = baseGravada * 0.16;
+        const totalPagar = subtotal + totalIVA;
+
+        // Formatear los subtotales de impuestos requeridos por la API
+        const impuestosSubtotal = [];
+        if (baseGravada > 0) {
+            impuestosSubtotal.push({
+                "CodigoTotalImp": "G",
+                "AlicuotaImp": "16.00",
+                "BaseImponibleImp": baseGravada.toFixed(2),
+                "ValorTotalImp": totalIVA.toFixed(2)
+            });
+        }
+        if (baseExenta > 0) {
+            impuestosSubtotal.push({
+                "CodigoTotalImp": "E",
+                "AlicuotaImp": "0.00",
+                "BaseImponibleImp": baseExenta.toFixed(2),
+                "ValorTotalImp": "0.00"
+            });
+        }
+
+        // 4. Armar el JSON Maestro
+        const payload = {
+            "DocumentoElectronico": {
+                "Encabezado": {
+                    "IdentificacionDocumento": {
+                        "TipoDocumento": "01",
+                        "NumeroDocumento": numFactura,
+                        "Serie": "",
+                        "FechaEmision": fechaFormat,
+                        "FechaVencimiento": fechaFormat,
+                        "HoraEmision": horaFormat,
+                        "TipoDePago": "Inmediato",
+                        "Sucursal": "0001",
+                        "TipoDeVenta": "Interna",
+                        "Moneda": "BSD",
+                        "NumeroControl": numControl // TFHKA lo recibe y asigna en algunos casos
+                    },
+                    "Comprador": {
+                        "TipoIdentificacion": "J", // J si es RIF, V si es cédula
+                        "NumeroIdentificacion": clienteData.identificacion || "V-00000000",
+                        "RazonSocial": clienteData.descripcion || "Cliente General",
+                        "Direccion": clienteData.direccion || "Caracas",
+                        "Pais": "VE",
+                        "Telefono": [clienteData.telefono || "0000000000"],
+                        "Correo": [clienteData.correo || "correo@ejemplo.com"]
+                    },
+                    "Totales": {
+                        "NroItems": String(carritoVentas.length),
+                        "MontoGravadoTotal": baseGravada.toFixed(2),
+                        "MontoExentoTotal": baseExenta.toFixed(2),
+                        "Subtotal": subtotal.toFixed(2),
+                        "TotalIVA": totalIVA.toFixed(2),
+                        "MontoTotalConIVA": totalPagar.toFixed(2),
+                        "TotalAPagar": totalPagar.toFixed(2),
+                        "MontoEnLetras": "VALOR EN LETRAS AQUI",
+                        "ImpuestosSubtotal": impuestosSubtotal,
+                        "FormasPago": [
+                            {
+                                "Forma": formaPago || "02", // 02 = Pago Móvil
+                                "Monto": totalPagar.toFixed(2),
+                                "Moneda": "BSD",
+                                "TipoCambio": "0.0000"
+                            }
+                        ]
+                    }
+                },
+                "DetallesItems": detallesItems
+            }
+        };
+
+        // 5. Enviar a nuestro Backend local
+        const respuestaBackend = await fetch('http://localhost:3000/api/emitir-factura', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        const resultado = await respuestaBackend.json();
+
+        if (resultado.codigo === "200" || resultado.codigo === 200 || resultado.Resultado) {
+            console.log("✅ Factura digital emitida con éxito:", resultado);
+            alert(`Factura Digital Emitida Exitosamente.\nNúmero de Control TFHKA: ${resultado.Resultado?.numeroControl || numControl}`);
+            return true;
+        } else {
+            console.error("❌ Error al emitir factura digital:", resultado);
+            alert(`⚠️ Venta guardada localmente, pero FALLÓ en la nube fiscal:\n${resultado.mensaje || 'Error desconocido'}\n${JSON.stringify(resultado.validaciones || '')}`);
+            return false;
+        }
+
+    } catch (error) {
+        console.error("❌ Error crítico enviando a facturación digital:", error);
+        alert("La venta se guardó, pero hubo un error de conexión con el servidor fiscal.");
+        return false;
+    }
+}
+                
         function imprimirVenta(idFactura) {
             window.open(`factura_pdf.html?id=${idFactura}`, '_blank');
         }
