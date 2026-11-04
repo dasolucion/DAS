@@ -3829,8 +3829,32 @@
                             "IdentificacionDocumento": {
                                 "TipoDocumento": "01", "NumeroDocumento": numFactura, "Serie": "", "FechaEmision": fechaFormat, "FechaVencimiento": fechaFormat, "HoraEmision": horaFormat, "TipoDePago": "Inmediato", "Sucursal": "0001", "TipoDeVenta": "Interna", "Moneda": "BSD", "NumeroControl": numControl
                             },
+                                            // Lógica para separar el RIF correctamente
+                let tipoId = "V";
+                let numId = clienteData.identificacion || "00000000";
+                
+                if (numId.includes("-")) {
+                    const partes = numId.split("-");
+                    tipoId = partes[0].trim().toUpperCase();
+                    numId = partes[1].trim();
+                } else if (numId.length > 1 && isNaN(numId[0])) {
+                    // Por si viene como "J12345678" sin guion
+                    tipoId = numId[0].toUpperCase();
+                    numId = numId.substring(1);
+                }
+                // Limpiar el número por si tiene puntos o espacios (ej: 12.345.678)
+                numId = numId.replace(/\D/g, ''); 
+
+                // ... (más abajo, dentro del payload) ...
+
                             "Comprador": {
-                                "TipoIdentificacion": "J", "NumeroIdentificacion": clienteData.identificacion || "V-00000000", "RazonSocial": clienteData.descripcion || "Cliente General", "Direccion": clienteData.direccion || "Caracas", "Pais": "VE", "Telefono": [clienteData.telefono || "0000000000"], "Correo": [clienteData.correo || "correo@ejemplo.com"]
+                                "TipoIdentificacion": tipoId, 
+                                "NumeroIdentificacion": numId, 
+                                "RazonSocial": clienteData.descripcion || "Cliente General", 
+                                "Direccion": clienteData.direccion || "Caracas", 
+                                "Pais": "VE", 
+                                "Telefono": [clienteData.telefono || "0000000000"], 
+                                "Correo": [clienteData.correo || "correo@ejemplo.com"]
                             },
                             "Totales": {
                                 "NroItems": String(carritoVentas.length), "MontoGravadoTotal": baseGravada.toFixed(2), "MontoExentoTotal": baseExenta.toFixed(2), "Subtotal": subtotal.toFixed(2), "TotalIVA": totalIVA.toFixed(2), "MontoTotalConIVA": totalPagar.toFixed(2), "TotalAPagar": totalPagar.toFixed(2), "MontoEnLetras": "VALOR EN LETRAS AQUI", "ImpuestosSubtotal": impuestosSubtotal, "FormasPago": [{ "Forma": formaPago || "02", "Monto": totalPagar.toFixed(2), "Moneda": "BSD", "TipoCambio": "0.0000" }]
