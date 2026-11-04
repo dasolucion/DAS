@@ -3650,137 +3650,220 @@
             actualizarTotalesVenta();
         });
 
-document.getElementById('form-venta').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const clienteId = document.getElementById('venta-cliente').value;
-    const esCxC = document.getElementById('venta-cxc').checked;
-    const numFactura = document.getElementById('venta-factura').value.trim();
-    const numControl = document.getElementById('venta-control').value.trim();
-    
-    const tasaUsada = parseFloat(document.getElementById('input-tasa-venta').value) || parseFloat(datosGenerales.tasa) || 1;
-    const fechaFactura = document.getElementById('venta-fecha').value;
+        document.getElementById('form-venta').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const clienteId = document.getElementById('venta-cliente').value;
+            const esCxC = document.getElementById('venta-cxc').checked;
+            const numFactura = document.getElementById('venta-factura').value.trim();
+            const numControl = document.getElementById('venta-control').value.trim();
+            
+            const tasaUsada = parseFloat(document.getElementById('input-tasa-venta').value) || parseFloat(datosGenerales.tasa) || 1;
+            const fechaFactura = document.getElementById('venta-fecha').value;
 
-    if (!clienteId || carritoVentas.length === 0) return alert('Seleccione cliente y agregue productos.');
-    if (!numFactura || !numControl) return alert('Debe indicar el Nº de Factura y Nº de Control.');
+            if (!clienteId || carritoVentas.length === 0) return alert('Seleccione cliente y agregue productos.');
+            if (!numFactura || !numControl) return alert('Debe indicar el Nº de Factura y Nº de Control.');
 
-    const btn = document.querySelector('#form-venta button[type="submit"]');
-    const originalHTML = btn.innerHTML;
-    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Validando duplicados...';
-    btn.disabled = true;
+            const btn = document.querySelector('#form-venta button[type="submit"]');
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Validando duplicados...';
+            btn.disabled = true;
 
-    try {
-        // 1. VALIDAR SI EL NÚMERO DE FACTURA YA EXISTE
-        const { data: factDuplicada, error: errFact } = await db.from('ventas').select('id, factura').eq('factura', numFactura).limit(1);
-        if (errFact) throw errFact;
-        if (factDuplicada && factDuplicada.length > 0) {
-            alert(`⚠️ ERROR FISCAL: La Factura Nº "${numFactura}" ya fue emitida anteriormente. Verifique el correlativo.`);
-            btn.innerHTML = originalHTML;
-            btn.disabled = false;
-            return;
-        }
+            try {
+                const { data: factDuplicada, error: errFact } = await db.from('ventas').select('id, factura').eq('factura', numFactura).limit(1);
+                if (errFact) throw errFact;
+                if (factDuplicada && factDuplicada.length > 0) {
+                    alert(`⚠️ ERROR FISCAL: La Factura Nº "${numFactura}" ya fue emitida anteriormente.`);
+                    btn.innerHTML = originalHTML; btn.disabled = false; return;
+                }
 
-        // 2. VALIDAR SI EL NÚMERO DE CONTROL YA EXISTE
-        const { data: ctrlDuplicado, error: errCtrl } = await db.from('ventas').select('id, control').eq('control', numControl).limit(1);
-        if (errCtrl) throw errCtrl;
-        if (ctrlDuplicado && ctrlDuplicado.length > 0) {
-            alert(`⚠️ ERROR FISCAL: El Nº de Control "${numControl}" ya existe en otra factura. Verifique el talonario físico.`);
-            btn.innerHTML = originalHTML;
-            btn.disabled = false;
-            return;
-        }
+                const { data: ctrlDuplicado, error: errCtrl } = await db.from('ventas').select('id, control').eq('control', numControl).limit(1);
+                if (errCtrl) throw errCtrl;
+                if (ctrlDuplicado && ctrlDuplicado.length > 0) {
+                    alert(`⚠️ ERROR FISCAL: El Nº de Control "${numControl}" ya existe en otra factura.`);
+                    btn.innerHTML = originalHTML; btn.disabled = false; return;
+                }
 
-        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Procesando venta...';
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Procesando venta...';
 
-        const montoExento = carritoVentas.reduce((s, i) => i.llevaIVA === false ? s + (i.precio * i.cantidad) : s, 0);
-        const descuentoVenta = parseFloat(document.getElementById('calc-descuento-venta').value) || 0;
+                const montoExento = carritoVentas.reduce((s, i) => i.llevaIVA === false ? s + (i.precio * i.cantidad) : s, 0);
+                const descuentoVenta = parseFloat(document.getElementById('calc-descuento-venta').value) || 0;
 
-        const payload = { 
-            cliente_id: clienteId, 
-            impuestos: impuestosVenta, 
-            monto_exento: montoExento,
-            descuento: descuentoVenta,
-            total: totalFacturaVenta, 
-            retencion_islr: islrVenta, 
-            cxc: esCxC, 
-            factura: numFactura, 
-            control: numControl,
-            tasa: tasaUsada,
-            fecha: fechaFactura,
-            retencion_iva_check: false,
-            retencion_islr_check: false
-        };
+                const payload = { 
+                    cliente_id: clienteId, 
+                    impuestos: impuestosVenta, 
+                    monto_exento: montoExento,
+                    descuento: descuentoVenta,
+                    total: totalFacturaVenta, 
+                    retencion_islr: islrVenta, 
+                    cxc: esCxC, 
+                    factura: numFactura, 
+                    control: numControl,
+                    tasa: tasaUsada,
+                    fecha: fechaFactura,
+                    retencion_iva_check: false,
+                    retencion_islr_check: false
+                };
 
-        const { data, error } = await db.from('ventas').insert([payload]).select();
-        if (error) throw error;
+                const { data, error } = await db.from('ventas').insert([payload]).select();
+                if (error) throw error;
 
-        if (data && data.length > 0) {
-            const ventaId = data[0].id;
-            const detalles = carritoVentas.map(i => ({ venta_id: ventaId, producto_id: i.id, cantidad: i.cantidad, precio_unitario: i.precio }));
-            await db.from('venta_detalles').insert(detalles);
+                if (data && data.length > 0) {
+                    const ventaId = data[0].id;
+                    const detalles = carritoVentas.map(i => ({ venta_id: ventaId, producto_id: i.id, cantidad: i.cantidad, precio_unitario: i.precio }));
+                    await db.from('venta_detalles').insert(detalles);
 
-            // --- INICIO LLAMADO A FACTURACIÓN DIGITAL ---
-            const { data: cliDataTFHKA } = await db.from('clientes').select('*').eq('id', clienteId).single();
-            const clienteParaFactura = cliDataTFHKA || { 
-                identificacion: 'V-00000000', 
-                descripcion: 'Cliente General', 
-                direccion: 'Venezuela', 
-                telefono: '0000000000', 
-                correo: 'correo@ejemplo.com' 
-            };
+                    // --- INICIO FACTURACIÓN DIGITAL ---
+                    const { data: cliDataTFHKA } = await db.from('clientes').select('*').eq('id', clienteId).single();
+                    const clienteParaFactura = cliDataTFHKA || { identificacion: 'V-00000000', descripcion: 'Cliente General', direccion: 'Venezuela', telefono: '0000000000', correo: 'correo@ejemplo.com' };
 
-            // Llamamos a la función (que ahora está fuera)
-            await enviarAFacturacionDigital(
-                ventaId, numFactura, numControl, fechaFactura, clienteParaFactura, carritoVentas, { total: totalFacturaVenta, impuestos: impuestosVenta }, tasaUsada, "02"
-            );
-            // --- FIN LLAMADO A FACTURACIÓN DIGITAL ---
+                    await enviarAFacturacionDigital(
+                        ventaId, numFactura, numControl, fechaFactura, clienteParaFactura, carritoVentas, { total: totalFacturaVenta, impuestos: impuestosVenta }, tasaUsada, "02"
+                    );
+                    // --- FIN FACTURACIÓN DIGITAL ---
 
-            if (esCxC) {
-                const fechaVenc = new Date(fechaFactura + 'T00:00:00');
-                fechaVenc.setDate(fechaVenc.getDate() + 7);
-                await db.from('tareas').insert([{
-                    cliente_id: clienteId,
-                    tipo: 'Cobro',
-                    descripcion: `Cobrar Factura Nº ${numFactura}`,
-                    fecha_vencimiento: fechaVenc.toISOString().split('T')[0],
-                    estado: 'Pendiente'
-                }]);
+                    if (esCxC) {
+                        const fechaVenc = new Date(fechaFactura + 'T00:00:00');
+                        fechaVenc.setDate(fechaVenc.getDate() + 7);
+                        await db.from('tareas').insert([{
+                            cliente_id: clienteId,
+                            tipo: 'Cobro',
+                            descripcion: `Cobrar Factura Nº ${numFactura}`,
+                            fecha_vencimiento: fechaVenc.toISOString().split('T')[0],
+                            estado: 'Pendiente'
+                        }]);
+                    }
+                }
+
+                await db.from('datos').update({ ult_fact: numFactura, ult_control: numControl }).eq('id', datosGenerales.id || 1);
+                datosGenerales.ult_fact = numFactura;
+                datosGenerales.ult_control = numControl;
+                actualizarVistasDatosLocales();
+
+                carritoVentas = [];
+                renderCarritoVentas();
+                document.getElementById('form-venta').reset();
+                document.getElementById('calc-impuesto-porcentaje-venta').value = "16";
+                document.getElementById('calc-descuento-venta').value = "0";
+                document.getElementById('venta-fecha').value = new Date().toISOString().split('T')[0];
+                document.getElementById('venta-cxc').checked = true;
+                document.getElementById('input-tasa-venta').value = parseFloat(datosGenerales.tasa || 1).toFixed(2);
+
+                cargarHistorialVentas();
+                cargarCxC();
+                generarCorrelativosVenta(); 
+                cargarDashboard();
+                cargarResumenIVA();
+
+                if(document.getElementById('islr') && !document.getElementById('islr').classList.contains('hidden')) {
+                    cargarProyeccionISLR();
+                }
+                alert(`✅ Factura Nº ${numFactura} registrada exitosamente.`);
+            } catch (err) {
+                console.error("ERROR REAL:", err);
+                alert("Error al procesar la venta: " + err.message);
+            } finally {
+                btn.innerHTML = originalHTML;
+                btn.disabled = false;
+            }
+        });
+
+        // ==========================================
+        // FUNCIÓN DE TFHKA (FUERA DEL EVENTO)
+        // ==========================================
+        async function enviarAFacturacionDigital(ventaId, numFactura, numControl, fechaFactura, clienteData, carritoVentas, totales, tasaUsada, formaPago) {
+            try {
+                const [anio, mes, dia] = fechaFactura.split('-');
+                const fechaFormat = `${dia}/${mes}/${anio}`;
+                
+                const ahora = new Date();
+                let horas = ahora.getHours();
+                const minutos = String(ahora.getMinutes()).padStart(2, '0');
+                const segundos = String(ahora.getSeconds()).padStart(2, '0');
+                const ampm = horas >= 12 ? 'pm' : 'am';
+                horas = horas % 12;
+                horas = horas ? horas : 12;
+                const horaFormat = `${String(horas).padStart(2, '0')}:${minutos}:${segundos} ${ampm}`;
+
+                const detallesItems = carritoVentas.map((item, index) => {
+                    const indicador = item.tipo === 'Servicio' ? '2' : '1';
+                    const codigoImp = item.llevaIVA ? 'G' : 'E';
+                    const tasaIVA = item.llevaIVA ? 16 : 0;
+                    const valorIVA = item.llevaIVA ? (item.precio * item.cantidad * 0.16) : 0;
+                    const valorTotalItem = (item.precio * item.cantidad) + valorIVA;
+
+                    return {
+                        "NumeroLinea": String(index + 1),
+                        "CodigoCIIU": "9609",
+                        "CodigoPLU": null,
+                        "IndicadorBienoServicio": indicador,
+                        "Descripcion": item.nombre,
+                        "Cantidad": String(item.cantidad),
+                        "UnidadMedida": "ZZ",
+                        "PrecioUnitario": item.precio.toFixed(2),
+                        "PrecioItem": (item.precio * item.cantidad).toFixed(2),
+                        "CodigoImpuesto": codigoImp,
+                        "TasaIVA": tasaIVA.toFixed(2),
+                        "ValorIVA": valorIVA.toFixed(2),
+                        "ValorTotalItem": valorTotalItem.toFixed(2)
+                    };
+                });
+
+                const baseGravada = carritoVentas.filter(i => i.llevaIVA).reduce((s, i) => s + (i.precio * i.cantidad), 0);
+                const baseExenta = carritoVentas.filter(i => !i.llevaIVA).reduce((s, i) => s + (i.precio * i.cantidad), 0);
+                
+                const subtotal = baseGravada + baseExenta;
+                const totalIVA = baseGravada * 0.16;
+                const totalPagar = subtotal + totalIVA;
+
+                const impuestosSubtotal = [];
+                if (baseGravada > 0) {
+                    impuestosSubtotal.push({ "CodigoTotalImp": "G", "AlicuotaImp": "16.00", "BaseImponibleImp": baseGravada.toFixed(2), "ValorTotalImp": totalIVA.toFixed(2) });
+                }
+                if (baseExenta > 0) {
+                    impuestosSubtotal.push({ "CodigoTotalImp": "E", "AlicuotaImp": "0.00", "BaseImponibleImp": baseExenta.toFixed(2), "ValorTotalImp": "0.00" });
+                }
+
+                const payload = {
+                    "DocumentoElectronico": {
+                        "Encabezado": {
+                            "IdentificacionDocumento": {
+                                "TipoDocumento": "01", "NumeroDocumento": numFactura, "Serie": "", "FechaEmision": fechaFormat, "FechaVencimiento": fechaFormat, "HoraEmision": horaFormat, "TipoDePago": "Inmediato", "Sucursal": "0001", "TipoDeVenta": "Interna", "Moneda": "BSD", "NumeroControl": numControl
+                            },
+                            "Comprador": {
+                                "TipoIdentificacion": "J", "NumeroIdentificacion": clienteData.identificacion || "V-00000000", "RazonSocial": clienteData.descripcion || "Cliente General", "Direccion": clienteData.direccion || "Caracas", "Pais": "VE", "Telefono": [clienteData.telefono || "0000000000"], "Correo": [clienteData.correo || "correo@ejemplo.com"]
+                            },
+                            "Totales": {
+                                "NroItems": String(carritoVentas.length), "MontoGravadoTotal": baseGravada.toFixed(2), "MontoExentoTotal": baseExenta.toFixed(2), "Subtotal": subtotal.toFixed(2), "TotalIVA": totalIVA.toFixed(2), "MontoTotalConIVA": totalPagar.toFixed(2), "TotalAPagar": totalPagar.toFixed(2), "MontoEnLetras": "VALOR EN LETRAS AQUI", "ImpuestosSubtotal": impuestosSubtotal, "FormasPago": [{ "Forma": formaPago || "02", "Monto": totalPagar.toFixed(2), "Moneda": "BSD", "TipoCambio": "0.0000" }]
+                            }
+                        },
+                        "DetallesItems": detallesItems
+                    }
+                };
+
+                const respuestaBackend = await fetch('https://das-crz8.onrender.com/api/emitir-factura', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const resultado = await respuestaBackend.json();
+
+                if (resultado.codigo === "200" || resultado.codigo === 200 || resultado.Resultado) {
+                    console.log("✅ Factura digital emitida con éxito:", resultado);
+                    alert(`Factura Digital Emitida Exitosamente.\nNúmero de Control TFHKA: ${resultado.Resultado?.numeroControl || numControl}`);
+                    return true;
+                } else {
+                    console.error("❌ Error al emitir factura digital:", resultado);
+                    alert(`⚠️ Venta guardada localmente, pero FALLÓ en la nube fiscal:\n${resultado.mensaje || 'Error desconocido'}\n${JSON.stringify(resultado.validaciones || '')}`);
+                    return false;
+                }
+
+            } catch (error) {
+                console.error("❌ Error crítico enviando a facturación digital:", error);
+                alert("La venta se guardó, pero hubo un error de conexión con el servidor fiscal.");
+                return false;
             }
         }
-
-        await db.from('datos').update({ ult_fact: numFactura, ult_control: numControl }).eq('id', datosGenerales.id || 1);
-        datosGenerales.ult_fact = numFactura;
-        datosGenerales.ult_control = numControl;
-        actualizarVistasDatosLocales();
-
-        carritoVentas = [];
-        renderCarritoVentas();
-        document.getElementById('form-venta').reset();
-        document.getElementById('calc-impuesto-porcentaje-venta').value = "16";
-        document.getElementById('calc-descuento-venta').value = "0";
-        document.getElementById('venta-fecha').value = new Date().toISOString().split('T')[0];
-        document.getElementById('venta-cxc').checked = true;
-        document.getElementById('input-tasa-venta').value = parseFloat(datosGenerales.tasa || 1).toFixed(2);
-
-        cargarHistorialVentas();
-        cargarCxC();
-        generarCorrelativosVenta(); 
-        cargarDashboard();
-        cargarResumenIVA();
-
-        if(document.getElementById('islr') && !document.getElementById('islr').classList.contains('hidden')) {
-            cargarProyeccionISLR();
-        }
-
-        alert(`✅ Factura Nº ${numFactura} registrada exitosamente.`);
-
-    } catch (err) {
-        console.error(err); // <-- IMPORTANTE: Esto te mostrará el error real en la consola
-        alert("Error al procesar la venta: " + err.message);
-    } finally {
-        btn.innerHTML = originalHTML;
-        btn.disabled = false;
-    }
-});
                 
         function imprimirVenta(idFactura) {
             window.open(`factura_pdf.html?id=${idFactura}`, '_blank');
