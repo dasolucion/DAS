@@ -3650,7 +3650,7 @@
             actualizarTotalesVenta();
         });
 
-        document.getElementById('form-venta').addEventListener('submit', async (e) => {
+             document.getElementById('form-venta').addEventListener('submit', async (e) => {
             e.preventDefault();
             const clienteId = document.getElementById('venta-cliente').value;
             const esCxC = document.getElementById('venta-cxc').checked;
@@ -3676,7 +3676,7 @@
                     btn.innerHTML = originalHTML; btn.disabled = false; return;
                 }
 
-                const { data: ctrlDuplicado, error: errCtrl } = await db.from('ventas').select('id, control').eq('control', numControl).limit(1);
+                const { data: ctrlDuplicado, error: errCtrl } = await db.from('ventas').select('id', 'control').eq('control', numControl).limit(1);
                 if (errCtrl) throw errCtrl;
                 if (ctrlDuplicado && ctrlDuplicado.length > 0) {
                     alert(`⚠️ ERROR FISCAL: El Nº de Control "${numControl}" ya existe en otra factura.`);
@@ -3712,14 +3712,19 @@
                     const detalles = carritoVentas.map(i => ({ venta_id: ventaId, producto_id: i.id, cantidad: i.cantidad, precio_unitario: i.precio }));
                     await db.from('venta_detalles').insert(detalles);
 
-                    // --- INICIO FACTURACIÓN DIGITAL ---
+                    // ====================================================
+                    // 🛑 TFHKA DESACTIVADO TEMPORALMENTE 🛑
+                    // Para volver a activarlo, borra los "//" al inicio de 
+                    // las siguientes líneas (hasta el FIN).
+                    // ====================================================
+                    /* 
                     const { data: cliDataTFHKA } = await db.from('clientes').select('*').eq('id', clienteId).single();
                     const clienteParaFactura = cliDataTFHKA || { identificacion: 'V-00000000', descripcion: 'Cliente General', direccion: 'Venezuela', telefono: '0000000000', correo: 'correo@ejemplo.com' };
-
-                    await enviarAFacturacionDigital(
-                        ventaId, numFactura, numControl, fechaFactura, clienteParaFactura, carritoVentas, { total: totalFacturaVenta, impuestos: impuestosVenta }, tasaUsada, "02"
-                    );
-                    // --- FIN FACTURACIÓN DIGITAL ---
+                    await enviarAFacturacionDigital(ventaId, numFactura, numControl, fechaFactura, clienteParaFactura, carritoVentas, { total: totalFacturaVenta, impuestos: impuestosVenta }, tasaUsada, "02");
+                    */
+                    // ====================================================
+                    // FIN TFHKA DESACTIVADO
+                    // ====================================================
 
                     if (esCxC) {
                         const fechaVenc = new Date(fechaFactura + 'T00:00:00');
@@ -3757,7 +3762,7 @@
                 if(document.getElementById('islr') && !document.getElementById('islr').classList.contains('hidden')) {
                     cargarProyeccionISLR();
                 }
-                alert(`✅ Factura Nº ${numFactura} registrada exitosamente.`);
+                alert(`✅ Factura Nº ${numFactura} registrada exitosamente (Modo Local sin TFHKA).`);
             } catch (err) {
                 console.error("ERROR REAL:", err);
                 alert("Error al procesar la venta: " + err.message);
@@ -3766,128 +3771,6 @@
                 btn.disabled = false;
             }
         });
-
-        // ==========================================
-        // FUNCIÓN DE TFHKA (AQUÍ AFUERA, TOTALMENTE SEPARADA)
-        // ==========================================
-        async function enviarAFacturacionDigital(ventaId, numFactura, numControl, fechaFactura, clienteData, carritoVentas, totales, tasaUsada, formaPago) {
-            try {
-                const [anio, mes, dia] = fechaFactura.split('-');
-                const fechaFormat = `${dia}/${mes}/${anio}`;
-                
-                const ahora = new Date();
-                let horas = ahora.getHours();
-                const minutos = String(ahora.getMinutes()).padStart(2, '0');
-                const segundos = String(ahora.getSeconds()).padStart(2, '0');
-                const ampm = horas >= 12 ? 'pm' : 'am';
-                horas = horas % 12;
-                horas = horas ? horas : 12;
-                const horaFormat = `${String(horas).padStart(2, '0')}:${minutos}:${segundos} ${ampm}`;
-
-                const detallesItems = carritoVentas.map((item, index) => {
-                    const indicador = item.tipo === 'Servicio' ? '2' : '1';
-                    const codigoImp = item.llevaIVA ? 'G' : 'E';
-                    const tasaIVA = item.llevaIVA ? 16 : 0;
-                    const valorIVA = item.llevaIVA ? (item.precio * item.cantidad * 0.16) : 0;
-                    const valorTotalItem = (item.precio * item.cantidad) + valorIVA;
-
-                    return {
-                        "NumeroLinea": String(index + 1),
-                        "CodigoCIIU": "9609",
-                        "CodigoPLU": null,
-                        "IndicadorBienoServicio": indicador,
-                        "Descripcion": item.nombre,
-                        "Cantidad": String(item.cantidad),
-                        "UnidadMedida": "ZZ",
-                        "PrecioUnitario": item.precio.toFixed(2),
-                        "PrecioItem": (item.precio * item.cantidad).toFixed(2),
-                        "CodigoImpuesto": codigoImp,
-                        "TasaIVA": tasaIVA.toFixed(2),
-                        "ValorIVA": valorIVA.toFixed(2),
-                        "ValorTotalItem": valorTotalItem.toFixed(2)
-                    };
-                });
-
-                const baseGravada = carritoVentas.filter(i => i.llevaIVA).reduce((s, i) => s + (i.precio * i.cantidad), 0);
-                const baseExenta = carritoVentas.filter(i => !i.llevaIVA).reduce((s, i) => s + (i.precio * i.cantidad), 0);
-                
-                const subtotal = baseGravada + baseExenta;
-                const totalIVA = baseGravada * 0.16;
-                const totalPagar = subtotal + totalIVA;
-
-                const impuestosSubtotal = [];
-                if (baseGravada > 0) {
-                    impuestosSubtotal.push({ "CodigoTotalImp": "G", "AlicuotaImp": "16.00", "BaseImponibleImp": baseGravada.toFixed(2), "ValorTotalImp": totalIVA.toFixed(2) });
-                }
-                if (baseExenta > 0) {
-                    impuestosSubtotal.push({ "CodigoTotalImp": "E", "AlicuotaImp": "0.00", "BaseImponibleImp": baseExenta.toFixed(2), "ValorTotalImp": "0.00" });
-                }
-
-                const payload = {
-                    "DocumentoElectronico": {
-                        "Encabezado": {
-                            "IdentificacionDocumento": {
-                                "TipoDocumento": "01", "NumeroDocumento": numFactura, "Serie": "", "FechaEmision": fechaFormat, "FechaVencimiento": fechaFormat, "HoraEmision": horaFormat, "TipoDePago": "Inmediato", "Sucursal": "0001", "TipoDeVenta": "Interna", "Moneda": "BSD", "NumeroControl": numControl
-                            },
-                                            // Lógica para separar el RIF correctamente
-                let tipoId = "V";
-                let numId = clienteData.identificacion || "00000000";
-                
-                if (numId.includes("-")) {
-                    const partes = numId.split("-");
-                    tipoId = partes[0].trim().toUpperCase();
-                    numId = partes[1].trim();
-                } else if (numId.length > 1 && isNaN(numId[0])) {
-                    // Por si viene como "J12345678" sin guion
-                    tipoId = numId[0].toUpperCase();
-                    numId = numId.substring(1);
-                }
-                // Limpiar el número por si tiene puntos o espacios (ej: 12.345.678)
-                numId = numId.replace(/\D/g, ''); 
-
-                // ... (más abajo, dentro del payload) ...
-
-                            "Comprador": {
-                                "TipoIdentificacion": tipoId, 
-                                "NumeroIdentificacion": numId, 
-                                "RazonSocial": clienteData.descripcion || "Cliente General", 
-                                "Direccion": clienteData.direccion || "Caracas", 
-                                "Pais": "VE", 
-                                "Telefono": [clienteData.telefono || "0000000000"], 
-                                "Correo": [clienteData.correo || "correo@ejemplo.com"]
-                            },
-                            "Totales": {
-                                "NroItems": String(carritoVentas.length), "MontoGravadoTotal": baseGravada.toFixed(2), "MontoExentoTotal": baseExenta.toFixed(2), "Subtotal": subtotal.toFixed(2), "TotalIVA": totalIVA.toFixed(2), "MontoTotalConIVA": totalPagar.toFixed(2), "TotalAPagar": totalPagar.toFixed(2), "MontoEnLetras": "VALOR EN LETRAS AQUI", "ImpuestosSubtotal": impuestosSubtotal, "FormasPago": [{ "Forma": formaPago || "02", "Monto": totalPagar.toFixed(2), "Moneda": "BSD", "TipoCambio": "0.0000" }]
-                            }
-                        },
-                        "DetallesItems": detallesItems
-                    }
-                };
-
-                const respuestaBackend = await fetch('https://das-crz8.onrender.com/api/emitir-factura', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-
-                const resultado = await respuestaBackend.json();
-
-                if (resultado.codigo === "200" || resultado.codigo === 200 || resultado.Resultado) {
-                    console.log("✅ Factura digital emitida con éxito:", resultado);
-                    alert(`Factura Digital Emitida Exitosamente.\nNúmero de Control TFHKA: ${resultado.Resultado?.numeroControl || numControl}`);
-                    return true;
-                } else {
-                    console.error("❌ Error al emitir factura digital:", resultado);
-                    alert(`⚠️ Venta guardada localmente, pero FALLÓ en la nube fiscal:\n${resultado.mensaje || 'Error desconocido'}\n${JSON.stringify(resultado.validaciones || '')}`);
-                    return false;
-                }
-
-            } catch (error) {
-                console.error("❌ Error crítico enviando a facturación digital:", error);
-                alert("La venta se guardó, pero hubo un error de conexión con el servidor fiscal.");
-                return false;
-            }
-        }
                 
         function imprimirVenta(idFactura) {
             window.open(`factura_pdf.html?id=${idFactura}`, '_blank');
