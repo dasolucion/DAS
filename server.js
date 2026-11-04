@@ -4,7 +4,10 @@ const cors = require('cors');
 require('dotenv').config();
 
 const app = express();
-app.use(cors());
+// Permite peticiones desde cualquier origen (o puedes poner tu URL de GitHub Pages)
+app.use(cors({
+    origin: '*' // En producción, puedes cambiar '*' por 'https://tu-usuario.github.io'
+}));
 app.use(express.json());
 
 // Variables para manejar el Token en caché
