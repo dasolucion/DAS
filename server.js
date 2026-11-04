@@ -58,11 +58,15 @@ app.post('/api/emitir-factura', async (req, res) => {
         // Retornar respuesta al frontend
         res.status(200).json(response.data);
 
-    } catch (error) {
-        console.error("Error al emitir documento:", error.response?.data || error.message);
-        res.status(error.response?.status || 500).json(error.response?.data || { mensaje: "Error interno procesando la factura" });
+   } catch (error) {
+        // Esto imprimirá el error detallado en los logs de Render
+        console.error("❌ ERROR DETALLADO DE TFHKA:", error.response?.data || error.message);
+        
+        // Esto enviará el error real al frontend
+        res.status(error.response?.status || 500).json(
+            error.response?.data || { mensaje: error.message || "Error interno procesando la factura" }
+        );
     }
-});
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
