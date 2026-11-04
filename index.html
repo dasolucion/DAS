@@ -3729,73 +3729,33 @@
             const detalles = carritoVentas.map(i => ({ venta_id: ventaId, producto_id: i.id, cantidad: i.cantidad, precio_unitario: i.precio }));
             await db.from('venta_detalles').insert(detalles);
 
-                     // --- NUEVO: LLAMADO A FACTURACIÓN DIGITAL ---
-            // Necesitamos el objeto cliente
-            const clienteActual = { 
-                identificacion: clientesData.find(c => c.id === clienteId)?.identificacion,
-                descripcion: clientesData.find(c => c.id === clienteId)?.descripcion,
-                direccion: clientesData.find(c => c.id === clienteId)?.direccion,
-                telefono: clientesData.find(c => c.id === clienteId)?.telefono,
-                correo: clientesData.find(c => c.id === clienteId)?.correo
-            };
+            // --- INICIO LLAMADO A FACTURACIÓN DIGITAL ---
+            // 1. Obtener los datos actuales del cliente desde Supabase
+            const { data: cliDataTFHKA } = await db.from('clientes').select('*').eq('id', clienteId).single();
             
-            // Opcional: Guardar el ID de transaccion de TFHKA en Supabase si te lo devuelve
-            await enviarAFacturacionDigital(ventaId, numFactura, numControl, fechaFactura, clienteActual, carritoVentas, {totalFacturaVenta, impuestosVenta}, tasaUsada, "02");
-            // --------------------------------------------
+            // Si por alguna razón el cliente no se encuentra, usamos datos genéricos para no romper
+            const clienteParaFactura = cliDataTFHKA || { 
+                identificacion: 'V-00000000', 
+                descripcion: 'Cliente General', 
+                direccion: 'Venezuela', 
+                telefono: '0000000000', 
+                correo: 'correo@ejemplo.com' 
+            };
 
-            if (esCxC) {
-                const fechaVenc = new Date(fechaFactura + 'T00:00:00');
-                fechaVenc.setDate(fechaVenc.getDate() + 7);
-                
-                await db.from('tareas').insert([{
-                    cliente_id: clienteId,
-                    tipo: 'Cobro',
-                    descripcion: `Cobrar Factura Nº ${numFactura}`,
-                    fecha_vencimiento: fechaVenc.toISOString().split('T')[0],
-                    estado: 'Pendiente'
-                }]);
-            }
-        }
-
-        await db.from('datos').update({ ult_fact: numFactura, ult_control: numControl }).eq('id', datosGenerales.id || 1);
-        datosGenerales.ult_fact = numFactura;
-        datosGenerales.ult_control = numControl;
-        actualizarVistasDatosLocales();
-
-        carritoVentas = [];
-        renderCarritoVentas();
-        document.getElementById('form-venta').reset();
-        document.getElementById('calc-impuesto-porcentaje-venta').value = "16";
-        document.getElementById('calc-descuento-venta').value = "0";
-        document.getElementById('venta-fecha').value = new Date().toISOString().split('T')[0];
-        document.getElementById('venta-cxc').checked = true;
-
-        document.getElementById('input-tasa-venta').value = parseFloat(datosGenerales.tasa || 1).toFixed(2);
-
-        cargarHistorialVentas();
-        cargarCxC();
-        generarCorrelativosVenta(); 
-        cargarDashboard();
-        cargarResumenIVA();
-
-        if(document.getElementById('islr') && !document.getElementById('islr').classList.contains('hidden')) {
-            cargarProyeccionISLR();
-        }
-
-        alert(`✅ Factura Nº ${numFactura} registrada exitosamente.`);
-
-    } catch (err) {
-        alert("Error al procesar la venta: " + err.message);
-    } finally {
-        btn.innerHTML = originalHTML;
-        btn.disabled = false;
-    }
-});
-
-// ==========================================
-// INTEGRACIÓN CON FACTURACIÓN DIGITAL (TFHKA)
-// ==========================================
-
+            // 2. Llamar a la función de envío a TFHKA
+            await enviarAFacturacionDigital(
+                data[0].id,        // ID de la venta
+                numFactura,        // Número de factura (ej: 000012)
+                numControl,        // Número de control (ej: 00-000012)
+                fechaFactura,      // Fecha de la venta (YYYY-MM-DD)
+                clienteParaFactura,// Datos del cliente
+                carritoVentas,     // El arreglo con los productos
+                { total: totalFacturaVenta, impuestos: impuestosVenta }, // Totales
+                tasaUsada,         // Tasa de cambio
+                "02"               // Forma de pago: 02 = Pago Móvil
+            );
+            // --- FIN LLAMADO A FACTURACIÓN DIGITAL ---
+                    
 async function enviarAFacturacionDigital(ventaId, numFactura, numControl, fechaFactura, clienteData, carritoVentas, totales, tasaUsada, formaPago) {
     try {
         // 1. Formatear Fecha y Hora para la API
