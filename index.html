@@ -2540,7 +2540,7 @@
             btn.disabled = false;
         });
 
-        async function cargarClientes() {
+               async function cargarClientes() {
             const { data: vends } = await db.from('vendedores').select('id, nombre');
             if (vends) vends.forEach(v => mapVendedoresGlobal[v.id] = v.nombre);
 
@@ -2552,6 +2552,18 @@
             mapClientesGlobal = {};
             mapClientesVendedor = {};
 
+            // Paleta de colores para los vendedores
+            const coloresVendedores = [
+                { bg: 'bg-pink-950/40', text: 'text-pink-300', border: 'border-pink-800/40' },
+                { bg: 'bg-blue-950/40', text: 'text-blue-300', border: 'border-blue-800/40' },
+                { bg: 'bg-emerald-950/40', text: 'text-emerald-300', border: 'border-emerald-800/40' },
+                { bg: 'bg-amber-950/40', text: 'text-amber-300', border: 'border-amber-800/40' },
+                { bg: 'bg-indigo-950/40', text: 'text-indigo-300', border: 'border-indigo-800/40' },
+                { bg: 'bg-rose-950/40', text: 'text-rose-300', border: 'border-rose-800/40' },
+                { bg: 'bg-teal-950/40', text: 'text-teal-300', border: 'border-teal-800/40' },
+                { bg: 'bg-purple-950/40', text: 'text-purple-300', border: 'border-purple-800/40' }
+            ];
+
             (data || []).forEach(c => {
                 mapClientesGlobal[c.id] = c.descripcion || 'Sin nombre';
                 mapClientesVendedor[c.id] = c.vendedor_id || null;
@@ -2560,8 +2572,22 @@
                     ? '<span class="bg-sky-500/10 text-sky-400 border border-sky-500/20 px-2 py-1 rounded-md text-[10px] font-bold">Sí</span>' 
                     : '<span class="bg-slate-800 text-slate-400 border border-slate-700 px-2 py-1 rounded-md text-[10px]">No</span>';
                 
+                // Lógica para asignar color único por vendedor
+                let colorClass = 'bg-slate-800 text-slate-400 border-slate-700'; // Color por defecto
+                if (c.vendedor_id && mapVendedoresGlobal[c.vendedor_id]) {
+                    // Creamos un "hash" simple basado en el ID para que siempre tenga el mismo color
+                    let hash = 0;
+                    const strId = String(c.vendedor_id);
+                    for (let i = 0; i < strId.length; i++) {
+                        hash = strId.charCodeAt(i) + ((hash << 5) - hash);
+                    }
+                    const colorIdx = Math.abs(hash) % coloresVendedores.length;
+                    const color = coloresVendedores[colorIdx];
+                    colorClass = `${color.bg} ${color.text} ${color.border}`;
+                }
+
                 const nombreVendedor = (c.vendedor_id && mapVendedoresGlobal[c.vendedor_id]) 
-                    ? `<span class="bg-pink-950/40 text-pink-300 border border-pink-800/40 px-2 py-0.5 rounded text-[10px] font-medium"><i class="fa-solid fa-id-badge mr-1"></i>${mapVendedoresGlobal[c.vendedor_id]}</span>`
+                    ? `<span class="${colorClass} px-2 py-0.5 rounded text-[10px] font-medium border"><i class="fa-solid fa-id-badge mr-1"></i>${mapVendedoresGlobal[c.vendedor_id]}</span>`
                     : '<span class="text-slate-500 text-[10px] italic">Sin asignar</span>';
 
                 tbody.innerHTML += `
@@ -5260,11 +5286,11 @@ console.log("📡 HACIENDO FETCH A RENDER...");
 
         if (resultado.codigo === "200" || resultado.codigo === 200 || resultado.Resultado) {
             console.log("✅ Factura digital emitida con éxito:", resultado);
-            alert(`Factura Digital Emitida Exitosamente.\nNúmero de Control TFHKA: ${resultado.Resultado?.numeroControl || numControl}`);
+            //alert(`Factura Digital Emitida Exitosamente.\nNúmero de Control TFHKA: ${resultado.Resultado?.numeroControl || numControl}`);
             return true;
         } else {
             console.error("❌ Error al emitir factura digital:", resultado);
-            alert(`⚠️ Venta guardada localmente, pero FALLÓ en la nube fiscal:\n${resultado.mensaje || 'Error desconocido'}\n${JSON.stringify(resultado.validaciones || '')}`);
+            //alert(`⚠️ Venta guardada localmente, pero FALLÓ en la nube fiscal:\n${resultado.mensaje || 'Error desconocido'}\n${JSON.stringify(resultado.validaciones || '')}`);
             return false;
         }
 
