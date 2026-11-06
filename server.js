@@ -7,7 +7,6 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Variables para manejar el Token en caché
 let tokenCache = null;
 let tokenExpiry = null;
 
@@ -17,13 +16,8 @@ async function obtenerToken() {
         return tokenCache;
     }
 
-    // Limpiamos cualquier espacio en blanco que pueda tener la variable en Render
     let urlBase = process.env.TFHKA_URL ? process.env.TFHKA_URL.trim() : "";
-    
-    // Si por alguna razón la variable está vacía en Render, forzamos la URL correcta
-    if (!urlBase) {
-        urlBase = "https://demoemisionv2.thefactoryhka.com.ve";
-    }
+    if (!urlBase) urlBase = "https://demoemisionv2.thefactoryhka.com.ve";
 
     const urlFinal = `${urlBase}/api/Autenticacion`;
     console.log("🔍 Intentando conectar a la URL:", urlFinal);
@@ -34,7 +28,12 @@ async function obtenerToken() {
             clave: process.env.TFHKA_PASS ? process.env.TFHKA_PASS.trim() : ""
         });
 
-        tokenCache = response.data.token || response.data.Token || response.data; 
+        // EXTRACCIÓN ROBUSTA DEL TOKEN (Evita el error [object Object])
+        let rawToken = response.data;
+        if (rawToken && typeof rawToken === 'object') {
+            rawToken = rawToken.token || rawToken.Token || rawToken.access_token || (rawToken.data ? rawToken.data.token : null);
+        }
+        tokenCache = String(rawToken);
         tokenExpiry = Date.now() + (11 * 60 * 60 * 1000);
         
         console.log("✅ Token de TFHKA obtenido correctamente.");
@@ -49,26 +48,31 @@ async function obtenerToken() {
 app.post('/api/emitir-factura', async (req, res) => {
     try {
         const payloadJSON = req.body;
-        
-        // Obtener token válido
         const token = await obtenerToken();
 
-        // Enviar el JSON a TFHKA
-        const response = await axios.post(`${process.env.TFHKA_URL}/api/Emision`, payloadJSON, {
+        let urlBase = process.env.TFHKA_URL ? process.env.TFHKA_URL.trim() : "https://demoemisionv2.thefactoryhka.com.ve";
+        const urlEmision = `${urlBase}/api/Emision`;
+
+        // TFHKA a veces exige usuario y clave en el body si el token falla
+        // Los inyectamos por si acaso para evitar el error 203
+        const payloadFinal = {
+            ...payloadJSON,
+            usuario: process.env.TFHKA_USER ? process.env.TFHKA_USER.trim() : "",
+            clave: process.env.TFHKA_PASS ? process.env.TFHKA_PASS.trim() : ""
+        };
+
+        const response = await axios.post(urlEmision, payloadFinal, {
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
             }
         });
 
-        // Retornar respuesta al frontend
         res.status(200).json(response.data);
 
     } catch (error) {
-        // Esto imprimirá el error detallado en los logs de Render
         console.error("❌ ERROR DETALLADO DE TFHKA:", error.response?.data || error.message);
         
-        // Esto enviará el error real al frontend
         res.status(error.response?.status || 500).json(
             error.response?.data || { mensaje: error.message || "Error interno procesando la factura" }
         );
