@@ -29,8 +29,10 @@ async function obtenerToken() {
         console.log("✅ Token de TFHKA obtenido correctamente.");
         return tokenCache;
     } catch (error) {
-        console.error("❌ Error de autenticación:", error.response?.data || error.message);
-        throw new Error("No se pudo conectar con los servidores de Facturación Digital.");
+        // Esto imprimirá el error exacto en los logs de Render
+        console.error("❌ ERROR REAL DE AUTENTICACIÓN TFHKA:", error.response?.data || error.message);
+        // Lanzamos el error original para que llegue a tu pantalla
+        throw error; 
     }
 }
 
