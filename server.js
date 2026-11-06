@@ -17,10 +17,21 @@ async function obtenerToken() {
         return tokenCache;
     }
 
+    // Limpiamos cualquier espacio en blanco que pueda tener la variable en Render
+    let urlBase = process.env.TFHKA_URL ? process.env.TFHKA_URL.trim() : "";
+    
+    // Si por alguna razón la variable está vacía en Render, forzamos la URL correcta
+    if (!urlBase) {
+        urlBase = "https://demoemisionv2.thefactoryhka.com.ve";
+    }
+
+    const urlFinal = `${urlBase}/api/Autenticacion`;
+    console.log("🔍 Intentando conectar a la URL:", urlFinal);
+
     try {
-        const response = await axios.post(`${process.env.TFHKA_URL}/api/Autenticacion`, {
-            usuario: process.env.TFHKA_USER,
-            clave: process.env.TFHKA_PASS
+        const response = await axios.post(urlFinal, {
+            usuario: process.env.TFHKA_USER ? process.env.TFHKA_USER.trim() : "",
+            clave: process.env.TFHKA_PASS ? process.env.TFHKA_PASS.trim() : ""
         });
 
         tokenCache = response.data.token || response.data.Token || response.data; 
@@ -29,9 +40,7 @@ async function obtenerToken() {
         console.log("✅ Token de TFHKA obtenido correctamente.");
         return tokenCache;
     } catch (error) {
-        // Esto imprimirá el error exacto en los logs de Render
         console.error("❌ ERROR REAL DE AUTENTICACIÓN TFHKA:", error.response?.data || error.message);
-        // Lanzamos el error original para que llegue a tu pantalla
         throw error; 
     }
 }
