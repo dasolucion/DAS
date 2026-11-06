@@ -414,7 +414,7 @@ document.title = `FAC - ${numFactura}`;
                 // ==========================================
 const descuento = parseFloat(venta.descuento) || 0;
 const subtotalGeneral = subtotalGravado + subtotalExento;
-const totalConDescuento = totalGeneralFactura - descuento; // total ya viene con IVA y sin ISLR
+const totalConDescuento = totalGeneralFactura;  // total ya viene con IVA y sin ISLR
 
 document.getElementById('val_subtotal').innerText = formatoVE.format(subtotalGeneral);
 document.getElementById('val_exento').innerText = formatoVE.format(subtotalExento);
