@@ -3717,11 +3717,11 @@
                     // Para volver a activarlo, borra los "//" al inicio de 
                     // las siguientes líneas (hasta el FIN).
                     // ====================================================
-                    /* 
+                   
                     const { data: cliDataTFHKA } = await db.from('clientes').select('*').eq('id', clienteId).single();
                     const clienteParaFactura = cliDataTFHKA || { identificacion: 'V-00000000', descripcion: 'Cliente General', direccion: 'Venezuela', telefono: '0000000000', correo: 'correo@ejemplo.com' };
                     await enviarAFacturacionDigital(ventaId, numFactura, numControl, fechaFactura, clienteParaFactura, carritoVentas, { total: totalFacturaVenta, impuestos: impuestosVenta }, tasaUsada, "02");
-                    */
+                   
                     // ====================================================
                     // FIN TFHKA DESACTIVADO
                     // ====================================================
