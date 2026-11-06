@@ -10,17 +10,14 @@ app.use(express.json());
 let tokenCache = null;
 let tokenExpiry = null;
 
-// 1. Función para obtener el Token JWT
 async function obtenerToken() {
     if (tokenCache && Date.now() < tokenExpiry) {
         return tokenCache;
     }
 
-    let urlBase = process.env.TFHKA_URL ? process.env.TFHKA_URL.trim() : "";
-    if (!urlBase) urlBase = "https://demoemisionv2.thefactoryhka.com.ve";
-
+    let urlBase = process.env.TFHKA_URL ? process.env.TFHKA_URL.trim() : "https://demoemisionv2.thefactoryhka.com.ve";
     const urlFinal = `${urlBase}/api/Autenticacion`;
-    console.log("🔍 Intentando conectar a la URL:", urlFinal);
+    console.log("🔍 Conectando a:", urlFinal);
 
     try {
         const response = await axios.post(urlFinal, {
@@ -28,7 +25,7 @@ async function obtenerToken() {
             clave: process.env.TFHKA_PASS ? process.env.TFHKA_PASS.trim() : ""
         });
 
-        // EXTRACCIÓN ROBUSTA DEL TOKEN (Evita el error [object Object])
+        // EXTRACCIÓN SEGURA DEL TOKEN
         let rawToken = response.data;
         if (rawToken && typeof rawToken === 'object') {
             rawToken = rawToken.token || rawToken.Token || rawToken.access_token || (rawToken.data ? rawToken.data.token : null);
@@ -36,15 +33,14 @@ async function obtenerToken() {
         tokenCache = String(rawToken);
         tokenExpiry = Date.now() + (11 * 60 * 60 * 1000);
         
-        console.log("✅ Token de TFHKA obtenido correctamente.");
+        console.log("✅ Token obtenido:", tokenCache.substring(0, 20) + "...");
         return tokenCache;
     } catch (error) {
-        console.error("❌ ERROR REAL DE AUTENTICACIÓN TFHKA:", error.response?.data || error.message);
+        console.error("❌ ERROR DE AUTENTICACIÓN:", error.response?.data || error.message);
         throw error; 
     }
 }
 
-// 2. Endpoint para emitir la factura
 app.post('/api/emitir-factura', async (req, res) => {
     try {
         const payloadJSON = req.body;
@@ -53,26 +49,44 @@ app.post('/api/emitir-factura', async (req, res) => {
         let urlBase = process.env.TFHKA_URL ? process.env.TFHKA_URL.trim() : "https://demoemisionv2.thefactoryhka.com.ve";
         const urlEmision = `${urlBase}/api/Emision`;
 
-        // TFHKA a veces exige usuario y clave en el body si el token falla
-        // Los inyectamos por si acaso para evitar el error 203
+        // Inyectamos credenciales en el body por si la API las requiere a nivel raíz
         const payloadFinal = {
             ...payloadJSON,
             usuario: process.env.TFHKA_USER ? process.env.TFHKA_USER.trim() : "",
             clave: process.env.TFHKA_PASS ? process.env.TFHKA_PASS.trim() : ""
         };
 
-        const response = await axios.post(urlEmision, payloadFinal, {
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            }
-        });
+        // PRUEBA 1: Enviar el token SIN el prefijo "Bearer " (algunas versiones de TFHKA lo exigen así)
+        const headers = {
+            'Content-Type': 'application/json',
+            'Authorization': token 
+        };
+
+        console.log("📤 Enviando a TFHKA...");
+        const response = await axios.post(urlEmision, payloadFinal, { headers });
 
         res.status(200).json(response.data);
 
     } catch (error) {
         console.error("❌ ERROR DETALLADO DE TFHKA:", error.response?.data || error.message);
         
+        // Si falla sin Bearer, intentamos con Bearer como fallback
+        if (error.response?.status === 401 || error.response?.status === 403) {
+            console.log("🔄 Reintentando con el prefijo 'Bearer'...");
+            try {
+                const token = await obtenerToken();
+                const responseRetry = await axios.post(urlEmision, payloadFinal, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                return res.status(200).json(responseRetry.data);
+            } catch (retryError) {
+                console.error("❌ ERROR EN REINTENTO:", retryError.response?.data || retryError.message);
+            }
+        }
+
         res.status(error.response?.status || 500).json(
             error.response?.data || { mensaje: error.message || "Error interno procesando la factura" }
         );
@@ -81,5 +95,5 @@ app.post('/api/emitir-factura', async (req, res) => {
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-    console.log(`🚀 Servidor de facturación corriendo en el puerto ${PORT}`);
+    console.log(`🚀 Servidor corriendo en el puerto ${PORT}`);
 });
