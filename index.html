@@ -5131,6 +5131,7 @@ function obtenerBaseImponibleFactura(v) {
 
                     async function enviarAFacturacionDigital(ventaId, numFactura, numControl, fechaFactura, clienteData, carritoVentas, totales, tasaUsada, formaPago) {
     try {
+     console.log("🚀 INICIANDO ENVÍO A TFHKA PARA LA FACTURA:", numFactura);
         // 1. Formatear Fecha y Hora para la API
         const [anio, mes, dia] = fechaFactura.split('-');
         const fechaFormat = `${dia}/${mes}/${anio}`;
@@ -5247,7 +5248,7 @@ function obtenerBaseImponibleFactura(v) {
                 "DetallesItems": detallesItems
             }
         };
-
+console.log("📡 HACIENDO FETCH A RENDER...");
         // 5. Enviar a nuestro Backend local
         const respuestaBackend = await fetch('https://das-crz8.onrender.com/api/emitir-factura', {
             method: 'POST',
