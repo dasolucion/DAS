@@ -15,30 +15,45 @@ async function obtenerToken() {
         return tokenCache;
     }
 
-    // URLs para Venezuela
-    let urlBase = process.env.TFHKA_URL ? process.env.TFHKA_URL.trim() : "https://demoemisionv2.thefactoryhka.com.ve";
+    // Usamos la URL oficial del entorno Demo (con v2)
+    const urlBase = process.env.TFHKA_URL ? process.env.TFHKA_URL.trim() : "https://demoemisionv2.thefactoryhka.com.ve";
     const urlFinal = `${urlBase}/api/Autenticacion`;
+    
+    // Limpiamos las credenciales
+    const user = process.env.TFHKA_USER ? process.env.TFHKA_USER.trim() : "";
+    const pass = process.env.TFHKA_PASS ? process.env.TFHKA_PASS.trim() : "";
+
+    const bodyAutenticacion = {
+        usuario: user,
+        clave: pass
+    };
+
     console.log("🔍 Autenticando en:", urlFinal);
+    console.log("📤 Body enviado:", JSON.stringify(bodyAutenticacion));
 
     try {
-        // TFHKA Venezuela espera 'usuario' y 'clave' en minúsculas para el token
-        const response = await axios.post(urlFinal, {
-            usuario: process.env.TFHKA_USER ? process.env.TFHKA_USER.trim() : "",
-            clave: process.env.TFHKA_PASS ? process.env.TFHKA_PASS.trim() : ""
+        const response = await axios.post(urlFinal, bodyAutenticacion, {
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            }
         });
 
-        // Log para ver la respuesta exacta de la autenticación
         console.log("📥 Respuesta de Autenticación:", JSON.stringify(response.data));
 
-        // Extracción robusta del token (maneja { token: "..." } o { Token: "..." })
         let rawToken = response.data;
         if (rawToken && typeof rawToken === 'object') {
             rawToken = rawToken.token || rawToken.Token || rawToken.access_token;
         }
-        tokenCache = String(rawToken);
-        tokenExpiry = Date.now() + (11 * 60 * 60 * 1000);
         
-        console.log("✅ Token obtenido (primeros 20 caracteres):", tokenCache.substring(0, 20));
+        if (!rawToken) {
+            throw new Error("El servidor no devolvió un token válido.");
+        }
+
+        tokenCache = String(rawToken);
+        tokenExpiry = Date.now() + (11 * 60 * 60 * 1000); // 11 horas
+        
+        console.log("✅ Token obtenido correctamente.");
         return tokenCache;
     } catch (error) {
         console.error("❌ ERROR DE AUTENTICACIÓN:", error.response?.data || error.message);
@@ -51,31 +66,26 @@ app.post('/api/emitir-factura', async (req, res) => {
         const payloadJSON = req.body;
         const token = await obtenerToken();
 
-        let urlBase = process.env.TFHKA_URL ? process.env.TFHKA_URL.trim() : "https://demoemisionv2.thefactoryhka.com.ve";
+        const urlBase = process.env.TFHKA_URL ? process.env.TFHKA_URL.trim() : "https://demoemisionv2.thefactoryhka.com.ve";
         const urlEmision = `${urlBase}/api/Emision`;
 
-        // ⚠️ IMPORTANTE: NO incluimos 'usuario' ni 'clave' en el cuerpo de la factura.
-        // La autenticación se hace SOLO con el token en el header.
-        
         const headers = {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}` // Volvemos a usar 'Bearer' que es el estándar
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${token}`
         };
 
         console.log("📤 Enviando factura a TFHKA...");
         const response = await axios.post(urlEmision, payloadJSON, { headers });
 
-        // Log de la respuesta exitosa
         console.log("✅ Respuesta de Emisión:", JSON.stringify(response.data));
         res.status(200).json(response.data);
 
     } catch (error) {
         console.error("❌ ERROR DETALLADO DE TFHKA:", error.response?.data || error.message);
         
-        // Si el token falla, forzamos una re-autenticación en el próximo intento
         if (error.response?.status === 401 || error.response?.status === 403 || error.response?.data?.codigo === '203') {
             tokenCache = null;
-            console.log("🔄 Token invalidado. Se reintentará en la próxima petición.");
         }
 
         res.status(error.response?.status || 500).json(
