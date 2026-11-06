@@ -412,16 +412,16 @@ document.title = `FAC - ${numFactura}`;
                 // ACTUALIZAR TOTALES
                 // Sub Total = suma de TODOS los items (gravado + exento)
                 // ==========================================
-const descuento = parseFloat(venta.descuento) || 0;
-const subtotalGeneral = subtotalGravado + subtotalExento;
-const totalConDescuento = totalGeneralFactura;  // total ya viene con IVA y sin ISLR
+                const descuento = parseFloat(venta.descuento) || 0;
+                const subtotalGeneral = subtotalGravado + subtotalExento;
+const totalCalculado = (subtotalGeneral + impuestosTotales) - descuento;
 
-document.getElementById('val_subtotal').innerText = formatoVE.format(subtotalGeneral);
-document.getElementById('val_exento').innerText = formatoVE.format(subtotalExento);
-document.getElementById('val_base').innerText = formatoVE.format(subtotalGravado);
-document.getElementById('val_iva').innerText = formatoVE.format(impuestosTotales);
-document.getElementById('val_descuento').innerText = "- " + formatoVE.format(descuento);
-document.getElementById('val_total').innerText = formatoVE.format(totalConDescuento);
+                document.getElementById('val_subtotal').innerText = formatoVE.format(subtotalGeneral);
+                document.getElementById('val_exento').innerText = formatoVE.format(subtotalExento);
+                document.getElementById('val_base').innerText = formatoVE.format(subtotalGravado);
+                document.getElementById('val_iva').innerText = formatoVE.format(impuestosTotales);
+                document.getElementById('val_descuento').innerText = "- " + formatoVE.format(descuento);
+                document.getElementById('val_total').innerText = formatoVE.format(totalCalculado);
 
             } catch (error) {
                 console.error("Error crítico Javascript:", error);
