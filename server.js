@@ -20,12 +20,14 @@ async function obtenerToken() {
     console.log("🔍 Conectando a:", urlFinal);
 
     try {
+        // TFHKA Venezuela espera los campos con mayúscula inicial y a veces el RIF
         const response = await axios.post(urlFinal, {
-            usuario: process.env.TFHKA_USER ? process.env.TFHKA_USER.trim() : "",
-            clave: process.env.TFHKA_PASS ? process.env.TFHKA_PASS.trim() : ""
+            Usuario: process.env.TFHKA_USER ? process.env.TFHKA_USER.trim() : "",
+            Clave: process.env.TFHKA_PASS ? process.env.TFHKA_PASS.trim() : "",
+            RIF: process.env.TFHKA_RIF ? process.env.TFHKA_RIF.trim() : "J-860043237" // <-- Tu RIF
         });
 
-        // EXTRACCIÓN SEGURA DEL TOKEN
+        // Extracción segura del token
         let rawToken = response.data;
         if (rawToken && typeof rawToken === 'object') {
             rawToken = rawToken.token || rawToken.Token || rawToken.access_token || (rawToken.data ? rawToken.data.token : null);
@@ -33,7 +35,7 @@ async function obtenerToken() {
         tokenCache = String(rawToken);
         tokenExpiry = Date.now() + (11 * 60 * 60 * 1000);
         
-        console.log("✅ Token obtenido:", tokenCache.substring(0, 20) + "...");
+        console.log("✅ Token obtenido correctamente.");
         return tokenCache;
     } catch (error) {
         console.error("❌ ERROR DE AUTENTICACIÓN:", error.response?.data || error.message);
@@ -49,44 +51,24 @@ app.post('/api/emitir-factura', async (req, res) => {
         let urlBase = process.env.TFHKA_URL ? process.env.TFHKA_URL.trim() : "https://demoemisionv2.thefactoryhka.com.ve";
         const urlEmision = `${urlBase}/api/Emision`;
 
-        // Inyectamos credenciales en el body por si la API las requiere a nivel raíz
         const payloadFinal = {
             ...payloadJSON,
-            usuario: process.env.TFHKA_USER ? process.env.TFHKA_USER.trim() : "",
-            clave: process.env.TFHKA_PASS ? process.env.TFHKA_PASS.trim() : ""
+            Usuario: process.env.TFHKA_USER ? process.env.TFHKA_USER.trim() : "",
+            Clave: process.env.TFHKA_PASS ? process.env.TFHKA_PASS.trim() : ""
         };
 
-        // PRUEBA 1: Enviar el token SIN el prefijo "Bearer " (algunas versiones de TFHKA lo exigen así)
         const headers = {
             'Content-Type': 'application/json',
-            'Authorization': token 
+            'Authorization': token // Sin 'Bearer' según pruebas anteriores
         };
 
-        console.log("📤 Enviando a TFHKA...");
+        console.log("📤 Enviando factura a TFHKA...");
         const response = await axios.post(urlEmision, payloadFinal, { headers });
 
         res.status(200).json(response.data);
 
     } catch (error) {
         console.error("❌ ERROR DETALLADO DE TFHKA:", error.response?.data || error.message);
-        
-        // Si falla sin Bearer, intentamos con Bearer como fallback
-        if (error.response?.status === 401 || error.response?.status === 403) {
-            console.log("🔄 Reintentando con el prefijo 'Bearer'...");
-            try {
-                const token = await obtenerToken();
-                const responseRetry = await axios.post(urlEmision, payloadFinal, {
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
-                return res.status(200).json(responseRetry.data);
-            } catch (retryError) {
-                console.error("❌ ERROR EN REINTENTO:", retryError.response?.data || retryError.message);
-            }
-        }
-
         res.status(error.response?.status || 500).json(
             error.response?.data || { mensaje: error.message || "Error interno procesando la factura" }
         );
