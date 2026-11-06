@@ -2540,7 +2540,7 @@
             btn.disabled = false;
         });
 
-               async function cargarClientes() {
+                    async function cargarClientes() {
             const { data: vends } = await db.from('vendedores').select('id, nombre');
             if (vends) vends.forEach(v => mapVendedoresGlobal[v.id] = v.nombre);
 
@@ -2552,16 +2552,16 @@
             mapClientesGlobal = {};
             mapClientesVendedor = {};
 
-            // Paleta de colores para los vendedores
+            // Paleta de colores para los vendedores (Hexadecimales y RGBA)
             const coloresVendedores = [
-                { bg: 'bg-pink-950/40', text: 'text-pink-300', border: 'border-pink-800/40' },
-                { bg: 'bg-blue-950/40', text: 'text-blue-300', border: 'border-blue-800/40' },
-                { bg: 'bg-emerald-950/40', text: 'text-emerald-300', border: 'border-emerald-800/40' },
-                { bg: 'bg-amber-950/40', text: 'text-amber-300', border: 'border-amber-800/40' },
-                { bg: 'bg-indigo-950/40', text: 'text-indigo-300', border: 'border-indigo-800/40' },
-                { bg: 'bg-rose-950/40', text: 'text-rose-300', border: 'border-rose-800/40' },
-                { bg: 'bg-teal-950/40', text: 'text-teal-300', border: 'border-teal-800/40' },
-                { bg: 'bg-purple-950/40', text: 'text-purple-300', border: 'border-purple-800/40' }
+                { bg: 'rgba(219, 39, 119, 0.1)', text: '#f472b6', border: 'rgba(219, 39, 119, 0.3)' }, // Rosa
+                { bg: 'rgba(37, 99, 235, 0.1)', text: '#60a5fa', border: 'rgba(37, 99, 235, 0.3)' },  // Azul
+                { bg: 'rgba(16, 185, 129, 0.1)', text: '#34d399', border: 'rgba(16, 185, 129, 0.3)' }, // Verde
+                { bg: 'rgba(245, 158, 11, 0.1)', text: '#fbbf24', border: 'rgba(245, 158, 11, 0.3)' }, // Ámbar
+                { bg: 'rgba(79, 70, 229, 0.1)', text: '#818cf8', border: 'rgba(79, 70, 229, 0.3)' },  // Índigo
+                { bg: 'rgba(225, 29, 72, 0.1)', text: '#fb7185', border: 'rgba(225, 29, 72, 0.3)' },  // Rojo suave
+                { bg: 'rgba(13, 148, 136, 0.1)', text: '#2dd4bf', border: 'rgba(13, 148, 136, 0.3)' }, // Teal
+                { bg: 'rgba(147, 51, 234, 0.1)', text: '#c084fc', border: 'rgba(147, 51, 234, 0.3)' }  // Púrpura
             ];
 
             (data || []).forEach(c => {
@@ -2572,10 +2572,10 @@
                     ? '<span class="bg-sky-500/10 text-sky-400 border border-sky-500/20 px-2 py-1 rounded-md text-[10px] font-bold">Sí</span>' 
                     : '<span class="bg-slate-800 text-slate-400 border border-slate-700 px-2 py-1 rounded-md text-[10px]">No</span>';
                 
-                // Lógica para asignar color único por vendedor
-                let colorClass = 'bg-slate-800 text-slate-400 border-slate-700'; // Color por defecto
+                // Lógica para asignar color único por vendedor usando estilos en línea
+                let styleVendedor = 'background-color: #1e293b; color: #94a3b8; border-color: #334155;'; // Color por defecto (Gris)
+                
                 if (c.vendedor_id && mapVendedoresGlobal[c.vendedor_id]) {
-                    // Creamos un "hash" simple basado en el ID para que siempre tenga el mismo color
                     let hash = 0;
                     const strId = String(c.vendedor_id);
                     for (let i = 0; i < strId.length; i++) {
@@ -2583,11 +2583,11 @@
                     }
                     const colorIdx = Math.abs(hash) % coloresVendedores.length;
                     const color = coloresVendedores[colorIdx];
-                    colorClass = `${color.bg} ${color.text} ${color.border}`;
+                    styleVendedor = `background-color: ${color.bg}; color: ${color.text}; border-color: ${color.border};`;
                 }
 
                 const nombreVendedor = (c.vendedor_id && mapVendedoresGlobal[c.vendedor_id]) 
-                    ? `<span class="${colorClass} px-2 py-0.5 rounded text-[10px] font-medium border"><i class="fa-solid fa-id-badge mr-1"></i>${mapVendedoresGlobal[c.vendedor_id]}</span>`
+                    ? `<span style="${styleVendedor}" class="px-2 py-1 rounded text-[10px] font-medium border"><i class="fa-solid fa-id-badge mr-1"></i>${mapVendedoresGlobal[c.vendedor_id]}</span>`
                     : '<span class="text-slate-500 text-[10px] italic">Sin asignar</span>';
 
                 tbody.innerHTML += `
