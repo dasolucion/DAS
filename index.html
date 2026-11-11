@@ -3733,24 +3733,16 @@
                 const { data, error } = await db.from('ventas').insert([payload]).select();
                 if (error) throw error;
 
+                let exitoTFHKA = false;
                 if (data && data.length > 0) {
                     const ventaId = data[0].id;
                     const detalles = carritoVentas.map(i => ({ venta_id: ventaId, producto_id: i.id, cantidad: i.cantidad, precio_unitario: i.precio }));
                     await db.from('venta_detalles').insert(detalles);
 
-                    // ====================================================
-                    // 🛑 TFHKA DESACTIVADO TEMPORALMENTE 🛑
-                    // Para volver a activarlo, borra los "//" al inicio de 
-                    // las siguientes líneas (hasta el FIN).
-                    // ====================================================
-                   
+                    // Enviar comprobante a The Factory HKA (via Edge Function facturacion-thefactory)
                     const { data: cliDataTFHKA } = await db.from('clientes').select('*').eq('id', clienteId).single();
                     const clienteParaFactura = cliDataTFHKA || { identificacion: 'V-00000000', descripcion: 'Cliente General', direccion: 'Venezuela', telefono: '0000000000', correo: 'correo@ejemplo.com' };
-                    await enviarAFacturacionDigital(ventaId, numFactura, numControl, fechaFactura, clienteParaFactura, carritoVentas, { total: totalFacturaVenta, impuestos: impuestosVenta }, tasaUsada, "02");
-                   
-                    // ====================================================
-                    // FIN TFHKA DESACTIVADO
-                    // ====================================================
+                    exitoTFHKA = await enviarAFacturacionDigital(ventaId, numFactura, numControl, fechaFactura, clienteParaFactura, carritoVentas, { total: totalFacturaVenta, impuestos: impuestosVenta }, tasaUsada, "02");
 
                     if (esCxC) {
                         const fechaVenc = new Date(fechaFactura + 'T00:00:00');
@@ -3788,7 +3780,7 @@
                 if(document.getElementById('islr') && !document.getElementById('islr').classList.contains('hidden')) {
                     cargarProyeccionISLR();
                 }
-                alert(`✅ Factura Nº ${numFactura} registrada exitosamente (Modo Local sin TFHKA).`);
+                alert(`✅ Factura Nº ${numFactura} registrada exitosamente${exitoTFHKA ? ' — Comprobante digital emitido en The Factory ✅' : ' — Comprobante digital NO emitido (revisar consola) ⚠️'}.`);
             } catch (err) {
                 console.error("ERROR REAL:", err);
                 alert("Error al procesar la venta: " + err.message);
@@ -4142,6 +4134,44 @@ function obtenerBaseImponibleFactura(v) {
             if (error) {
                 alert("Error al guardar comprobante: " + error.message);
                 return;
+            }
+
+            // Enviar comprobante de retencion (IVA / ISLR) a The Factory -> /api/AplicarRetencion
+            if (check) {
+                try {
+                    const retBase = obtenerBaseImponibleFactura(retencionVentaSeleccionada);
+                    const payloadRetencion = {
+                        serie: null,
+                        numeroDocumento: String(retencionVentaSeleccionada.factura || ''),
+                        numeroControl: String(retencionVentaSeleccionada.control || ''),
+                        totalRetencion: {
+                            totalBaseImponible: retBase.toFixed(2),
+                            numeroCompRetencion: nro,
+                            fechaEmisionCR: fecha || new Date().toLocaleDateString('es-VE'),
+                            totalIVA: (parseFloat(retencionVentaSeleccionada.impuestos) || 0).toFixed(2),
+                            totalRetenido: monto.toFixed(2),
+                            totalISRL: monto.toFixed(2),
+                            totalIGTF: "0.00",
+                            tipoComprobante: tipo === 'iva' ? '1' : null,
+                            EsNegativo: false
+                        }
+                    };
+                    const { data: sessionRet } = await db.auth.getSession();
+                    const accessTokenRet = sessionRet?.session?.access_token || supabaseKey;
+                    const resRet = await fetch(`${supabaseUrl}/functions/v1/facturacion-thefactory`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${accessTokenRet}`,
+                            'apikey': supabaseKey
+                        },
+                        body: JSON.stringify(payloadRetencion)
+                    });
+                    const resRetData = await resRet.json().catch(() => ({}));
+                    console.log("RETENCION_ENVIADA_TFHKA: " + JSON.stringify(resRetData));
+                } catch (eRet) {
+                    console.error("ERROR_RETENCION_TFHKA: " + eRet);
+                }
             }
 
             cerrarModalRetencion();
@@ -5249,7 +5279,8 @@ function obtenerBaseImponibleFactura(v) {
                         "Direccion": clienteData.direccion || "Caracas",
                         "Pais": "VE",
                         "Telefono": [clienteData.telefono || "0000000000"],
-                        "Correo": [clienteData.correo || "correo@ejemplo.com"]
+                        "Correo": [clienteData.correo || "correo@ejemplo.com"],
+                        "Notificar": "Si" // Enviar comprobante por correo al cliente
                     },
                     "Totales": {
                         "NroItems": String(carritoVentas.length),
@@ -5274,22 +5305,50 @@ function obtenerBaseImponibleFactura(v) {
                 "DetallesItems": detallesItems
             }
         };
-console.log("📡 HACIENDO FETCH A RENDER...");
-        // 5. Enviar a nuestro Backend local
-        const respuestaBackend = await fetch('https://das-crz8.onrender.com/api/emitir-factura', {
+console.log("📡 ENVIANDO A LA EDGE FUNCTION SUPABASE (facturacion-thefactory)...");
+        // 5. Enviar el comprobante a la Edge Function de Supabase -> The Factory HKA
+        const { data: sessionTFHKA } = await db.auth.getSession();
+        const accessTokenTFHKA = sessionTFHKA?.session?.access_token || supabaseKey;
+        const respuestaBackend = await fetch(`${supabaseUrl}/functions/v1/facturacion-thefactory`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${accessTokenTFHKA}`,
+                'apikey': supabaseKey
+            },
             body: JSON.stringify(payload)
         });
 
-        const resultado = await respuestaBackend.json();
+        const resultado = await respuestaBackend.json().catch(() => ({}));
 
-        if (resultado.codigo === "200" || resultado.codigo === 200 || resultado.Resultado) {
+        if (respuestaBackend.ok && (resultado.codigo === "200" || resultado.codigo === 200 || resultado.Resultado)) {
             console.log("✅ Factura digital emitida con éxito:", resultado);
             //alert(`Factura Digital Emitida Exitosamente.\nNúmero de Control TFHKA: ${resultado.Resultado?.numeroControl || numControl}`);
+            // 6. Enviar el comprobante (PDF) via correo al cliente -> /api/Correo/Enviar
+            try {
+                const resCorreo = await fetch(`${supabaseUrl}/functions/v1/facturacion-thefactory`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${accessTokenTFHKA}`,
+                        'apikey': supabaseKey
+                    },
+                    body: JSON.stringify({
+                        serie: null,
+                        tipoDocumento: "01",
+                        numeroDocumento: String(resultado?.Resultado?.numeroDocumento || numFactura || ''),
+                        correos: [clienteData?.correo || clienteData?.email || 'correo@ejemplo.com'].filter(c => typeof c === 'string' && c.includes('@'))
+                    })
+                });
+                const resCorreoData = await resCorreo.json().catch(() => ({}));
+                console.log("ENVIAR_CORREO_RESULT: " + JSON.stringify(resCorreoData));
+            } catch (eCorreo) {
+                console.error("ERROR_CORREO: " + eCorreo);
+            }
             return true;
         } else {
-            console.error("❌ Error al emitir factura digital:", resultado);
+            console.error("Error al emitir factura digital:", resultado);
+            alert("Venta guardada localmente, pero FALLO en la nube fiscal: " + (resultado.mensaje || 'Error desconocido') + " | Validaciones: " + JSON.stringify(resultado.validaciones || []));
             //alert(`⚠️ Venta guardada localmente, pero FALLÓ en la nube fiscal:\n${resultado.mensaje || 'Error desconocido'}\n${JSON.stringify(resultado.validaciones || '')}`);
             return false;
         }
