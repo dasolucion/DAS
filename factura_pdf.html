@@ -114,6 +114,7 @@
                 <h1 id="val_empresa_nombre">Cargando...</h1>
                 <p id="val_empresa_direccion1">...</p>
                 <p id="val_empresa_direccion2"></p>
+                <p id="val_empresa_telefono"></p>
             </div>
             <div class="datos-control texto-azul">
                 <div id="val_empresa_rif">RIF: ...</div>
@@ -176,22 +177,13 @@
 </div>
         </div>
 
-                <!-- FOOTER SENIAT (Desaparece en Talonario porque el papel ya lo trae) -->
+        <!-- FOOTER SENIAT (Desaparece en Talonario porque el papel ya lo trae) -->
         <div class="disclaimer texto-azul oculto-en-talonario">
             Corporación Bobinas y Rollos, C.A. RIF J-31151599-2 AV PRINCIPAL LAS CANTERAS DEL ESTE, MACARACUAY GALPON S/N PB. CARACAS ESTADO MIRANDA. TELEFONOS 0212-2580068<br>
-            NUMERO DE PROVIDENCIA: SENIAT-01-00683 DEL 01/04/2008 TIPO DE DOCUMENTO: FORMA LIBRE N° DE CONTROL DESDE EL 00-001251 HASTA EL 00-001400 FECHA DE ELABORACION 09/07/2025
+            NUMERO DE PROVIDENCIA: SENIAT-01-00683 DEL 01/04/2008 TIPO DE DOCUMENTO: FORMA LIBRE N° DE CONTROL DESDE EL 00-001251 HASTA 00-001400 FECHA DE ELABORACION 09/07/2025
         </div>
         <div class="original texto-rojo oculto-en-talonario">ORIGINAL - CLIENTE</div>
-
-        <!-- FOOTER SENIAT (Desaparece en Talonario porque el papel ya lo trae) 
-        <div class="disclaimer texto-azul oculto-en-talonario" style="font-size: 7.5px; line-height: 1.4;">
-            <strong>DOCUMENTO EMITIDO BAJO LA MODALIDAD DE IMPRENTA DIGITAL</strong><br>
-            Imprenta Digital Autorizada mediante Providencia SENIAT/INTI/00/000XXX de fecha XX/XX/2022<br>
-            THE FACTORY HKA VENEZUELA, C.A. RIF J-40283558-8<br>
-            Factura válida fiscalmente. Puede verificar su autenticidad en: <br>
-            https://factura.thefactoryhka.com.ve/consulta<br><br>
-            Corporación Bobinas y Rollos, C.A. RIF J-31151599-2 AV PRINCIPAL LAS CANTERAS DEL ESTE, MACARACUAY GALPON S/N PB. CARACAS ESTADO MIRANDA. TELEFONOS 0212-2580068
-        </div>-->
+    </div>
 
     <!-- SCRIPT DE CONEXIÓN A SUPABASE Y FUNCIONES -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -234,7 +226,11 @@ function imprimirTalonario() {
         // ==========================================
         async function cargarDatosEmpresa() {
             try {
-                const { data: config, error } = await db.from('datos').select('*').limit(1).single();
+                // Se ordena por fecha de creación descendente y se toma el primer registro:
+                // la tabla 'datos' puede tener varias filas y .single() falla/retorna la incorrecta
+                // cuando hay mas de una, lo que dejaba el encabezado sin direccion/teléfono.
+                const { data: configList, error } = await db.from('datos').select('*').order('created_at', { ascending: false }).limit(1);
+                const config = configList && configList.length > 0 ? configList[0] : null;
                 if (error || !config) {
                     console.warn("No se pudo cargar la configuración de la empresa.");
                     return;
@@ -258,6 +254,12 @@ function imprimirTalonario() {
                     const mitad = Math.ceil(palabras.length / 2);
                     document.getElementById('val_empresa_direccion1').innerText = palabras.slice(0, mitad).join(' ');
                     document.getElementById('val_empresa_direccion2').innerText = palabras.slice(mitad).join(' ');
+                }
+
+                // Teléfono de la empresa
+                const elTelefonoEmpresa = document.getElementById('val_empresa_telefono');
+                if (elTelefonoEmpresa) {
+                    elTelefonoEmpresa.innerText = config.empresa_telefono ? `Tel: ${config.empresa_telefono}` : '';
                 }
             } catch(e) {
                 console.warn("Error al cargar configuración de empresa:", e);
@@ -412,16 +414,16 @@ document.title = `FAC - ${numFactura}`;
                 // ACTUALIZAR TOTALES
                 // Sub Total = suma de TODOS los items (gravado + exento)
                 // ==========================================
-                const descuento = parseFloat(venta.descuento) || 0;
-                const subtotalGeneral = subtotalGravado + subtotalExento;
-const totalCalculado = (subtotalGeneral + impuestosTotales) - descuento;
+const descuento = parseFloat(venta.descuento) || 0;
+const subtotalGeneral = subtotalGravado + subtotalExento;
+const totalConDescuento = totalGeneralFactura - descuento; // total ya viene con IVA y sin ISLR
 
-                document.getElementById('val_subtotal').innerText = formatoVE.format(subtotalGeneral);
-                document.getElementById('val_exento').innerText = formatoVE.format(subtotalExento);
-                document.getElementById('val_base').innerText = formatoVE.format(subtotalGravado);
-                document.getElementById('val_iva').innerText = formatoVE.format(impuestosTotales);
-                document.getElementById('val_descuento').innerText = "- " + formatoVE.format(descuento);
-                document.getElementById('val_total').innerText = formatoVE.format(totalCalculado);
+document.getElementById('val_subtotal').innerText = formatoVE.format(subtotalGeneral);
+document.getElementById('val_exento').innerText = formatoVE.format(subtotalExento);
+document.getElementById('val_base').innerText = formatoVE.format(subtotalGravado);
+document.getElementById('val_iva').innerText = formatoVE.format(impuestosTotales);
+document.getElementById('val_descuento').innerText = "- " + formatoVE.format(descuento);
+document.getElementById('val_total').innerText = formatoVE.format(totalConDescuento);
 
             } catch (error) {
                 console.error("Error crítico Javascript:", error);
