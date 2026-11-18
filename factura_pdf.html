@@ -224,12 +224,25 @@ function imprimirTalonario() {
         // ==========================================
         // CARGAR DATOS DE LA EMPRESA DESDE PARÁMETROS
         // ==========================================
+        // Divide la dirección en 2 líneas lógicas (corta en una coma cercana a la mitad)
+        // sin recortar el texto: si es más larga, el navegador la envuelve normalmente.
+        function dividirDireccion(dir) {
+            const texto = String(dir || '').trim();
+            if (!texto) return ['', ''];
+            if (texto.length <= 60) return [texto, ''];
+            let corte = texto.lastIndexOf(',', 65);
+            if (corte < 30) corte = texto.indexOf(',', 40);
+            if (corte < 30) corte = texto.lastIndexOf(' ', 65);
+            if (corte < 30) corte = 60;
+            return [texto.slice(0, corte + 1).trim(), texto.slice(corte + 1).trim()];
+        }
+
         async function cargarDatosEmpresa() {
             try {
-                // Se ordena por fecha de creación descendente y se toma el primer registro:
-                // la tabla 'datos' puede tener varias filas y .single() falla/retorna la incorrecta
-                // cuando hay mas de una, lo que dejaba el encabezado sin direccion/teléfono.
-                const { data: configList, error } = await db.from('datos').select('*').order('created_at', { ascending: false }).limit(1);
+                // ORDEN DETERMINISTA por id: debe ser SIEMPRE el mismo registro que
+                // usa la pantalla de Parámetros (el de mayor id), para que los cambios
+                // de dirección/teléfono se reflejen al reimprimir la factura.
+                const { data: configList, error } = await db.from('datos').select('*').order('id', { ascending: false }).limit(1);
                 const config = configList && configList.length > 0 ? configList[0] : null;
                 if (error || !config) {
                     console.warn("No se pudo cargar la configuración de la empresa.");
@@ -247,13 +260,11 @@ function imprimirTalonario() {
                     document.getElementById('val_empresa_rif').innerText = `RIF. ${config.empresa_rif}`;
                 }
 
-                // Dirección (dividida en 2 líneas para mejor presentación)
+                // Dirección (dividida en 2 líneas para mejor presentación, sin recortar)
                 if (config.empresa_direccion) {
-                    const dir = config.empresa_direccion;
-                    const palabras = dir.split(' ');
-                    const mitad = Math.ceil(palabras.length / 2);
-                    document.getElementById('val_empresa_direccion1').innerText = palabras.slice(0, mitad).join(' ');
-                    document.getElementById('val_empresa_direccion2').innerText = palabras.slice(mitad).join(' ');
+                    const [dir1, dir2] = dividirDireccion(config.empresa_direccion);
+                    document.getElementById('val_empresa_direccion1').innerText = dir1;
+                    document.getElementById('val_empresa_direccion2').innerText = dir2;
                 }
 
                 // Teléfono de la empresa
