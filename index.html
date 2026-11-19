@@ -5208,7 +5208,50 @@ function obtenerBaseImponibleFactura(v) {
             }
         }
 
-                    async function enviarAFacturacionDigital(ventaId, numFactura, numControl, fechaFactura, clienteData, carritoVentas, totales, tasaUsada, formaPago) {
+        // ==========================================
+        // MONTO EN LETRAS (requerido por The Factory)
+        // ==========================================
+        function montoEnLetrasVES(monto) {
+            const n = Math.abs(Number(monto) || 0);
+            const entero = Math.floor(n);
+            const centavos = Math.round((n - entero) * 100);
+            const letras = numeroALetras(entero).trim();
+            const moneda = entero === 1 ? 'BOLIVAR' : 'BOLIVARES';
+            return `${letras} ${moneda} CON ${String(centavos).padStart(2, '0')}/100`;
+        }
+
+        function numeroALetras(n) {
+            const UNI = ['', 'UNO', 'DOS', 'TRES', 'CUATRO', 'CINCO', 'SEIS', 'SIETE', 'OCHO', 'NUEVE', 'DIEZ', 'ONCE', 'DOCE', 'TRECE', 'CATORCE', 'QUINCE', 'DIECISEIS', 'DIECISIETE', 'DIECIOCHO', 'DIECINUEVE', 'VEINTE'];
+            const DEC = ['', '', '', 'TREINTA', 'CUARENTA', 'CINCUENTA', 'SESENTA', 'SETENTA', 'OCHENTA', 'NOVENTA'];
+            const CEN = ['', 'CIENTO', 'DOSCIENTOS', 'TRESCIENTOS', 'CUATROCIENTOS', 'QUINIENTOS', 'SEISCIENTOS', 'SETECIENTOS', 'OCHOCIENTOS', 'NOVECIENTOS'];
+
+            function centenas(num) {
+                if (num === 0) return '';
+                if (num === 100) return 'CIEN';
+                let s = '';
+                if (num >= 100) { s += CEN[Math.floor(num / 100)] + ' '; num %= 100; }
+                if (num <= 20) { if (num) s += UNI[num]; }
+                else if (num < 30) { s += 'VEINTI' + UNI[num - 20].toLowerCase(); }
+                else { s += DEC[Math.floor(num / 10)]; if (num % 10) s += ' Y ' + UNI[num % 10]; }
+                return s.trim();
+            }
+
+            function tramo(num) {
+                if (num === 0) return 'CERO';
+                let s = '';
+                const millones = Math.floor(num / 1000000);
+                if (millones) s += (millones === 1 ? 'UN MILLON' : tramo(millones) + ' MILLONES') + ' ';
+                const milesParte = Math.floor((num % 1000000) / 1000);
+                if (milesParte) s += (milesParte === 1 ? 'MIL' : centenas(milesParte) + ' MIL') + ' ';
+                const resto = num % 1000;
+                if (resto) s += centenas(resto);
+                return s.trim();
+            }
+
+            return tramo(Math.floor(Math.abs(Number(n) || 0)));
+        }
+
+        async function enviarAFacturacionDigital(ventaId, numFactura, numControl, fechaFactura, clienteData, carritoVentas, totales, tasaUsada, formaPago) {
     try {
      console.log("🚀 INICIANDO ENVÍO A TFHKA PARA LA FACTURA:", numFactura);
         // 1. Formatear Fecha y Hora para la API
@@ -5235,19 +5278,17 @@ function obtenerBaseImponibleFactura(v) {
             const valorTotalItem = (item.precio * item.cantidad) + valorIVA;
 
             return {
-                "NumeroLinea": String(index + 1),
-                "CodigoCIIU": "9609", // Código genérico de servicios, puedes ajustarlo
-                "CodigoPLU": null,
-                "IndicadorBienoServicio": indicador,
-                "Descripcion": item.nombre,
-                "Cantidad": String(item.cantidad),
-                "UnidadMedida": "ZZ", // ZZ = Unidad genérica
-                "PrecioUnitario": item.precio.toFixed(2),
-                "PrecioItem": (item.precio * item.cantidad).toFixed(2),
-                "CodigoImpuesto": codigoImp,
-                "TasaIVA": tasaIVA.toFixed(2),
-                "ValorIVA": valorIVA.toFixed(2),
-                "ValorTotalItem": valorTotalItem.toFixed(2)
+                numeroLinea: String(index + 1),
+                indicadorBienoServicio: indicador,
+                descripcion: item.nombre,
+                cantidad: String(item.cantidad),
+                unidadMedida: "NIU", // NIU = Unidad (código SENIAT)
+                precioUnitario: item.precio.toFixed(2),
+                precioItem: (item.precio * item.cantidad).toFixed(2),
+                codigoImpuesto: codigoImp,
+                tasaIVA: tasaIVA.toFixed(2),
+                valorIVA: valorIVA.toFixed(2),
+                valorTotalItem: valorTotalItem.toFixed(2)
             };
         });
 
@@ -5263,76 +5304,77 @@ function obtenerBaseImponibleFactura(v) {
         const impuestosSubtotal = [];
         if (baseGravada > 0) {
             impuestosSubtotal.push({
-                "CodigoTotalImp": "G",
-                "AlicuotaImp": "16.00",
-                "BaseImponibleImp": baseGravada.toFixed(2),
-                "ValorTotalImp": totalIVA.toFixed(2)
+                codigoTotalImp: "G",
+                alicuotaImp: "16.00",
+                baseImponibleImp: baseGravada.toFixed(2),
+                valorTotalImp: totalIVA.toFixed(2)
             });
         }
         if (baseExenta > 0) {
             impuestosSubtotal.push({
-                "CodigoTotalImp": "E",
-                "AlicuotaImp": "0.00",
-                "BaseImponibleImp": baseExenta.toFixed(2),
-                "ValorTotalImp": "0.00"
+                codigoTotalImp: "E",
+                alicuotaImp: "0.00",
+                baseImponibleImp: baseExenta.toFixed(2),
+                valorTotalImp: "0.00"
             });
         }
 
         // 4. Armar el JSON Maestro
         const payload = {
-            "DocumentoElectronico": {
-                "Encabezado": {
-                    "IdentificacionDocumento": {
-                        "TipoDocumento": "01",
-                        "NumeroDocumento": numFactura,
-                        "Serie": "",
-                        "FechaEmision": fechaFormat,
-                        "FechaVencimiento": fechaFormat,
-                        "HoraEmision": horaFormat,
-                        "TipoDePago": "Inmediato",
-                        "Sucursal": "0001",
-                        "TipoDeVenta": "Interna",
-                        "Moneda": "BSD",
-                        "NumeroControl": numControl // TFHKA lo recibe y asigna en algunos casos
+            documentoElectronico: {
+                encabezado: {
+                    identificacionDocumento: {
+                        tipoDocumento: "01",
+                        numeroDocumento: numFactura,
+                        serie: "",
+                        fechaEmision: fechaFormat,
+                        fechaVencimiento: fechaFormat,
+                        horaEmision: horaFormat,
+                        tipoDePago: "Inmediato",
+                        sucursal: "0001",
+                        tipoDeVenta: "Interna",
+                        moneda: "VES"
                     },
-                    "Comprador": {
-                        "TipoIdentificacion": "J", // J si es RIF, V si es cédula
-                        "NumeroIdentificacion": clienteData.identificacion || "V-00000000",
-                        "RazonSocial": clienteData.descripcion || "Cliente General",
-                        "Direccion": clienteData.direccion || "Caracas",
-                        "Pais": "VE",
-                        "Telefono": [clienteData.telefono || "0000000000"],
-                        "Correo": [clienteData.correo || "correo@ejemplo.com"],
-                        "Notificar": "Si" // Enviar comprobante por correo al cliente
+                    comprador: {
+                        // El tipo se deduce de la identificacion (J-123 -> J, V-123 -> V)
+                        tipoIdentificacion: (String(clienteData.identificacion || '').match(/^[A-Za-z]/) || ['V'])[0].toUpperCase(),
+                        numeroIdentificacion: String(clienteData.identificacion || '').replace(/^[A-Za-z]-?\s*/, '').trim() || "00000000",
+                        razonSocial: clienteData.descripcion || "Cliente General",
+                        direccion: clienteData.direccion || "Caracas",
+                        pais: "VE",
+                        telefono: [clienteData.telefono || "0000000000"],
+                        correo: [clienteData.correo || "correo@ejemplo.com"],
+                        notificar: "No" // el comprobante se envia en el paso /api/Correo/Enviar
                     },
-                    "Totales": {
-                        "NroItems": String(carritoVentas.length),
-                        "MontoGravadoTotal": baseGravada.toFixed(2),
-                        "MontoExentoTotal": baseExenta.toFixed(2),
-                        "Subtotal": subtotal.toFixed(2),
-                        "TotalIVA": totalIVA.toFixed(2),
-                        "MontoTotalConIVA": totalPagar.toFixed(2),
-                        "TotalAPagar": totalPagar.toFixed(2),
-                        "MontoEnLetras": "VALOR EN LETRAS AQUI",
-                        "ImpuestosSubtotal": impuestosSubtotal,
-                        "FormasPago": [
+                    totales: {
+                        nroItems: String(carritoVentas.length),
+                        montoGravadoTotal: baseGravada.toFixed(2),
+                        montoExentoTotal: baseExenta.toFixed(2),
+                        subtotal: subtotal.toFixed(2),
+                        totalIVA: totalIVA.toFixed(2),
+                        montoTotalConIVA: totalPagar.toFixed(2),
+                        totalAPagar: totalPagar.toFixed(2),
+                        montoEnLetras: montoEnLetrasVES(totalPagar),
+                        totalDescuento: "0.00",
+                        impuestosSubtotal: impuestosSubtotal,
+                        formasPago: [
                             {
-                                "Forma": formaPago || "02", // 02 = Pago Móvil
-                                "Monto": totalPagar.toFixed(2),
-                                "Moneda": "BSD",
-                                "TipoCambio": "0.0000"
+                                forma: formaPago || "02", // 02 = Pago Movil
+                                monto: totalPagar.toFixed(2),
+                                moneda: "VES",
+                                tipoCambio: "0.0000"
                             }
                         ]
                     }
                 },
-                "DetallesItems": detallesItems
+                detallesItems: detallesItems
             }
         };
 console.log("📡 ENVIANDO A LA EDGE FUNCTION SUPABASE (facturacion-thefactory)...");
         // 5. Enviar el comprobante a la Edge Function de Supabase -> The Factory HKA
         const { data: sessionTFHKA } = await db.auth.getSession();
         const accessTokenTFHKA = sessionTFHKA?.session?.access_token || supabaseKey;
-        const respuestaBackend = await fetch(`${supabaseUrl}/functions/v1/facturacion-thefactory`, {
+        const respuestaBackend = await fetch(`${supabaseUrl}/functions/v1/facturacion-thefactory/api/Emision`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -5344,12 +5386,12 @@ console.log("📡 ENVIANDO A LA EDGE FUNCTION SUPABASE (facturacion-thefactory).
 
         const resultado = await respuestaBackend.json().catch(() => ({}));
 
-        if (respuestaBackend.ok && (resultado.codigo === "200" || resultado.codigo === 200 || resultado.Resultado)) {
+        if (respuestaBackend.ok && (resultado.codigo === "200" || resultado.codigo === 200 || resultado.Codigo === "200" || resultado.Codigo === 200)) {
             console.log("✅ Factura digital emitida con éxito:", resultado);
             //alert(`Factura Digital Emitida Exitosamente.\nNúmero de Control TFHKA: ${resultado.Resultado?.numeroControl || numControl}`);
             // 6. Enviar el comprobante (PDF) via correo al cliente -> /api/Correo/Enviar
             try {
-                const resCorreo = await fetch(`${supabaseUrl}/functions/v1/facturacion-thefactory`, {
+                const resCorreo = await fetch(`${supabaseUrl}/functions/v1/facturacion-thefactory/api/Correo/Enviar`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -5357,9 +5399,9 @@ console.log("📡 ENVIANDO A LA EDGE FUNCTION SUPABASE (facturacion-thefactory).
                         'apikey': supabaseKey
                     },
                     body: JSON.stringify({
-                        serie: null,
+                        serie: "",
                         tipoDocumento: "01",
-                        numeroDocumento: String(resultado?.Resultado?.numeroDocumento || numFactura || ''),
+                        numeroDocumento: String(resultado?.resultado?.numeroDocumento || resultado?.Resultado?.numeroDocumento || numFactura || ''),
                         correos: [clienteData?.correo || clienteData?.email || 'correo@ejemplo.com'].filter(c => typeof c === 'string' && c.includes('@'))
                     })
                 });
@@ -5368,6 +5410,27 @@ console.log("📡 ENVIANDO A LA EDGE FUNCTION SUPABASE (facturacion-thefactory).
             } catch (eCorreo) {
                 console.error("ERROR_CORREO: " + eCorreo);
             }
+
+            // 7. Consultar estado: TFHKA asigna el numero de control y la URL del PDF fiscal
+            try {
+                const resEstado = await fetch(`${supabaseUrl}/functions/v1/facturacion-thefactory/api/EstadoDocumento`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${accessTokenTFHKA}`,
+                        'apikey': supabaseKey
+                    },
+                    body: JSON.stringify({ tipoDocumento: "01", numeroDocumento: String(numFactura), serie: "" })
+                });
+                const estadoData = await resEstado.json().catch(() => ({}));
+                const controlFiscal = estadoData?.estado?.numeroControl || resultado?.resultado?.numeroControl || '';
+                const urlFiscal = estadoData?.estado?.urlConsulta || resultado?.resultado?.urlConsulta || '';
+                window.dasFacturaFiscal = { control: controlFiscal, url: urlFiscal, estado: estadoData?.estado?.estadoDocumento || '' };
+                console.log("ESTADO_FISCAL: " + JSON.stringify(window.dasFacturaFiscal));
+            } catch (eEstado) {
+                console.error("ERROR_ESTADO_FISCAL: " + eEstado);
+            }
+
             return true;
         } else {
             console.error("Error al emitir factura digital:", resultado);
