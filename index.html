@@ -3803,7 +3803,7 @@
                 if(document.getElementById('islr') && !document.getElementById('islr').classList.contains('hidden')) {
                     cargarProyeccionISLR();
                 }
-                alert(`✅ Factura Nº ${numFactura} registrada exitosamente${exitoTFHKA ? ' — Comprobante digital emitido en The Factory ✅' : ' — Comprobante digital NO emitido (revisar consola) ⚠️'}.`);
+                alert(`✅ Factura Nº ${numFactura} registrada exitosamente${exitoTFHKA ? ' — Comprobante digital emitido en The Factory ✅. Descarga el PDF fiscal con el botón rojo 📄 del historial.' : ' — Comprobante digital NO emitido (revisar consola) ⚠️'}.`);
             } catch (err) {
                 console.error("ERROR REAL:", err);
                 alert("Error al procesar la venta: " + err.message);
@@ -3898,6 +3898,56 @@
             aplicarFiltrosVentas();
         }
 
+        // ==========================================
+        // DESCARGA DEL PDF FISCAL (The Factory HKA)
+        // ==========================================
+        async function descargarPdfFiscal(numeroDocumento, boton) {
+            if (!numeroDocumento) {
+                alert('Esta venta no tiene Numero de Factura asociado.');
+                return;
+            }
+            const htmlOriginal = boton ? boton.innerHTML : null;
+            if (boton) {
+                boton.disabled = true;
+                boton.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+            }
+            try {
+                const res = await fetch(`${supabaseUrl}/functions/v1/facturacion-thefactory/api/DescargaArchivo`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${supabaseKey}`,
+                        'apikey': supabaseKey
+                    },
+                    body: JSON.stringify({ serie: "", tipoDocumento: "01", numeroDocumento: String(numeroDocumento) })
+                });
+                const data = await res.json().catch(() => ({}));
+                if (!res.ok || !data.archivo) {
+                    alert('The Factory no devolvio el PDF.\n' + (data.mensaje || data.codigo || ('HTTP ' + res.status)));
+                    return;
+                }
+                const bin = atob(data.archivo);
+                const bytes = new Uint8Array(bin.length);
+                for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+                const url = URL.createObjectURL(new Blob([bytes], { type: 'application/pdf' }));
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `FacturaFiscal-${numeroDocumento}.pdf`;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                setTimeout(() => URL.revokeObjectURL(url), 30000);
+            } catch (e) {
+                console.error("ERROR_PDF_FISCAL: " + e);
+                alert('Error descargando el PDF fiscal: ' + e.message);
+            } finally {
+                if (boton) {
+                    boton.disabled = false;
+                    boton.innerHTML = htmlOriginal;
+                }
+            }
+        }
+
         function renderTablaVentas(lista) {
             const tbody = document.getElementById('tabla-ventas');
             if (!tbody) return;
@@ -3956,6 +4006,7 @@ const btnRetIslr = retIslrActiva
                         <td class="p-4 text-center">${btnRetIslr}</td>
                         <td class="p-4">${estadoCxC}</td>
                         <td class="p-4 text-right space-x-2">
+                            <button onclick="descargarPdfFiscal('${v.factura}', this)" class="bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-rose-300 px-2.5 py-1.5 rounded-lg text-[10px] font-bold transition shadow-sm" title="Factura fiscal The Factory (PDF)"><i class="fa-solid fa-file-pdf"></i></button>
                             <button onclick="imprimirVenta('${v.id}')" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 hover:text-white px-2.5 py-1.5 rounded-lg text-[10px] font-bold transition shadow-sm" title="Imprimir"><i class="fa-solid fa-print"></i></button>
                             <button onclick="eliminarVenta('${v.id}')" class="text-rose-400 hover:text-rose-300 font-medium px-2"><i class="fa-solid fa-trash"></i></button>
                         </td>
@@ -5425,7 +5476,7 @@ console.log("📡 ENVIANDO A LA EDGE FUNCTION SUPABASE (facturacion-thefactory).
                 const estadoData = await resEstado.json().catch(() => ({}));
                 const controlFiscal = estadoData?.estado?.numeroControl || resultado?.resultado?.numeroControl || '';
                 const urlFiscal = estadoData?.estado?.urlConsulta || resultado?.resultado?.urlConsulta || '';
-                window.dasFacturaFiscal = { control: controlFiscal, url: urlFiscal, estado: estadoData?.estado?.estadoDocumento || '' };
+                window.dasFacturaFiscal = { numeroDocumento: String(numFactura), control: controlFiscal, url: urlFiscal, estado: estadoData?.estado?.estadoDocumento || '' };
                 console.log("ESTADO_FISCAL: " + JSON.stringify(window.dasFacturaFiscal));
             } catch (eEstado) {
                 console.error("ERROR_ESTADO_FISCAL: " + eEstado);
