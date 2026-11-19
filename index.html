@@ -5231,7 +5231,7 @@ function obtenerBaseImponibleFactura(v) {
                 let s = '';
                 if (num >= 100) { s += CEN[Math.floor(num / 100)] + ' '; num %= 100; }
                 if (num <= 20) { if (num) s += UNI[num]; }
-                else if (num < 30) { s += 'VEINTI' + UNI[num - 20].toLowerCase(); }
+                else if (num < 30) { s += ['VEINTIUNO', 'VEINTIDOS', 'VEINTITRES', 'VEINTICUATRO', 'VEINTICINCO', 'VEINTISEIS', 'VEINTISIETE', 'VEINTIOCHO', 'VEINTINUEVE'][num - 21]; }
                 else { s += DEC[Math.floor(num / 10)]; if (num % 10) s += ' Y ' + UNI[num % 10]; }
                 return s.trim();
             }
