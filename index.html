@@ -1204,6 +1204,14 @@
                             <input type="date" id="comp-fecha" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-orange-500 transition" required>
                         </div>
                         <div>
+                            <label class="block text-xs font-medium text-slate-300 mb-1">Nº de Factura</label>
+                            <input type="text" id="comp-factura" placeholder="Ej. 000277" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-orange-500 transition font-mono">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-300 mb-1">Nº de Control</label>
+                            <input type="text" id="comp-control" placeholder="Ej. 00-000298" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-orange-500 transition font-mono">
+                        </div>
+                        <div>
                             <label class="block text-xs font-medium text-slate-300 mb-1">Subtotal Gravado (Bs)</label>
                             <input type="number" step="0.01" id="comp-subtotal" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-orange-500 transition" oninput="calcularTotalCompra()" required>
                         </div>
@@ -1272,6 +1280,8 @@
                                 <tr>
                                     <th class="p-4 font-medium">Fecha</th>
                                     <th class="p-4 font-medium">Descripción/Proveedor</th>
+                                    <th class="p-4 font-medium">Nº Factura</th>
+                                    <th class="p-4 font-medium">Nº Control</th>
                                     <th class="p-4 font-medium">Subtotal Gravado</th>
                                     <th class="p-4 font-medium">Exento</th>
                                     <th class="p-4 font-medium">IVA</th>
@@ -3438,6 +3448,8 @@
             const nuevaCompra = {
                 descripcion: nombreProv,
                 fecha: document.getElementById('comp-fecha').value,
+                numero_factura: (document.getElementById('comp-factura')?.value || '').trim() || null,
+                numero_control: (document.getElementById('comp-control')?.value || '').trim() || null,
                 subtotal: parseFloat(document.getElementById('comp-subtotal').value),
                 monto_exento: parseFloat(document.getElementById('comp-exento').value) || 0,
                 impuestos: parseFloat(document.getElementById('comp-iva').value),
@@ -3502,7 +3514,7 @@
             const tasaActiva = parseFloat(datosGenerales.tasa) || 1;
 
             if (lista.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-slate-500 italic text-xs">No se encontraron compras con los filtros aplicados.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="9" class="p-8 text-center text-slate-500 italic text-xs">No se encontraron compras con los filtros aplicados.</td></tr>`;
                 document.getElementById('compras-resumen-filtro').innerText = '0 compras | Bs. 0,00 | $0,00';
                 return;
             }
@@ -3519,6 +3531,8 @@
                     <tr class="hover:bg-slate-800/50 transition border-b border-slate-800">
                         <td class="p-4 text-slate-400 font-mono text-[11px]">${formatearFechaMostrar(c.fecha || c.created_at)}</td>
                         <td class="p-4 font-medium text-white">${c.descripcion} ${badgePersonal}</td>
+                        <td class="p-4 font-mono text-slate-300 text-[11px]">${c.numero_factura || '-'}</td>
+                        <td class="p-4 font-mono text-emerald-400 text-[11px]">${c.numero_control || '-'}</td>
                         <td class="p-4 font-mono text-slate-400 text-[11px]">Bs. ${formatNumber(c.subtotal)}</td>
                         <td class="p-4 font-mono text-amber-400 text-[11px]">Bs. ${formatNumber(c.monto_exento || 0)}</td>
                         <td class="p-4 font-mono text-slate-400 text-[11px]">Bs. ${formatNumber(c.impuestos)}</td>
