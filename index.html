@@ -5662,7 +5662,7 @@ console.log("📡 ENVIANDO A LA EDGE FUNCTION SUPABASE (facturacion-thefactory).
             if (!sel) return;
             const anterior = sel.value;
             const [resV, resCli, notas] = await Promise.all([
-                db.from('ventas').select('id,factura,total,fecha,cliente_id,tfhka_numero_documento,tfhka_estado'),
+                db.from('ventas').select('id,factura,total,fecha,cliente_id,cxc,tfhka_numero_documento,tfhka_estado'),
                 db.from('clientes').select('id,descripcion'),
                 traerNC('venta_id,total')
             ]);
@@ -5672,6 +5672,12 @@ console.log("📡 ENVIANDO A LA EDGE FUNCTION SUPABASE (facturacion-thefactory).
             notas.forEach(n => { mapNc[n.venta_id] = (mapNc[n.venta_id] || 0) + (parseFloat(n.total) || 0); });
 
             const lista = (resV.data || []).filter(v => {
+                // Solo facturas "vivas": fiscalmente emitidas, pendientes de cobro y sin NC previa.
+                if (v.cxc !== true) return false;
+                const emitida = Boolean(v.tfhka_numero_documento) ||
+                    String(v.tfhka_estado || '').toLowerCase() === 'enviada';
+                if (!emitida) return false;
+                if ((mapNc[v.id] || 0) > 0) return false;
                 const saldo = (parseFloat(v.total) || 0) - (mapNc[v.id] || 0);
                 return saldo > 0.009;
             }).sort((a, b) => {
@@ -5682,9 +5688,11 @@ console.log("📡 ENVIANDO A LA EDGE FUNCTION SUPABASE (facturacion-thefactory).
 
             sel.innerHTML = '<option value="">Seleccione una factura...</option>' + lista.map(v => {
                 const saldo = (parseFloat(v.total) || 0) - (mapNc[v.id] || 0);
-                const fiscal = v.tfhka_numero_documento ? ' ✅' : '';
-                return `<option value="${v.id}">#${escNC(v.factura || v.id)} · ${escNC(mapCli[v.cliente_id] || 'Cliente')} · Bs. ${formatNumber(saldo)}${fiscal}</option>`;
+                return `<option value="${v.id}">#${escNC(v.factura || v.id)} · ${escNC(mapCli[v.cliente_id] || 'Cliente')} · Bs. ${formatNumber(saldo)} ✅</option>`;
             }).join('');
+            if (!lista.length) {
+                sel.innerHTML = '<option value="">No hay facturas emitidas, pendientes de cobro y sin NC previa</option>';
+            }
             if (lista.some(v => String(v.id) === String(anterior))) sel.value = anterior;
         }
 
@@ -5941,6 +5949,22 @@ console.log("📡 ENVIANDO A LA EDGE FUNCTION SUPABASE (facturacion-thefactory).
 
                 await db.from('datos').update({ ult_nc: numNC }).eq('id', datosGenerales.id || 1);
                 datosGenerales.ult_nc = numNC;
+
+                // La factura acreditada deja de estar pendiente: se retira de CxC
+                // y se cierra su compromiso de cobro (mismo patrón que marcarComoPagado).
+                try {
+                    await db.from('ventas').update({ cxc: false }).eq('id', ncVentaCache.id);
+                    const facturaAfectada = String(ncVentaCache.factura || '');
+                    if (facturaAfectada) {
+                        await db.from('tareas')
+                            .update({ estado: 'Completada' })
+                            .eq('cliente_id', ncVentaCache.cliente_id)
+                            .eq('tipo', 'Cobro')
+                            .like('descripcion', `%${facturaAfectada}%`);
+                    }
+                } catch (eCxC) {
+                    console.error('ERROR_AL_CERRAR_CXC_NC: ' + eCxC);
+                }
 
                 try {
                     const rc = await fetch(`${supabaseUrl}/functions/v1/facturacion-thefactory/api/Correo/Enviar`, {
