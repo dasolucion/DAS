@@ -158,6 +158,9 @@
             <button onclick="mostrarModulo('notas')" class="w-full text-left py-3 px-4 rounded-xl text-xs font-medium transition flex items-center gap-3 text-slate-300 hover:bg-slate-800 hover:text-white border border-transparent hover:border-slate-700">
                 <i class="fa-solid fa-file-lines w-5 text-center text-cyan-400"></i> Notas de Entrega
             </button>
+            <button onclick="mostrarModulo('notas-credito')" class="w-full text-left py-3 px-4 rounded-xl text-xs font-medium transition flex items-center gap-3 text-slate-300 hover:bg-slate-800 hover:text-white border border-transparent hover:border-slate-700">
+                <i class="fa-solid fa-file-arrow-down w-5 text-center text-rose-400"></i> Notas de Crédito
+            </button>
             <button onclick="mostrarModulo('ventas')" class="w-full text-left py-3 px-4 rounded-xl text-xs font-medium transition flex items-center gap-3 text-slate-300 hover:bg-slate-800 hover:text-white border border-transparent hover:border-slate-700">
                 <i class="fa-solid fa-cart-shopping w-5 text-center text-emerald-400"></i> Ventas
             </button>
@@ -912,6 +915,78 @@
                                 </tr>
                             </thead>
                             <tbody id="tabla-notas" class="divide-y border-slate-800"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- NOTAS DE CREDITO -->
+            <section id="notas-credito" class="modulo hidden max-w-6xl mx-auto space-y-6">
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-2xl flex items-center gap-3">
+                    <div class="bg-slate-800 text-rose-400 p-2.5 rounded-xl border border-slate-700">
+                        <i class="fa-solid fa-file-arrow-down text-lg"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-bold text-white tracking-tight">Notas de Crédito</h2>
+                        <p class="text-xs text-slate-400">Emisión digital ante The Factory HKA</p>
+                    </div>
+                </div>
+
+                <div class="bg-slate-900/60 border border-slate-800 p-5 rounded-2xl space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+                        <div>
+                            <label class="block text-xs font-medium text-slate-300 mb-1">Factura fiscal a acreditar</label>
+                            <select id="nc-factura" onchange="alCambiarFacturaNC()" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-rose-500"></select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-300 mb-1">Tipo</label>
+                            <select id="nc-tipo" onchange="renderItemsNC()" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-rose-500">
+                                <option value="total">Total</option>
+                                <option value="parcial">Parcial</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-300 mb-1">N° Nota de Crédito</label>
+                            <input id="nc-numero" readonly class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-rose-300 font-mono font-bold outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-300 mb-1">Correo del cliente</label>
+                            <input id="nc-correo" type="email" placeholder="correo@ejemplo.com" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-rose-500">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-300 mb-1">Motivo de la devolución</label>
+                        <input id="nc-motivo" type="text" maxlength="255" placeholder="Ej. Devolución de mercancía" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-rose-500">
+                    </div>
+                    <div id="nc-detalles" class="overflow-x-auto border border-slate-800 rounded-xl"></div>
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pt-2">
+                        <div id="nc-resumen" class="font-mono text-xs text-slate-300 space-y-1"></div>
+                        <button id="btn-emitir-nc" type="button" onclick="emitirNotaCredito()" class="bg-rose-600 hover:bg-rose-500 text-white px-5 py-2.5 rounded-xl text-xs font-bold transition shadow-sm">
+                            <i class="fa-solid fa-file-arrow-down mr-2"></i>Emitir Nota de Crédito
+                        </button>
+                    </div>
+                </div>
+
+                <div class="bg-slate-900/60 border border-slate-800 rounded-2xl overflow-hidden">
+                    <div class="p-4 border-b border-slate-800">
+                        <h3 class="text-sm font-bold text-slate-200">Historial de Notas de Crédito</h3>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-slate-950/60 text-slate-400">
+                                <tr>
+                                    <th class="p-4 font-medium">Fecha</th>
+                                    <th class="p-4 font-medium">N° NC</th>
+                                    <th class="p-4 font-medium">Control TFHKA</th>
+                                    <th class="p-4 font-medium">Factura afectada</th>
+                                    <th class="p-4 font-medium">Cliente</th>
+                                    <th class="p-4 font-medium">Motivo</th>
+                                    <th class="p-4 font-medium">Total</th>
+                                    <th class="p-4 font-medium">Estado</th>
+                                    <th class="p-4 font-medium text-right">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabla-nc" class="divide-y border-slate-800"></tbody>
                         </table>
                     </div>
                 </div>
@@ -1722,6 +1797,7 @@
 
         let islrData = { ingresos: 0, costoVentas: 0, compras: 0, retenciones: 0 };
         let ventasHistorialCache = [];
+        let ventasNCCache = {};
         let comprasHistorialCache = [];
         let mapClientesGlobal = {};
         let mapClientesVendedor = {};
@@ -1956,6 +2032,7 @@
             if(id === 'proveedores') cargarProveedores();
             if(id === 'presupuestos') { cargarOpcionesPresupuesto(); cargarHistorialPresupuestos(); }
             if(id === 'notas') { cargarOpcionesNotas(); cargarHistorialNotas(); }
+            if(id === 'notas-credito') cargarModuloNotasCredito();
             if(id === 'ventas') { 
                 cargarOpcionesVentas(); 
                 cargarHistorialVentas(); 
@@ -3846,6 +3923,9 @@
     // Consulta en Supabase
     const { data, error } = await db.from('ventas').select('*');
     if (error) return console.error(error);
+    const notasAcreditadas = await traerNC('venta_id,total');
+    ventasNCCache = {};
+    notasAcreditadas.forEach(n => { ventasNCCache[n.venta_id] = (ventasNCCache[n.venta_id] || 0) + (parseFloat(n.total) || 0); });
     
     // ORDENAMIENTO NUMÉRICO POR FACTURA (Última emitida arriba)
     ventasHistorialCache = (data || []).sort((a, b) => {
@@ -3997,7 +4077,7 @@ const btnRetIslr = retIslrActiva
                 tbody.innerHTML += `
                     <tr class="hover:bg-slate-800/50 transition border-b border-slate-800">
                         <td class="p-4 text-slate-400 font-mono text-[11px]">${formatearFechaMostrar(v.fecha || v.created_at)}</td>
-                        <td class="p-4 font-mono font-medium text-slate-300">${v.factura || '-'}</td>
+                        <td class="p-4 font-mono font-medium text-slate-300">${v.factura || '-'}${ventasNCCache[v.id] ? ` <span class="bg-rose-500/10 text-rose-300 border border-rose-500/20 px-1.5 py-0.5 rounded text-[9px] font-bold" title="Acreditada parcialmente">NC</span>` : ''}</td>
                         <td class="p-4 font-mono font-medium text-emerald-400">${v.control || '-'}</td>
                         <td class="p-4 font-medium text-white">${nombreCliente}</td>
                         <td class="p-4 font-mono font-bold text-slate-300 text-[11px]">Bs. ${formatNumber(totalBs)}</td>
@@ -4307,6 +4387,13 @@ function obtenerBaseImponibleFactura(v) {
                     db.from('ventas').select('*').eq('cxc', true),
                     db.from('notas_entrega').select('*').eq('cxc', true)
                 ]);
+                const notasCreditoCxC = await traerNC('venta_id,total,iva');
+                const mapNcVenta = {};
+                notasCreditoCxC.forEach(n => {
+                    mapNcVenta[n.venta_id] = mapNcVenta[n.venta_id] || { total: 0, iva: 0 };
+                    mapNcVenta[n.venta_id].total += parseFloat(n.total) || 0;
+                    mapNcVenta[n.venta_id].iva += parseFloat(n.iva) || 0;
+                });
                 
                 let listadoMixto = [];
 
@@ -4323,7 +4410,8 @@ function obtenerBaseImponibleFactura(v) {
                             retIva = (ivaTotal * 0.75);
                         }
 
-                        const ivaRecibido = Math.max(0, ivaTotal - retIva);
+                        const ncVenta = mapNcVenta[v.id] || { total: 0, iva: 0 };
+                        const ivaRecibido = Math.max(0, ivaTotal - retIva - ncVenta.iva);
 
                         // Si tiene retención ISLR confirmada mediante checklist, deducir su monto real
                         let islrRetenido = 0;
@@ -4333,7 +4421,7 @@ function obtenerBaseImponibleFactura(v) {
                             islrRetenido = parseFloat(v.retencion_islr) || 0;
                         }
                         
-                        const baseNetaCobrar = Math.max(0, v.total - retIva - islrRetenido);
+                        const baseNetaCobrar = Math.max(0, v.total - retIva - islrRetenido - ncVenta.total);
                         const tasaRef = v.tasa || datosGenerales.tasa || 1;
                         const porCobrarUsd = baseNetaCobrar / tasaRef;
 
@@ -4501,6 +4589,20 @@ function obtenerBaseImponibleFactura(v) {
                         }
                     });
                 }
+
+                // NOTAS DE CREDITO: se descuentan en el mes en que se emiten
+                const notasCreditoIVA = await traerNC('fecha,base_gravada,monto_exento,iva');
+                notasCreditoIVA.forEach(n => {
+                    const ymd = normalizarFechaYMD(n.fecha);
+                    if (ymd && ymd.startsWith(String(year))) {
+                        const mes = parseInt(ymd.split('-')[1], 10) - 1;
+                        if (mes >= 0 && mes <= 11) {
+                            dataMeses[mes].v_base -= parseFloat(n.base_gravada) || 0;
+                            dataMeses[mes].v_exento -= parseFloat(n.monto_exento) || 0;
+                            dataMeses[mes].v_iva -= parseFloat(n.iva) || 0;
+                        }
+                    }
+                });
 
                 // Servicios para estimación ISLR mensual
                 const { data: detalles } = await db.from('venta_detalles').select('venta_id, producto_id, cantidad, precio_unitario');
@@ -5478,6 +5580,18 @@ console.log("📡 ENVIANDO A LA EDGE FUNCTION SUPABASE (facturacion-thefactory).
                 const urlFiscal = estadoData?.estado?.urlConsulta || resultado?.resultado?.urlConsulta || '';
                 window.dasFacturaFiscal = { numeroDocumento: String(numFactura), control: controlFiscal, url: urlFiscal, estado: estadoData?.estado?.estadoDocumento || '' };
                 console.log("ESTADO_FISCAL: " + JSON.stringify(window.dasFacturaFiscal));
+                // Guardar la referencia fiscal en la venta: la Nota de Credito se vincula a estos datos.
+                try {
+                    await db.from('ventas').update({
+                        tfhka_numero_documento: String(resultado?.resultado?.numeroDocumento || numFactura),
+                        tfhka_control: controlFiscal,
+                        tfhka_estado: estadoData?.estado?.estadoDocumento || '',
+                        tfhka_serie: String(resultado?.resultado?.serie ?? ''),
+                        tfhka_respuesta: { emision: resultado, estado: estadoData?.estado || null }
+                    }).eq('id', ventaId);
+                } catch (eGuardarTFHKA) {
+                    console.error("ERROR_GUARDANDO_REFERENCIA_TFHKA: " + eGuardarTFHKA);
+                }
             } catch (eEstado) {
                 console.error("ERROR_ESTADO_FISCAL: " + eEstado);
             }
@@ -5497,6 +5611,405 @@ console.log("📡 ENVIANDO A LA EDGE FUNCTION SUPABASE (facturacion-thefactory).
     }
 }
         
+        // ==========================================
+        // NOTAS DE CREDITO (THE FACTORY HKA)
+        // ==========================================
+        let ncVentaCache = null;
+        let ncClienteCache = null;
+        let ncItemsCache = [];
+
+        function escNC(s) {
+            return String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        }
+
+        function fechaDDMMYYYY(ymd) {
+            const m = String(ymd || '').match(/^(\d{4})-(\d{2})-(\d{2})/);
+            return m ? `${m[3]}/${m[2]}/${m[1]}` : '';
+        }
+
+        function traerNC(cols) {
+            return db.from('notas_credito').select(cols).then(r => Array.isArray(r.data) ? r.data : []).catch(() => []);
+        }
+
+        function generarCorrelativoNC() {
+            const m = String(datosGenerales.ult_nc || '000000').match(/(\d+)$/);
+            return String((m ? parseInt(m[1], 10) : 0) + 1).padStart(6, '0');
+        }
+
+        async function cargarModuloNotasCredito() {
+            const inp = document.getElementById('nc-numero');
+            if (inp) inp.value = generarCorrelativoNC();
+            await Promise.all([cargarFacturasAcreditables(), cargarHistorialNC()]);
+            await alCambiarFacturaNC();
+        }
+
+        async function cargarFacturasAcreditables() {
+            const sel = document.getElementById('nc-factura');
+            if (!sel) return;
+            const anterior = sel.value;
+            const [resV, resCli, notas] = await Promise.all([
+                db.from('ventas').select('id,factura,total,fecha,cliente_id,tfhka_numero_documento,tfhka_estado'),
+                db.from('clientes').select('id,descripcion'),
+                traerNC('venta_id,total')
+            ]);
+            const mapCli = {};
+            (resCli.data || []).forEach(c => mapCli[c.id] = c.descripcion || 'Desconocido');
+            const mapNc = {};
+            notas.forEach(n => { mapNc[n.venta_id] = (mapNc[n.venta_id] || 0) + (parseFloat(n.total) || 0); });
+
+            const lista = (resV.data || []).filter(v => {
+                const saldo = (parseFloat(v.total) || 0) - (mapNc[v.id] || 0);
+                return saldo > 0.009;
+            }).sort((a, b) => {
+                const na = parseInt(String(a.factura || '').replace(/\D/g, ''), 10) || 0;
+                const nb = parseInt(String(b.factura || '').replace(/\D/g, ''), 10) || 0;
+                return nb - na;
+            });
+
+            sel.innerHTML = '<option value="">Seleccione una factura...</option>' + lista.map(v => {
+                const saldo = (parseFloat(v.total) || 0) - (mapNc[v.id] || 0);
+                const fiscal = v.tfhka_numero_documento ? ' ✅' : '';
+                return `<option value="${v.id}">#${escNC(v.factura || v.id)} · ${escNC(mapCli[v.cliente_id] || 'Cliente')} · Bs. ${formatNumber(saldo)}${fiscal}</option>`;
+            }).join('');
+            if (lista.some(v => String(v.id) === String(anterior))) sel.value = anterior;
+        }
+
+        async function alCambiarFacturaNC() {
+            const sel = document.getElementById('nc-factura');
+            const id = sel ? sel.value : '';
+            ncVentaCache = null;
+            ncClienteCache = null;
+            ncItemsCache = [];
+            if (!id) { renderItemsNC(); return; }
+
+            const [resV, resD, resP] = await Promise.all([
+                db.from('ventas').select('*').eq('id', id).single(),
+                db.from('venta_detalles').select('*').eq('venta_id', id),
+                db.from('productos').select('id,descripcion,tipo,lleva_iva')
+            ]);
+            ncVentaCache = resV.data || null;
+            const mapProd = {};
+            (resP.data || []).forEach(p => mapProd[p.id] = p);
+            ncItemsCache = (resD.data || []).map(d => {
+                const p = mapProd[d.producto_id] || {};
+                return {
+                    producto_id: d.producto_id,
+                    descripcion: p.descripcion || 'Producto',
+                    tipo: p.tipo || 'Producto',
+                    cantidad: parseFloat(d.cantidad) || 0,
+                    precio_unitario: parseFloat(d.precio_unitario) || 0,
+                    llevaIVA: p.lleva_iva !== false
+                };
+            });
+            if (ncVentaCache) {
+                const rc = await db.from('clientes').select('*').eq('id', ncVentaCache.cliente_id).single();
+                ncClienteCache = rc.data || null;
+                const inpCorreo = document.getElementById('nc-correo');
+                if (inpCorreo && ncClienteCache && ncClienteCache.correo) inpCorreo.value = ncClienteCache.correo;
+            }
+            renderItemsNC();
+        }
+
+        function renderItemsNC() {
+            const caja = document.getElementById('nc-detalles');
+            if (!caja) return;
+            const parcial = document.getElementById('nc-tipo')?.value === 'parcial';
+            if (!ncItemsCache.length) {
+                caja.innerHTML = '<p class="p-6 text-center text-slate-500 text-xs italic">Seleccione una factura para ver sus artículos.</p>';
+                calcularTotalesNC();
+                return;
+            }
+            caja.innerHTML = `<table class="w-full text-xs">
+                <thead class="bg-slate-950/60 text-slate-400">
+                    <tr><th class="p-3 text-left">Incluir</th><th class="p-3 text-left">Descripción</th><th class="p-3 text-right">Cant.</th><th class="p-3 text-right">Precio Bs.</th><th class="p-3 text-right">Subtotal Bs.</th></tr>
+                </thead>
+                <tbody class="divide-y divide-slate-800">${ncItemsCache.map((it, i) => `
+                    <tr>
+                        <td class="p-3"><input type="checkbox" id="nc-inc-${i}" ${parcial ? '' : 'disabled'} checked onchange="calcularTotalesNC()" class="accent-rose-500"></td>
+                        <td class="p-3 text-slate-200">${escNC(it.descripcion)}${it.llevaIVA ? '' : ' [EXENTO]'}</td>
+                        <td class="p-3 text-right"><input type="number" min="0" max="${it.cantidad}" step="1" id="nc-cant-${i}" value="${it.cantidad}" ${parcial ? '' : 'readonly'} oninput="calcularTotalesNC()" class="w-20 bg-slate-950 border border-slate-700 rounded-lg p-1.5 text-right text-slate-200 font-mono"></td>
+                        <td class="p-3 text-right font-mono text-slate-400">${formatNumber(it.precio_unitario)}</td>
+                        <td class="p-3 text-right font-mono text-slate-300" id="nc-sub-${i}">${formatNumber(it.cantidad * it.precio_unitario)}</td>
+                    </tr>`).join('')}</tbody></table>`;
+            calcularTotalesNC();
+        }
+
+        function calcularTotalesNC(actualizar = true) {
+            let base = 0, exento = 0, n = 0;
+            ncItemsCache.forEach((it, i) => {
+                const inc = document.getElementById('nc-inc-' + i);
+                const inp = document.getElementById('nc-cant-' + i);
+                const cant = Math.max(0, Math.min(parseFloat(inp?.value) || 0, it.cantidad));
+                const sub = cant * it.precio_unitario;
+                if ((!inc || inc.checked) && cant > 0) {
+                    if (it.llevaIVA) base += sub; else exento += sub;
+                    n++;
+                }
+                const celda = document.getElementById('nc-sub-' + i);
+                if (celda) celda.innerText = formatNumber(sub);
+            });
+            const iva = base * 0.16;
+            const total = base + exento + iva;
+            if (actualizar) {
+                const caja = document.getElementById('nc-resumen');
+                if (caja) caja.innerHTML = `
+                    <div>Base gravada: <span class="text-white">Bs. ${formatNumber(base)}</span></div>
+                    <div>Exento: <span class="text-white">Bs. ${formatNumber(exento)}</span></div>
+                    <div>IVA 16%: <span class="text-white">Bs. ${formatNumber(iva)}</span></div>
+                    <div class="text-sm font-bold text-rose-300">Total a acreditar: Bs. ${formatNumber(total)}</div>`;
+            }
+            return { base, exento, iva, total, n };
+        }
+
+        function ahoraNC() {
+            const d = new Date();
+            let h = d.getHours(); const ampm = h >= 12 ? 'pm' : 'am'; h = h % 12 || 12;
+            return {
+                fecha: `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`,
+                hora: `${String(h).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}:${String(d.getSeconds()).padStart(2, '0')} ${ampm}`,
+                iso: d.toISOString().split('T')[0]
+            };
+        }
+
+        async function emitirNotaCredito() {
+            const btn = document.getElementById('btn-emitir-nc');
+            if (!ncVentaCache) return alert('Seleccione una factura.');
+            const motivo = (document.getElementById('nc-motivo')?.value || '').trim();
+            if (!motivo) return alert('Indique el motivo de la nota de crédito.');
+            const correo = (document.getElementById('nc-correo')?.value || '').trim();
+            if (!correo.includes('@')) return alert('Indique el correo del cliente para enviar la nota de crédito.');
+            const t = calcularTotalesNC(false);
+            if (t.total <= 0 || t.n === 0) return alert('Debe incluir al menos un artículo con cantidad mayor a cero.');
+            const saldo = (parseFloat(ncVentaCache.total) || 0) - 0;
+            if (t.total > saldo + 0.01) return alert('El total de la NC no puede superar el total de la factura.');
+            const tipo = document.getElementById('nc-tipo')?.value || 'total';
+            const numNC = document.getElementById('nc-numero')?.value || generarCorrelativoNC();
+            const f = ahoraNC();
+            const originalHTML = btn ? btn.innerHTML : null;
+            if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i>Emitiendo...'; }
+
+            try {
+                const cli = ncClienteCache || {};
+                const tipoId = (String(cli.identificacion || '').match(/^[A-Za-z]/) || ['V'])[0].toUpperCase();
+                const numId = String(cli.identificacion || '').replace(/^[A-Za-z]-?\s*/, '').trim() || '00000000';
+                const detalles = [];
+                let linea = 1;
+                ncItemsCache.forEach((it, i) => {
+                    const inc = document.getElementById('nc-inc-' + i);
+                    const cant = Math.max(0, Math.min(parseFloat(document.getElementById('nc-cant-' + i)?.value) || 0, it.cantidad));
+                    if ((inc && !inc.checked) || cant <= 0) return;
+                    const sub = cant * it.precio_unitario;
+                    const ivaLinea = it.llevaIVA ? sub * 0.16 : 0;
+                    detalles.push({
+                        numeroLinea: String(linea++),
+                        indicadorBienoServicio: it.tipo === 'Servicio' ? '2' : '1',
+                        descripcion: it.descripcion,
+                        cantidad: String(cant),
+                        unidadMedida: 'NIU',
+                        precioUnitario: it.precio_unitario.toFixed(2),
+                        precioItem: sub.toFixed(2),
+                        codigoImpuesto: it.llevaIVA ? 'G' : 'E',
+                        tasaIVA: it.llevaIVA ? '16.00' : '0.00',
+                        valorIVA: ivaLinea.toFixed(2),
+                        valorTotalItem: (sub + ivaLinea).toFixed(2)
+                    });
+                });
+
+                const payload = { documentoElectronico: {
+                    encabezado: {
+                        identificacionDocumento: {
+                            tipoDocumento: '02',
+                            numeroDocumento: numNC,
+                            serie: '',
+                            fechaEmision: f.fecha,
+                            fechaVencimiento: f.fecha,
+                            horaEmision: f.hora,
+                            tipoDePago: 'Inmediato',
+                            sucursal: '0001',
+                            tipoDeVenta: 'Interna',
+                            moneda: 'VES',
+                            tipoTransaccion: tipo === 'total' ? '03' : '04',
+                            serieFacturaAfectada: String(ncVentaCache.tfhka_serie || ''),
+                            numeroFacturaAfectada: String(ncVentaCache.tfhka_numero_documento || ncVentaCache.factura || ''),
+                            fechaFacturaAfectada: fechaDDMMYYYY(ncVentaCache.fecha),
+                            montoFacturaAfectada: (parseFloat(ncVentaCache.total) || 0).toFixed(2),
+                            comentarioFacturaAfectada: motivo
+                        },
+                        comprador: {
+                            tipoIdentificacion: tipoId,
+                            numeroIdentificacion: numId,
+                            razonSocial: cli.descripcion || 'Cliente General',
+                            direccion: cli.direccion || 'Caracas',
+                            pais: 'VE',
+                            telefono: [cli.telefono || '0000000000'],
+                            correo: [correo],
+                            notificar: 'No'
+                        },
+                        totales: {
+                            nroItems: String(detalles.length),
+                            montoGravadoTotal: t.base.toFixed(2),
+                            montoExentoTotal: t.exento.toFixed(2),
+                            subtotal: (t.base + t.exento).toFixed(2),
+                            totalIVA: t.iva.toFixed(2),
+                            montoTotalConIVA: t.total.toFixed(2),
+                            totalAPagar: t.total.toFixed(2),
+                            montoEnLetras: montoEnLetrasVES(t.total),
+                            totalDescuento: '0.00',
+                            impuestosSubtotal: t.base > 0 ? [{ codigoTotalImp: 'G', alicuotaImp: '16.00', baseImponibleImp: t.base.toFixed(2), valorTotalImp: t.iva.toFixed(2) }] : [],
+                            formasPago: [{ forma: '01', monto: t.total.toFixed(2), moneda: 'VES', tipoCambio: '0.0000' }]
+                        }
+                    },
+                    detallesItems: detalles
+                }};
+
+                const H = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${supabaseKey}`, 'apikey': supabaseKey };
+                const res = await fetch(`${supabaseUrl}/functions/v1/facturacion-thefactory/api/Emision`, { method: 'POST', headers: H, body: JSON.stringify(payload) });
+                const resultado = await res.json().catch(() => ({}));
+                const codigo = String(resultado.codigo ?? '');
+                if (!res.ok || codigo !== '200') {
+                    alert('FALLÓ la emisión fiscal: ' + (resultado.mensaje || 'Error desconocido') + '\n' + JSON.stringify(resultado.validaciones || []));
+                    return;
+                }
+
+                let estadoData = {};
+                try {
+                    const re = await fetch(`${supabaseUrl}/functions/v1/facturacion-thefactory/api/EstadoDocumento`, {
+                        method: 'POST', headers: H,
+                        body: JSON.stringify({ tipoDocumento: '02', numeroDocumento: numNC, serie: '' })
+                    });
+                    estadoData = await re.json().catch(() => ({}));
+                } catch (e) { console.error('ERROR_ESTADO_NC: ' + e); }
+
+                const control = estadoData?.estado?.numeroControl || resultado?.resultado?.numeroControl || '';
+                const urlPdf = estadoData?.estado?.urlConsulta || resultado?.resultado?.urlConsulta || '';
+
+                const { data: fila, error: errNC } = await db.from('notas_credito').insert([{
+                    venta_id: ncVentaCache.id,
+                    cliente_id: ncVentaCache.cliente_id,
+                    numero_documento: numNC,
+                    numero_control: control,
+                    serie: '',
+                    tipo: tipo,
+                    motivo: motivo,
+                    fecha: f.iso,
+                    hora: f.hora,
+                    base_gravada: t.base.toFixed(2),
+                    monto_exento: t.exento.toFixed(2),
+                    iva: t.iva.toFixed(2),
+                    total: t.total.toFixed(2),
+                    tasa: parseFloat(ncVentaCache.tasa) || datosGenerales.tasa || 1,
+                    factura_afectada: String(ncVentaCache.tfhka_numero_documento || ncVentaCache.factura || ''),
+                    serie_factura_afectada: String(ncVentaCache.tfhka_serie || ''),
+                    fecha_factura_afectada: fechaDDMMYYYY(ncVentaCache.fecha),
+                    monto_factura_afectada: (parseFloat(ncVentaCache.total) || 0).toFixed(2),
+                    tfhka_estado: estadoData?.estado?.estadoDocumento || '',
+                    tfhka_control: control,
+                    tfhka_url: urlPdf,
+                    tfhka_respuesta: { emision: resultado, estado: estadoData?.estado || null }
+                }]).select();
+                if (errNC) throw errNC;
+
+                if (fila && fila[0] && detalles.length) {
+                    const detallesBD = detalles.map(d => ({
+                        nota_credito_id: fila[0].id,
+                        producto_id: null,
+                        descripcion: d.descripcion,
+                        cantidad: d.cantidad,
+                        precio_unitario: d.precioUnitario,
+                        codigo_impuesto: d.codigoImpuesto,
+                        tasa_iva: d.tasaIVA,
+                        valor_iva: d.valorIVA,
+                        valor_total_item: d.valorTotalItem
+                    }));
+                    const errDet = await db.from('nota_credito_detalles').insert(detallesBD);
+                    if (errDet.error) console.error('ERROR_DETALLES_NC: ' + errDet.error.message);
+                }
+
+                await db.from('datos').update({ ult_nc: numNC }).eq('id', datosGenerales.id || 1);
+                datosGenerales.ult_nc = numNC;
+
+                try {
+                    const rc = await fetch(`${supabaseUrl}/functions/v1/facturacion-thefactory/api/Correo/Enviar`, {
+                        method: 'POST', headers: H,
+                        body: JSON.stringify({ serie: '', tipoDocumento: '02', numeroDocumento: numNC, correos: [correo] })
+                    });
+                    const rcorreo = await rc.json().catch(() => ({}));
+                    await db.from('notas_credito').update({ correo_enviado: String(rcorreo.codigo) === '200' }).eq('numero_documento', numNC);
+                    console.log('CORREO_NC: ' + JSON.stringify(rcorreo));
+                } catch (e) { console.error('ERROR_CORREO_NC: ' + e); }
+
+                alert(`✅ Nota de Crédito ${numNC} emitida. Control fiscal: ${control || '(pendiente)'}. PDF disponible en el historial.`);
+                await Promise.all([cargarFacturasAcreditables(), cargarHistorialNC()]);
+                document.getElementById('nc-motivo').value = '';
+                document.getElementById('nc-numero').value = generarCorrelativoNC();
+                alCambiarFacturaNC();
+            } catch (e) {
+                console.error('ERROR_EMISION_NC: ' + e);
+                alert('Error al emitir la nota de crédito: ' + e.message);
+            } finally {
+                if (btn) { btn.disabled = false; btn.innerHTML = originalHTML; }
+            }
+        }
+
+        async function descargarPdfNC(numeroDocumento, boton) {
+            if (!numeroDocumento) return alert('Esta NC no tiene número de documento.');
+            const original = boton ? boton.innerHTML : null;
+            if (boton) { boton.disabled = true; boton.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>'; }
+            try {
+                const res = await fetch(`${supabaseUrl}/functions/v1/facturacion-thefactory/api/DescargaArchivo`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${supabaseKey}`, 'apikey': supabaseKey },
+                    body: JSON.stringify({ serie: '', tipoDocumento: '02', numeroDocumento: String(numeroDocumento) })
+                });
+                const data = await res.json().catch(() => ({}));
+                if (!res.ok || !data.archivo) return alert('No se pudo descargar el PDF de la NC.\n' + (data.mensaje || data.codigo || res.status));
+                const bin = atob(data.archivo);
+                const bytes = new Uint8Array(bin.length);
+                for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+                const url = URL.createObjectURL(new Blob([bytes], { type: 'application/pdf' }));
+                const a = document.createElement('a');
+                a.href = url; a.download = `NotaCredito-${numeroDocumento}.pdf`;
+                document.body.appendChild(a); a.click(); a.remove();
+                setTimeout(() => URL.revokeObjectURL(url), 30000);
+            } catch (e) {
+                console.error('ERROR_PDF_NC: ' + e);
+                alert('Error descargando el PDF de la NC: ' + e.message);
+            } finally {
+                if (boton) { boton.disabled = false; boton.innerHTML = original; }
+            }
+        }
+
+        async function cargarHistorialNC() {
+            const tbody = document.getElementById('tabla-nc');
+            if (!tbody) return;
+            const [notas, resCli] = await Promise.all([
+                traerNC('*'),
+                db.from('clientes').select('id,descripcion')
+            ]);
+            const mapCli = {};
+            (resCli.data || []).forEach(c => mapCli[c.id] = c.descripcion || 'Desconocido');
+            if (!notas.length) {
+                tbody.innerHTML = '<tr><td colspan="9" class="p-8 text-center text-slate-500 italic text-xs">No hay notas de crédito emitidas.</td></tr>';
+                return;
+            }
+            notas.sort((a, b) => String(b.numero_documento || '').localeCompare(String(a.numero_documento || '')));
+            tbody.innerHTML = notas.map(n => `
+                <tr class="hover:bg-slate-800/50 transition border-b border-slate-800">
+                    <td class="p-4 text-slate-400 font-mono text-[11px]">${escNC(formatearFechaMostrar(n.fecha))}</td>
+                    <td class="p-4 font-mono font-medium text-slate-300">${escNC(n.numero_documento)}</td>
+                    <td class="p-4 font-mono font-medium text-emerald-400">${escNC(n.tfhka_control || n.numero_control || '-')}</td>
+                    <td class="p-4 font-mono text-slate-400">${escNC(n.factura_afectada || '-')}</td>
+                    <td class="p-4 text-white">${escNC(mapCli[n.cliente_id] || 'Desconocido')}</td>
+                    <td class="p-4 text-slate-400 text-[11px]">${escNC(n.motivo || '-')}</td>
+                    <td class="p-4 font-mono font-bold text-slate-200">Bs. ${formatNumber(parseFloat(n.total) || 0)}</td>
+                    <td class="p-4"><span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-1 rounded-md text-[10px] font-bold">${escNC(n.tfhka_estado || 'Registrada')}</span></td>
+                    <td class="p-4 text-right space-x-2">
+                        <button onclick="descargarPdfNC('${escNC(n.numero_documento)}', this)" class="bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-rose-300 px-2.5 py-1.5 rounded-lg text-[10px] font-bold" title="PDF fiscal de la NC"><i class="fa-solid fa-file-pdf"></i></button>
+                        ${n.tfhka_url ? `<a href="${escNC(n.tfhka_url)}" target="_blank" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 px-2.5 py-1.5 rounded-lg text-[10px] font-bold" title="Ver en The Factory"><i class="fa-solid fa-arrow-up-right-from-square"></i></a>` : ''}
+                    </td>
+                </tr>`).join('');
+        }
+
         // ==========================================
         // INICIALIZACIÓN GENERAL
         // ==========================================
