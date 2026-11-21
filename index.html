@@ -1211,6 +1211,10 @@
                             <label class="block text-xs font-medium text-slate-300 mb-1">Nº de Control</label>
                             <input type="text" id="comp-control" placeholder="Ej. 00-000298" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-orange-500 transition font-mono">
                         </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-xs font-medium text-slate-300 mb-1">Copia de la factura (imagen o PDF)</label>
+                            <input type="file" id="comp-imagen" accept="image/*,application/pdf" class="w-full text-xs text-slate-400 file:mr-3 file:px-3 file:py-2 file:rounded-lg file:border-0 file:bg-orange-600/20 file:text-orange-300 file:text-xs file:font-bold hover:file:bg-orange-600/30">
+                        </div>
                         <div>
                             <label class="block text-xs font-medium text-slate-300 mb-1">Subtotal Gravado (Bs)</label>
                             <input type="number" step="0.01" id="comp-subtotal" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-orange-500 transition" oninput="calcularTotalCompra()" required>
@@ -3457,9 +3461,14 @@
                 es_factura_personal: document.getElementById('comp-es-personal').checked
             };
 
-            const { error } = await db.from('compras').insert([nuevaCompra]);
+            const { data: filaCompra, error } = await db.from('compras').insert([nuevaCompra]).select();
             if (error) alert("Error guardando compra: " + error.message);
             else {
+                // Subir la copia de la factura al Storage de Supabase
+                const archivo = document.getElementById('comp-imagen')?.files?.[0];
+                if (archivo && filaCompra && filaCompra[0]) {
+                    await subirCopiaCompra(filaCompra[0].id, archivo);
+                }
                 document.getElementById('form-compra').reset();
                 document.getElementById('comp-es-personal').checked = false;
                 document.getElementById('comp-exento').value = 0;
@@ -3472,6 +3481,56 @@
             btn.innerHTML = originalHTML;
             btn.disabled = false;
         });
+
+        // ===== COPIAS DE FACTURAS EN SUPABASE STORAGE =====
+        const BUCKET_COMPRAS = 'facturas-compras';
+
+        async function subirCopiaCompra(compraId, archivo) {
+            try {
+                const fecha = new Date().toISOString().split('T')[0];
+                const seguro = String(archivo.name || 'factura')
+                    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+                    .replace(/[^a-zA-Z0-9._-]/g, '_');
+                const ruta = `compras/${fecha}/${compraId}-${seguro}`;
+                const res = await fetch(`${supabaseUrl}/storage/v1/object/${BUCKET_COMPRAS}/${ruta}`, {
+                    method: 'POST',
+                    headers: {
+                        'apikey': supabaseKey,
+                        'Authorization': `Bearer ${supabaseKey}`,
+                        'Content-Type': archivo.type || 'application/octet-stream',
+                        'x-upsert': 'true'
+                    },
+                    body: archivo
+                });
+                if (!res.ok) {
+                    const t = await res.text().catch(() => '');
+                    console.error('ERROR_SUBIR_COPIA_COMPRA: ' + res.status + ' ' + t.slice(0, 200));
+                    alert('La compra se guardó, pero no se pudo subir la copia de la factura.');
+                    return;
+                }
+                const url = `${supabaseUrl}/storage/v1/object/public/${BUCKET_COMPRAS}/${ruta}`;
+                await db.from('compras').update({ imagen_url: url }).eq('id', compraId);
+                cargarHistorialCompras();
+            } catch (e) {
+                console.error('ERROR_SUBIR_COPIA_COMPRA: ' + e);
+                alert('La compra se guardó, pero hubo un error subiendo la copia: ' + e.message);
+            }
+        }
+
+        function verCopiaCompra(url) {
+            if (!url) return alert('Esta compra no tiene copia de factura adjunta.');
+            window.open(url, '_blank');
+        }
+
+        async function adjuntarCopiaCompra(compraId) {
+            const inp = document.createElement('input');
+            inp.type = 'file';
+            inp.accept = 'image/*,application/pdf';
+            inp.onchange = async () => {
+                if (inp.files && inp.files[0]) await subirCopiaCompra(compraId, inp.files[0]);
+            };
+            inp.click();
+        }
 
         async function cargarHistorialCompras() {
             try {
@@ -3538,6 +3597,7 @@
                         <td class="p-4 font-mono text-slate-400 text-[11px]">Bs. ${formatNumber(c.impuestos)}</td>
                         <td class="p-4 font-mono font-bold text-orange-400 text-[11px]">Bs. ${formatNumber(c.total)}</td>
                         <td class="p-4 text-right">
+                            ${c.imagen_url ? `<button onclick="verCopiaCompra('${c.imagen_url}')" class="text-emerald-400 hover:text-emerald-300 font-medium px-2" title="Ver copia de la factura"><i class="fa-solid fa-eye"></i></button>` : `<button onclick="adjuntarCopiaCompra('${c.id}')" class="text-slate-500 hover:text-emerald-400 font-medium px-2" title="Adjuntar copia de la factura"><i class="fa-solid fa-paperclip"></i></button>`}
                             <button onclick="eliminarCompra('${c.id}')" class="text-rose-400 hover:text-rose-300 font-medium px-2"><i class="fa-solid fa-trash"></i></button>
                         </td>
                     </tr>`;
