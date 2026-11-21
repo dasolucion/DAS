@@ -72,7 +72,7 @@ function procesarMensaje(msg) {
 /** Lee los datos del cuerpo del correo de Venezuela Hosting. */
 function leerDatos(cuerpo) {
   const t = cuerpo.replace(/\r/g, '').replace(/[ \t]+/g, ' ');
-  const num = (t.match(/Proforma\s*#\s*:?\s*(\d{3,})/i) || [])[1] || '';
+  const num = (t.match(/(?:Proforma|Factura)\s*(?:#|N[º°o.])?\s*[:#]?\s*(\d{3,})/i) || [])[1] || '';
 
   let fecha = '';
   const f1 = (t.match(/generado\s+el\s+dia\s+(\d{2})\/(\d{2})\/(\d{4})/i) || []);
@@ -81,12 +81,18 @@ function leerDatos(cuerpo) {
   if (f.length === 4) fecha = `${f[3]}-${f[2]}-${f[1]}`;
   if (!fecha) fecha = new Date().toISOString().split('T')[0];
 
+  const sub = monto((t.match(/Subtotal\s*:\s*BsS\.?\s*([\d.,]+)/i) || [])[1]);
+  const iva = monto((t.match(/[\d.]+%\s*IVA\s*Venezuela\s*:\s*BsS\.?\s*([\d.,]+)/i) || [])[1]);
+  const total = monto((t.match(/(?:^|\n)\s*Total\s*:\s*BsS\.?\s*([\d.,]+)/i) || [])[1])
+             || monto((t.match(/Monto\s*a\s*Pagar\s*:\s*BsS\.?\s*([\d.,]+)/i) || [])[1])
+             || (sub + iva);
+
   return {
     numeroFactura: num,
     fecha: fecha,
-    subtotal: monto((t.match(/Subtotal\s*:\s*BsS\.?\s*([\d.,]+)/i) || [])[1]),
-    impuestos: monto((t.match(/[\d.]+%\s*IVA\s*Venezuela\s*:\s*BsS\.?\s*([\d.,]+)/i) || [])[1]),
-    total: monto((t.match(/(?:^|\n)\s*Total\s*:\s*BsS\.?\s*([\d.,]+)/i) || [])[1])
+    subtotal: sub,
+    impuestos: iva,
+    total: total
   };
 }
 
