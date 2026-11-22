@@ -8,6 +8,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
     <style>
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
@@ -172,6 +174,9 @@
             </button>
             <button onclick="mostrarModulo('resumen-iva')" class="w-full text-left py-3 px-4 rounded-xl text-xs font-medium transition flex items-center gap-3 text-slate-300 hover:bg-slate-800 hover:text-white border border-transparent hover:border-slate-700 mt-2">
                 <i class="fa-solid fa-file-invoice-dollar w-5 text-center text-blue-400"></i> Resumen de IVA
+            </button>
+            <button onclick="mostrarModulo('libros-fiscales')" class="w-full text-left py-3 px-4 rounded-xl text-xs font-medium transition flex items-center gap-3 text-slate-300 hover:bg-slate-800 hover:text-white border border-transparent hover:border-slate-700">
+                <i class="fa-solid fa-book-open w-5 text-center text-blue-400"></i> Libros Fiscales
             </button>
             <button onclick="mostrarModulo('islr')" class="w-full text-left py-3 px-4 rounded-xl text-xs font-medium transition flex items-center gap-3 text-slate-300 hover:bg-slate-800 hover:text-white border border-transparent hover:border-slate-700">
                 <i class="fa-solid fa-scale-balanced w-5 text-center text-amber-400"></i> Proyección ISLR
@@ -1233,6 +1238,32 @@
                             <label class="block text-xs font-medium text-slate-300 mb-1">Total (Bs)</label>
                             <input type="number" step="0.01" id="comp-total" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-xs text-orange-400 font-bold outline-none cursor-not-allowed" readonly>
                         </div>
+                        <div class="md:col-span-4 bg-slate-950 border border-rose-900/40 rounded-xl p-4 space-y-4">
+                            <div class="flex items-center gap-3">
+                                <input type="checkbox" id="comp-ret-check" class="w-4 h-4 bg-slate-950 border-slate-700 rounded accent-rose-500 cursor-pointer" onchange="calcularRetencionCompraFormulario()">
+                                <label for="comp-ret-check" class="text-xs font-medium text-rose-300 cursor-pointer">
+                                    <i class="fa-solid fa-file-invoice-dollar"></i> Registrar Retención de IVA de esta compra <span class="text-slate-500">(opcional)</span>
+                                </label>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                                <div>
+                                    <label class="block text-[10px] font-medium text-slate-400 mb-1">Nº Comprobante</label>
+                                    <input type="text" id="comp-ret-nro" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2 text-xs text-white font-mono outline-none focus:border-rose-500" placeholder="Ej: 20261100001234">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-medium text-slate-400 mb-1">% Retenido</label>
+                                    <input type="number" step="0.01" min="0" max="100" id="comp-ret-porc" value="75" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2 text-xs text-white font-mono outline-none focus:border-rose-500" oninput="calcularRetencionCompraFormulario()">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-medium text-rose-400 mb-1">Monto Retenido (Bs)</label>
+                                    <input type="number" step="0.01" min="0" id="comp-ret-monto" value="0" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2 text-xs text-rose-300 font-mono font-bold outline-none focus:border-rose-500">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-medium text-amber-400 mb-1">Fecha Retención</label>
+                                    <input type="date" id="comp-ret-fecha" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2 text-xs text-amber-300 font-mono outline-none focus:border-amber-500">
+                                </div>
+                            </div>
+                        </div>
                         <div class="md:col-span-4 flex items-end">
                             <button type="submit" class="w-full md:w-auto bg-orange-600 hover:bg-orange-500 text-white font-bold px-6 py-2.5 rounded-xl transition shadow-lg shadow-orange-600/20 text-xs flex items-center justify-center gap-2">
                                 <i class="fa-solid fa-save"></i> Guardar Compra
@@ -1408,6 +1439,120 @@
                             </thead>
                             <tbody id="tabla-dash-iva" class="divide-y divide-blue-900/20 text-slate-300 font-mono text-[11px]"></tbody>
                         </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- LIBROS FISCALES -->
+            <section id="libros-fiscales" class="modulo hidden max-w-6xl mx-auto space-y-6">
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-2xl flex items-center gap-3">
+                    <div class="bg-slate-800 text-blue-400 p-2.5 rounded-xl border border-slate-700">
+                        <i class="fa-solid fa-book-open text-lg"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-bold text-white tracking-tight">Libros Fiscales</h2>
+                        <p class="text-xs text-slate-400">Libro de Ventas y Libro de Compras IVA generados bajo demanda por período mensual</p>
+                    </div>
+                </div>
+
+                <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-xl no-print">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-5 items-end">
+                        <div>
+                            <label class="block text-xs font-medium text-slate-300 mb-1">Libro a generar</label>
+                            <select id="libro-tipo" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-blue-500 transition">
+                                <option value="ventas">Libro de Ventas IVA</option>
+                                <option value="compras">Libro de Compras IVA</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-300 mb-1">Período mensual</label>
+                            <input type="month" id="libro-periodo" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white font-mono outline-none focus:border-blue-500 transition">
+                        </div>
+                        <div class="flex gap-2">
+                            <button type="button" onclick="previsualizarLibroFiscal()" class="flex-1 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 font-bold px-4 py-2.5 rounded-xl transition text-xs flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-table-list text-blue-400"></i> Vista previa
+                            </button>
+                            <button type="button" onclick="descargarLibroFiscalPdf(this)" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-bold px-4 py-2.5 rounded-xl transition shadow-lg shadow-blue-600/20 text-xs flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-file-pdf"></i> Generar PDF
+                            </button>
+                        </div>
+                    </div>
+                    <p class="text-[11px] text-slate-500 mt-4 flex items-center gap-2">
+                        <i class="fa-solid fa-circle-info text-blue-400"></i>
+                        El libro se arma con las ventas, compras, notas de crédito y retenciones de IVA ya registradas en el sistema. Selecciona el mes y genera el PDF cuando lo necesites.
+                    </p>
+                </div>
+
+                <div id="libro-preview" class="hidden space-y-6">
+                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl">
+                        <div class="flex flex-wrap items-center justify-between gap-3">
+                            <div>
+                                <h3 id="libro-preview-titulo" class="text-base font-bold text-white">Libro</h3>
+                                <p id="libro-preview-sub" class="text-xs text-slate-400"></p>
+                            </div>
+                            <span id="libro-preview-total" class="text-[11px] font-mono text-slate-400 bg-slate-950/60 border border-slate-800 px-3 py-1 rounded-xl">0 registros</span>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div class="bg-slate-900 border border-emerald-900/50 rounded-2xl p-5">
+                            <p class="text-[10px] text-slate-400 mb-1 uppercase tracking-wider">Total con IVA</p>
+                            <p id="libro-card-total" class="text-xl font-mono font-bold text-emerald-400">Bs. 0,00</p>
+                        </div>
+                        <div class="bg-slate-900 border border-sky-900/50 rounded-2xl p-5">
+                            <p class="text-[10px] text-slate-400 mb-1 uppercase tracking-wider">Base Imponible</p>
+                            <p id="libro-card-base" class="text-xl font-mono font-bold text-sky-400">Bs. 0,00</p>
+                        </div>
+                        <div class="bg-slate-900 border border-amber-900/50 rounded-2xl p-5">
+                            <p class="text-[10px] text-slate-400 mb-1 uppercase tracking-wider">IVA</p>
+                            <p id="libro-card-iva" class="text-xl font-mono font-bold text-amber-400">Bs. 0,00</p>
+                        </div>
+                        <div class="bg-slate-900 border border-rose-900/50 rounded-2xl p-5">
+                            <p class="text-[10px] text-slate-400 mb-1 uppercase tracking-wider">Retención IVA</p>
+                            <p id="libro-card-ret" class="text-xl font-mono font-bold text-rose-400">Bs. 0,00</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+                        <h3 class="text-sm font-bold p-4 border-b border-slate-800 text-white flex items-center gap-2">
+                            <i class="fa-solid fa-list-ol text-blue-400"></i> Detalle del período
+                        </h3>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse text-[11px]">
+                                <thead class="bg-slate-950 border-b border-slate-800 text-slate-400 uppercase tracking-wider text-[9px]">
+                                    <tr>
+                                        <th class="p-3 font-medium">Fecha</th>
+                                        <th class="p-3 font-medium">Doc.</th>
+                                        <th class="p-3 font-medium">RIF</th>
+                                        <th class="p-3 font-medium">Nombre / Razón social</th>
+                                        <th class="p-3 font-medium text-right">Total</th>
+                                        <th class="p-3 font-medium text-right">Exento</th>
+                                        <th class="p-3 font-medium text-right">Base</th>
+                                        <th class="p-3 font-medium text-right">IVA</th>
+                                        <th class="p-3 font-medium text-right">Retenido</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tabla-libro-preview" class="divide-y divide-slate-800 text-slate-300 font-mono"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+                        <h3 id="libro-resumen-titulo" class="text-sm font-bold p-4 border-b border-slate-800 text-white flex items-center gap-2">
+                            <i class="fa-solid fa-calculator text-blue-400"></i> Resumen
+                        </h3>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse text-xs">
+                                <thead class="bg-slate-950 border-b border-slate-800 text-slate-400 uppercase tracking-wider text-[9px]">
+                                    <tr>
+                                        <th class="p-3 font-medium">Concepto</th>
+                                        <th class="p-3 font-medium text-right">Base Imponible</th>
+                                        <th class="p-3 font-medium text-right">IVA / Débito Fiscal</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tabla-libro-resumen" class="divide-y divide-slate-800 text-slate-300 font-mono text-[11px]"></tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -1740,6 +1885,69 @@
         </div>
     </div>
 
+    <div id="modal-retencion-compra" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/85 backdrop-blur-sm p-4 overflow-y-auto">
+        <div class="w-full max-w-lg bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl relative my-auto">
+            <div class="flex items-center justify-between pb-4 border-b border-slate-800 mb-5">
+                <div class="flex items-center gap-3">
+                    <div class="p-2.5 rounded-xl text-base bg-rose-950 border border-rose-800 text-rose-400">
+                        <i class="fa-solid fa-file-invoice-dollar"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-base font-bold text-white tracking-tight">Retención de IVA en Compra</h3>
+                        <p id="modal-retencion-compra-sub" class="text-xs text-slate-400">Proveedor • Factura</p>
+                    </div>
+                </div>
+                <button type="button" onclick="cerrarModalRetencionCompra()" class="text-slate-400 hover:text-white text-lg">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <form id="form-retencion-compra" onsubmit="guardarRetencionCompra(event)" class="space-y-4">
+                <input type="hidden" id="modal-compra-ret-id">
+                <div class="flex items-center gap-3 bg-slate-950 p-3.5 rounded-xl border border-slate-800">
+                    <input type="checkbox" id="modal-compra-ret-check" class="w-5 h-5 bg-slate-900 border-slate-700 rounded accent-rose-500 cursor-pointer">
+                    <label for="modal-compra-ret-check" class="text-xs font-bold text-white cursor-pointer flex flex-col">
+                        <span>¿Aplicar Retención de IVA?</span>
+                        <span class="text-[10px] text-slate-400 font-normal">Se reflejará en el Libro de Compras IVA del período.</span>
+                    </label>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-[11px] font-medium text-slate-300 mb-1">Nº Comprobante / Retención</label>
+                        <input type="text" id="modal-compra-ret-nro" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white font-mono outline-none focus:border-rose-500" placeholder="Ej: 20261100001234">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-medium text-slate-300 mb-1">Porcentaje Retenido (%)</label>
+                        <input type="number" step="0.01" min="0" max="100" id="modal-compra-ret-porc" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white font-mono outline-none focus:border-rose-500" oninput="calcularMontoModalRetencionCompra()">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-medium text-rose-400 mb-1">Monto Retenido (Bs)</label>
+                        <input type="number" step="0.01" min="0" id="modal-compra-ret-monto" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-rose-300 font-mono font-bold outline-none focus:border-rose-500">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-medium text-amber-400 mb-1">Fecha de la Retención (Mes Fiscal)</label>
+                        <input type="date" id="modal-compra-ret-fecha" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-amber-300 font-mono outline-none focus:border-amber-500">
+                    </div>
+                </div>
+
+                <div class="flex justify-between items-center pt-3 border-t border-slate-800">
+                    <button type="button" onclick="quitarRetencionCompra()" class="text-rose-400 hover:text-rose-300 text-xs font-semibold flex items-center gap-1.5 px-3 py-2 rounded-xl hover:bg-rose-950/30 transition">
+                        <i class="fa-solid fa-trash-can"></i> Quitar Retención
+                    </button>
+                    <div class="flex gap-2">
+                        <button type="button" onclick="cerrarModalRetencionCompra()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold px-4 py-2.5 rounded-xl text-xs transition border border-slate-700">
+                            Cerrar
+                        </button>
+                        <button type="submit" class="bg-rose-600 hover:bg-rose-500 text-white font-bold px-5 py-2.5 rounded-xl text-xs transition shadow-lg shadow-rose-600/20 flex items-center gap-1.5">
+                            <i class="fa-solid fa-floppy-disk"></i> Guardar Retención
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script>
         // ==========================================
         // SEGURIDAD / LOGIN
@@ -2037,6 +2245,7 @@
 
             if(id === 'dashboard') cargarDashboard();
             if(id === 'resumen-iva') cargarResumenIVA();
+            if(id === 'libros-fiscales') inicializarLibrosFiscales();
             if(id === 'islr') cargarProyeccionIS
             if(id === 'islr') cargarProyeccionISLR();
             if(id === 'parametros') actualizarVistasDatosLocales();
@@ -3411,6 +3620,20 @@
         // ==========================================
         // COMPRAS (CON FILTROS INTEGRADOS)
         // ==========================================
+        function calcularRetencionCompraFormulario() {
+            const check = document.getElementById('comp-ret-check');
+            if (!check) return;
+            const iva = parseFloat(document.getElementById('comp-iva').value) || 0;
+            const porc = parseFloat(document.getElementById('comp-ret-porc').value) || 0;
+            if (check.checked) {
+                document.getElementById('comp-ret-monto').value = (iva * (porc / 100)).toFixed(2);
+                const fecha = document.getElementById('comp-ret-fecha');
+                if (!fecha.value) fecha.value = document.getElementById('comp-fecha').value || new Date().toISOString().split('T')[0];
+            } else {
+                document.getElementById('comp-ret-monto').value = '0.00';
+            }
+        }
+
         async function cargarOpcionesCompras() {
             try {
                 const { data: provs } = await db.from('proveedores').select('id, descripcion').order('descripcion');
@@ -3458,7 +3681,18 @@
                 monto_exento: parseFloat(document.getElementById('comp-exento').value) || 0,
                 impuestos: parseFloat(document.getElementById('comp-iva').value),
                 total: parseFloat(document.getElementById('comp-total').value),
-                es_factura_personal: document.getElementById('comp-es-personal').checked
+                es_factura_personal: document.getElementById('comp-es-personal').checked,
+                retencion_iva_check: document.getElementById('comp-ret-check').checked,
+                retencion_iva_porc: parseFloat(document.getElementById('comp-ret-porc').value) || 0,
+                retencion_iva_monto: document.getElementById('comp-ret-check').checked
+                    ? (parseFloat(document.getElementById('comp-ret-monto').value) || 0)
+                    : 0,
+                retencion_iva_comprobante: document.getElementById('comp-ret-check').checked
+                    ? ((document.getElementById('comp-ret-nro').value || '').trim() || null)
+                    : null,
+                retencion_iva_fecha: document.getElementById('comp-ret-check').checked
+                    ? (document.getElementById('comp-ret-fecha').value || null)
+                    : null
             };
 
             const { data: filaCompra, error } = await db.from('compras').insert([nuevaCompra]).select();
@@ -3472,6 +3706,11 @@
                 document.getElementById('form-compra').reset();
                 document.getElementById('comp-es-personal').checked = false;
                 document.getElementById('comp-exento').value = 0;
+                document.getElementById('comp-ret-check').checked = false;
+                document.getElementById('comp-ret-porc').value = 75;
+                document.getElementById('comp-ret-monto').value = 0;
+                document.getElementById('comp-ret-nro').value = '';
+                document.getElementById('comp-ret-fecha').value = '';
                 cargarHistorialCompras();
                 cargarResumenIVA();
                 if(document.getElementById('islr') && !document.getElementById('islr').classList.contains('hidden')) {
@@ -3597,6 +3836,7 @@
                         <td class="p-4 font-mono text-slate-400 text-[11px]">Bs. ${formatNumber(c.impuestos)}</td>
                         <td class="p-4 font-mono font-bold text-orange-400 text-[11px]">Bs. ${formatNumber(c.total)}</td>
                         <td class="p-4 text-right">
+                            <button onclick="abrirModalRetencionCompra('${c.id}')" class="${c.retencion_iva_check ? 'text-rose-400 hover:text-rose-300' : 'text-slate-500 hover:text-rose-400'} font-medium px-2" title="${c.retencion_iva_check ? `Retención IVA: Bs. ${formatNumber(c.retencion_iva_monto || 0)} (${c.retencion_iva_porc || 75}%)` : 'Registrar retención de IVA'}"><i class="fa-${c.retencion_iva_check ? 'solid' : 'regular'} fa-file-invoice-dollar"></i></button>
                             ${c.imagen_url ? `<button onclick="verCopiaCompra('${c.imagen_url}')" class="text-emerald-400 hover:text-emerald-300 font-medium px-2" title="Ver copia de la factura"><i class="fa-solid fa-eye"></i></button>` : `<button onclick="adjuntarCopiaCompra('${c.id}')" class="text-slate-500 hover:text-emerald-400 font-medium px-2" title="Adjuntar copia de la factura"><i class="fa-solid fa-paperclip"></i></button>`}
                             <button onclick="eliminarCompra('${c.id}')" class="text-rose-400 hover:text-rose-300 font-medium px-2"><i class="fa-solid fa-trash"></i></button>
                         </td>
@@ -3613,6 +3853,82 @@
             const { error } = await db.from('compras').delete().eq('id', id);
             if (error) alert('Error: ' + error.message);
             else { cargarHistorialCompras(); cargarResumenIVA(); }
+        }
+
+        // ===== RETENCIÓN DE IVA EN COMPRAS =====
+        let retencionCompraSeleccionada = null;
+
+        function abrirModalRetencionCompra(compraId) {
+            const compra = comprasHistorialCache.find(c => String(c.id) === String(compraId));
+            if (!compra) return alert('Compra no encontrada.');
+            retencionCompraSeleccionada = compra;
+
+            document.getElementById('modal-compra-ret-id').value = compra.id;
+            document.getElementById('modal-retencion-compra-sub').innerText =
+                `${compra.descripcion || 'Proveedor'} • Factura ${compra.numero_factura || '-'}`;
+
+            document.getElementById('modal-compra-ret-check').checked = !!compra.retencion_iva_check;
+            document.getElementById('modal-compra-ret-nro').value = compra.retencion_iva_comprobante || '';
+            document.getElementById('modal-compra-ret-porc').value =
+                (compra.retencion_iva_porc !== undefined && compra.retencion_iva_porc !== null)
+                    ? compra.retencion_iva_porc : 75;
+            document.getElementById('modal-compra-ret-monto').value =
+                (compra.retencion_iva_check && compra.retencion_iva_monto !== null && compra.retencion_iva_monto !== undefined)
+                    ? parseFloat(compra.retencion_iva_monto).toFixed(2)
+                    : ((parseFloat(compra.impuestos) || 0) * 0.75).toFixed(2);
+            document.getElementById('modal-compra-ret-fecha').value =
+                normalizarFechaYMD(compra.retencion_iva_fecha) || normalizarFechaYMD(compra.fecha);
+
+            const modal = document.getElementById('modal-retencion-compra');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function cerrarModalRetencionCompra() {
+            const modal = document.getElementById('modal-retencion-compra');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            retencionCompraSeleccionada = null;
+        }
+
+        function calcularMontoModalRetencionCompra() {
+            if (!retencionCompraSeleccionada) return;
+            const porc = parseFloat(document.getElementById('modal-compra-ret-porc').value) || 0;
+            const iva = parseFloat(retencionCompraSeleccionada.impuestos) || 0;
+            document.getElementById('modal-compra-ret-monto').value = (iva * (porc / 100)).toFixed(2);
+        }
+
+        async function guardarRetencionCompra(e) {
+            e.preventDefault();
+            if (!retencionCompraSeleccionada) return;
+            const check = document.getElementById('modal-compra-ret-check').checked;
+            const payload = {
+                retencion_iva_check: check,
+                retencion_iva_porc: parseFloat(document.getElementById('modal-compra-ret-porc').value) || 0,
+                retencion_iva_monto: check ? (parseFloat(document.getElementById('modal-compra-ret-monto').value) || 0) : 0,
+                retencion_iva_comprobante: check ? ((document.getElementById('modal-compra-ret-nro').value || '').trim() || null) : null,
+                retencion_iva_fecha: check ? (document.getElementById('modal-compra-ret-fecha').value || null) : null
+            };
+            const { error } = await db.from('compras').update(payload).eq('id', retencionCompraSeleccionada.id);
+            if (error) return alert('Error guardando retención: ' + error.message);
+            cerrarModalRetencionCompra();
+            await cargarHistorialCompras();
+            await cargarResumenIVA();
+        }
+
+        async function quitarRetencionCompra() {
+            if (!retencionCompraSeleccionada) return;
+            if (!confirm('¿Quitar la retención de IVA de esta compra?')) return;
+            const { error } = await db.from('compras').update({
+                retencion_iva_check: false,
+                retencion_iva_monto: 0,
+                retencion_iva_comprobante: null,
+                retencion_iva_fecha: null
+            }).eq('id', retencionCompraSeleccionada.id);
+            if (error) return alert('Error: ' + error.message);
+            cerrarModalRetencionCompra();
+            await cargarHistorialCompras();
+            await cargarResumenIVA();
         }
 
         // ==========================================
@@ -6103,6 +6419,568 @@ console.log("📡 ENVIANDO A LA EDGE FUNCTION SUPABASE (facturacion-thefactory).
                         ${n.tfhka_url ? `<a href="${escNC(n.tfhka_url)}" target="_blank" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 px-2.5 py-1.5 rounded-lg text-[10px] font-bold" title="Ver en The Factory"><i class="fa-solid fa-arrow-up-right-from-square"></i></a>` : ''}
                     </td>
                 </tr>`).join('');
+        }
+
+        // ==========================================
+        // LIBROS FISCALES (VENTAS / COMPRAS IVA)
+        // ==========================================
+        const MESES_LIBRO = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+        let libroActual = null;
+
+        function inicializarLibrosFiscales() {
+            const inp = document.getElementById('libro-periodo');
+            if (inp && !inp.value) {
+                const hoy = new Date();
+                inp.value = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}`;
+            }
+            const tipo = document.getElementById('libro-tipo')?.value || 'ventas';
+            const periodo = inp ? inp.value : '';
+            if (!libroActual || libroActual.tipo !== tipo || libroActual.periodo !== periodo) {
+                previsualizarLibroFiscal();
+            }
+        }
+
+        function rangoPeriodoLibro(periodo) {
+            const [y, m] = String(periodo || '').split('-').map(Number);
+            if (!y || !m) return null;
+            const ultimoDia = new Date(Date.UTC(y, m, 0)).getUTCDate();
+            const fin = `${y}-${String(m).padStart(2, '0')}-${String(ultimoDia).padStart(2, '0')}`;
+            const sigY = m === 12 ? y + 1 : y;
+            const sigM = m === 12 ? 1 : m + 1;
+            return {
+                inicio: `${y}-${String(m).padStart(2, '0')}-01`,
+                fin,
+                hastaExclusivo: `${sigY}-${String(sigM).padStart(2, '0')}-01`,
+                etiqueta: `${MESES_LIBRO[m - 1]} ${y}`
+            };
+        }
+
+        function r2(n) { return Math.round((parseFloat(n) || 0) * 100) / 100; }
+
+        function desgloseVentaLibro(v) {
+            const total = r2(v.total);
+            const iva = r2(v.impuestos);
+            const exentoBruto = r2(v.monto_exento);
+            const descuento = r2(v.descuento);
+            const gravadoBruto = Math.max(0, total + descuento - iva - exentoBruto);
+            const sumaBases = gravadoBruto + exentoBruto;
+            let base = gravadoBruto;
+            let exento = exentoBruto;
+            if (descuento > 0 && sumaBases > 0) {
+                base = Math.max(0, gravadoBruto - (descuento * (gravadoBruto / sumaBases)));
+                exento = Math.max(0, exentoBruto - (descuento * (exentoBruto / sumaBases)));
+            }
+            if (base <= 0 && iva > 0) base = iva / 0.16;
+            return { total, iva, base: r2(base), exento: r2(exento), descuento };
+        }
+
+        function alicuotaLibro(base, iva) {
+            if (base > 0 && iva > 0) return r2((iva / base) * 100);
+            return iva > 0 ? 16 : 0;
+        }
+
+        function ordenarFilasLibro(filas) {
+            const prioridad = { FAC: 0, 'N/C': 1, RET: 2 };
+            return filas.sort((a, b) => {
+                if (a.fecha !== b.fecha) return a.fecha < b.fecha ? -1 : 1;
+                const pa = prioridad[a.tipoTran] ?? 9;
+                const pb = prioridad[b.tipoTran] ?? 9;
+                if (pa !== pb) return pa - pb;
+                return String(a.numero || '').localeCompare(String(b.numero || ''));
+            });
+        }
+
+        async function construirLibroVentas(periodo, rango) {
+            const [resVentas, resRet, resCli, notas] = await Promise.all([
+                db.from('ventas').select('*').gte('fecha', rango.inicio).lt('fecha', rango.hastaExclusivo),
+                db.from('ventas').select('*').eq('retencion_iva_check', true).gte('retencion_iva_fecha', rango.inicio).lt('retencion_iva_fecha', rango.hastaExclusivo),
+                db.from('clientes').select('id, descripcion, identificacion, contribuyente_especial'),
+                db.from('notas_credito').select('*').gte('fecha', rango.inicio).lt('fecha', rango.hastaExclusivo)
+            ]);
+            if (resVentas.error) throw new Error('Ventas: ' + resVentas.error.message);
+            if (resCli.error) throw new Error('Clientes: ' + resCli.error.message);
+
+            const mapCli = {};
+            (resCli.data || []).forEach(c => mapCli[c.id] = c);
+
+            const filas = [];
+            (resVentas.data || []).forEach(v => {
+                const d = desgloseVentaLibro(v);
+                const cli = mapCli[v.cliente_id] || {};
+                filas.push({
+                    fecha: normalizarFechaYMD(v.fecha),
+                    rif: cli.identificacion || '',
+                    nombre: cli.descripcion || 'Cliente',
+                    tipoDoc: 'FAC',
+                    serial: '01-REG',
+                    numero: v.factura || '',
+                    tipoTran: 'FAC',
+                    afectada: '',
+                    total: d.total,
+                    exento: d.exento,
+                    base: d.base,
+                    alic: alicuotaLibro(d.base, d.iva),
+                    iva: d.iva,
+                    baseRet: 0,
+                    retenido: 0,
+                    porcRet: '',
+                    nroComp: '',
+                    fechaRet: '',
+                    esEspecial: !!cli.contribuyente_especial
+                });
+            });
+
+            (notas.data || []).forEach(n => {
+                const cli = mapCli[n.cliente_id] || {};
+                const base = r2(n.base_gravada);
+                const iva = r2(n.iva);
+                filas.push({
+                    fecha: normalizarFechaYMD(n.fecha),
+                    rif: cli.identificacion || '',
+                    nombre: cli.descripcion || 'Cliente',
+                    tipoDoc: 'N/C',
+                    serial: '00-REG',
+                    numero: n.numero_documento || '',
+                    tipoTran: 'N/C',
+                    afectada: n.factura_afectada || '',
+                    total: -r2(n.total),
+                    exento: -r2(n.monto_exento),
+                    base: -base,
+                    alic: alicuotaLibro(base, iva),
+                    iva: -iva,
+                    baseRet: 0,
+                    retenido: 0,
+                    porcRet: '',
+                    nroComp: '',
+                    fechaRet: ''
+                });
+            });
+
+            (resRet.data || []).forEach(v => {
+                const cli = mapCli[v.cliente_id] || {};
+                const d = desgloseVentaLibro(v);
+                const porc = parseFloat(v.retencion_iva_porc) || 75;
+                const monto = v.retencion_iva_monto !== null && v.retencion_iva_monto !== undefined
+                    ? r2(v.retencion_iva_monto)
+                    : r2(d.iva * (porc / 100));
+                const fechaRet = normalizarFechaYMD(v.retencion_iva_fecha || v.fecha);
+                filas.push({
+                    fecha: fechaRet,
+                    rif: cli.identificacion || '',
+                    nombre: cli.descripcion || 'Cliente',
+                    tipoDoc: 'RET',
+                    serial: '03-REG',
+                    numero: v.retencion_iva_comprobante || '',
+                    tipoTran: 'RET',
+                    afectada: v.factura || '',
+                    total: 0,
+                    exento: 0,
+                    base: 0,
+                    alic: 0,
+                    iva: 0,
+                    baseRet: d.base,
+                    retenido: monto,
+                    porcRet: porc,
+                    nroComp: v.retencion_iva_comprobante || '',
+                    fechaRet
+                });
+            });
+
+            ordenarFilasLibro(filas);
+
+            const tot = { total: 0, exento: 0, base: 0, iva: 0, baseRet: 0, retenido: 0, gravadaBase: 0, gravadaIva: 0, contribBase: 0, contribIva: 0, noContribBase: 0, noContribIva: 0 };
+            filas.forEach(f => {
+                tot.total += f.total;
+                tot.exento += f.exento;
+                tot.base += f.base;
+                tot.iva += f.iva;
+                tot.baseRet += f.baseRet;
+                tot.retenido += f.retenido;
+                if (f.tipoTran === 'FAC') {
+                    tot.gravadaBase += f.base;
+                    tot.gravadaIva += f.iva;
+                    if (f.esEspecial) {
+                        tot.contribBase += f.base;
+                        tot.contribIva += f.iva;
+                    } else {
+                        tot.noContribBase += f.base;
+                        tot.noContribIva += f.iva;
+                    }
+                }
+            });
+            Object.keys(tot).forEach(k => tot[k] = r2(tot[k]));
+
+            const resumen = [
+                { concepto: 'Ventas internas no gravadas (exentas)', base: tot.exento, iva: 0, retenido: 0 },
+                { concepto: 'Ventas internas gravadas alícuota general (16,00 %)', base: tot.gravadaBase, iva: tot.gravadaIva, retenido: 0 },
+                { concepto: 'Ventas internas a contribuyentes (16,00 %)', base: r2(tot.contribBase), iva: r2(tot.contribIva), retenido: 0 },
+                { concepto: 'Ventas internas a no contribuyentes (16,00 %)', base: r2(tot.noContribBase), iva: r2(tot.noContribIva), retenido: 0 },
+                { concepto: 'Notas de crédito emitidas en el período', base: r2(tot.base - tot.gravadaBase), iva: r2(tot.iva - tot.gravadaIva), retenido: 0 },
+                { concepto: 'Total ventas y débitos fiscales del período', base: tot.base, iva: tot.iva, retenido: 0 },
+                { concepto: 'Retenciones de IVA aplicadas', base: tot.baseRet, iva: 0, retenido: tot.retenido },
+                { concepto: 'Débito fiscal neto después de retenciones', base: tot.base, iva: r2(tot.iva - tot.retenido), retenido: tot.retenido }
+            ];
+
+            return {
+                tipo: 'ventas',
+                periodo,
+                inicio: rango.inicio,
+                fin: rango.fin,
+                etiqueta: rango.etiqueta,
+                titulo: 'LIBRO DE VENTAS I.V.A.',
+                filas,
+                totales: tot,
+                resumen,
+                totalRegistros: filas.length
+            };
+        }
+
+        async function construirLibroCompras(periodo, rango) {
+            const [resCompras, resProv] = await Promise.all([
+                db.from('compras').select('*').gte('fecha', rango.inicio).lt('fecha', rango.hastaExclusivo),
+                db.from('proveedores').select('descripcion, identificacion')
+            ]);
+            if (resCompras.error) throw new Error('Compras: ' + resCompras.error.message);
+
+            const mapProv = {};
+            (resProv.data || []).forEach(p => {
+                if (p.descripcion) mapProv[String(p.descripcion).trim().toUpperCase()] = p.identificacion || '';
+            });
+
+            const filas = [];
+            (resCompras.data || []).forEach(c => {
+                const total = r2(c.total);
+                const exento = r2(c.monto_exento);
+                const subtotal = r2(c.subtotal);
+                const ivaReal = r2(c.impuestos);
+                const personal = !!c.es_factura_personal;
+                const base = personal ? 0 : subtotal;
+                const iva = personal ? 0 : ivaReal;
+                const sinCredito = personal ? total : exento;
+                const conRet = !!c.retencion_iva_check;
+                const porcRet = parseFloat(c.retencion_iva_porc) || 75;
+                const retenido = conRet
+                    ? (c.retencion_iva_monto !== null && c.retencion_iva_monto !== undefined
+                        ? r2(c.retencion_iva_monto)
+                        : r2(iva * (porcRet / 100)))
+                    : 0;
+
+                filas.push({
+                    fecha: normalizarFechaYMD(c.fecha),
+                    rif: mapProv[String(c.descripcion || '').trim().toUpperCase()] || '',
+                    nombre: c.descripcion || 'Proveedor',
+                    tipoDoc: 'FAC',
+                    numero: c.numero_factura || '',
+                    control: c.numero_control || '',
+                    tipoTran: 'FAC',
+                    afectada: '',
+                    total,
+                    exento: sinCredito,
+                    base,
+                    alic: alicuotaLibro(base, iva),
+                    iva,
+                    baseRet: conRet ? base : 0,
+                    retenido,
+                    porcRet: conRet ? porcRet : '',
+                    nroComp: conRet ? (c.retencion_iva_comprobante || '') : '',
+                    fechaRet: conRet ? normalizarFechaYMD(c.retencion_iva_fecha || c.fecha) : '',
+                    personal
+                });
+            });
+
+            ordenarFilasLibro(filas);
+
+            const tot = { total: 0, exento: 0, base: 0, iva: 0, baseRet: 0, retenido: 0 };
+            filas.forEach(f => {
+                tot.total += f.total;
+                tot.exento += f.exento;
+                tot.base += f.base;
+                tot.iva += f.iva;
+                tot.baseRet += f.baseRet;
+                tot.retenido += f.retenido;
+            });
+            Object.keys(tot).forEach(k => tot[k] = r2(tot[k]));
+
+            const resumen = [
+                { concepto: 'Compras no gravadas y/o sin derecho a crédito fiscal', base: tot.exento, iva: 0, retenido: 0 },
+                { concepto: 'Compras internas gravadas alícuota general (16,00 %)', base: tot.base, iva: tot.iva, retenido: 0 },
+                { concepto: 'Total compras y créditos fiscales del período', base: tot.base, iva: tot.iva, retenido: 0 },
+                { concepto: 'Retenciones de IVA practicadas a proveedores', base: tot.baseRet, iva: 0, retenido: tot.retenido },
+                { concepto: 'Crédito fiscal neto del período', base: tot.base, iva: tot.iva, retenido: tot.retenido }
+            ];
+
+            return {
+                tipo: 'compras',
+                periodo,
+                inicio: rango.inicio,
+                fin: rango.fin,
+                etiqueta: rango.etiqueta,
+                titulo: 'LIBRO DE COMPRAS I.V.A.',
+                filas,
+                totales: tot,
+                resumen,
+                totalRegistros: filas.length
+            };
+        }
+
+        async function construirLibroFiscal() {
+            const tipo = document.getElementById('libro-tipo')?.value || 'ventas';
+            const periodo = document.getElementById('libro-periodo')?.value || periodoLibroActual();
+            const rango = rangoPeriodoLibro(periodo);
+            if (!rango) throw new Error('Selecciona un período mensual válido.');
+            return tipo === 'compras'
+                ? construirLibroCompras(periodo, rango)
+                : construirLibroVentas(periodo, rango);
+        }
+
+        function periodoLibroActual() {
+            const hoy = new Date();
+            return `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}`;
+        }
+
+        function renderizarLibroFiscal(data) {
+            libroActual = data;
+
+            document.getElementById('libro-preview').classList.remove('hidden');
+            document.getElementById('libro-preview-titulo').innerText = data.titulo.replace('I.V.A.', 'IVA');
+            document.getElementById('libro-preview-sub').innerText =
+                `${data.etiqueta} • Desde el ${fechaDDMMYYYY(data.inicio)} hasta el ${fechaDDMMYYYY(data.fin)}`;
+            document.getElementById('libro-preview-total').innerText = `${data.totalRegistros} registros`;
+
+            const t = data.totales;
+            document.getElementById('libro-card-total').innerText = `Bs. ${formatNumber(t.total)}`;
+            document.getElementById('libro-card-base').innerText = `Bs. ${formatNumber(t.base)}`;
+            document.getElementById('libro-card-iva').innerText = `Bs. ${formatNumber(t.iva)}`;
+            document.getElementById('libro-card-ret').innerText = `Bs. ${formatNumber(t.retenido)}`;
+
+            document.getElementById('libro-resumen-titulo').innerHTML = data.tipo === 'ventas'
+                ? '<i class="fa-solid fa-calculator text-blue-400"></i> Resumen de Débitos Fiscales'
+                : '<i class="fa-solid fa-calculator text-blue-400"></i> Resumen de Créditos Fiscales';
+
+            const tbody = document.getElementById('tabla-libro-preview');
+            if (data.filas.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="9" class="p-8 text-center text-slate-500 italic">No hay operaciones registradas en este período.</td></tr>';
+            } else {
+                tbody.innerHTML = data.filas.map(f => `
+                    <tr class="hover:bg-slate-800/40">
+                        <td class="p-3">${fechaDDMMYYYY(f.fecha)}</td>
+                        <td class="p-3">${escNC(f.tipoDoc)} ${escNC(f.numero || '-')}</td>
+                        <td class="p-3">${escNC(f.rif || '-')}</td>
+                        <td class="p-3 text-slate-200">${escNC(f.nombre)}</td>
+                        <td class="p-3 text-right ${f.total < 0 ? 'text-rose-400' : ''}">${formatNumber(f.total)}</td>
+                        <td class="p-3 text-right">${formatNumber(f.exento)}</td>
+                        <td class="p-3 text-right">${formatNumber(f.base)}</td>
+                        <td class="p-3 text-right">${formatNumber(f.iva)}</td>
+                        <td class="p-3 text-right">${formatNumber(f.retenido)}</td>
+                    </tr>`).join('');
+            }
+
+            const tbRes = document.getElementById('tabla-libro-resumen');
+            tbRes.innerHTML = data.resumen.map(r => `
+                <tr class="${r.concepto.startsWith('Total') || r.concepto.startsWith('Débito') || r.concepto.startsWith('Crédito') ? 'bg-slate-950/60 font-bold text-white' : ''}">
+                    <td class="p-3">${escNC(r.concepto)}</td>
+                    <td class="p-3 text-right">${formatNumber(r.base)}</td>
+                    <td class="p-3 text-right">${formatNumber(r.iva)}</td>
+                </tr>`).join('');
+        }
+
+        async function previsualizarLibroFiscal() {
+            try {
+                const data = await construirLibroFiscal();
+                renderizarLibroFiscal(data);
+            } catch (e) {
+                console.error('ERROR_LIBRO_FISCAL: ' + e);
+                alert('No se pudo generar el libro: ' + e.message);
+            }
+        }
+
+        function dibujarEncabezadoLibro(doc, data) {
+            const pageW = doc.internal.pageSize.getWidth();
+            doc.setTextColor(0);
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(11);
+            doc.text(data.titulo, 8, 11);
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(7.5);
+            doc.text(`Desde el ${fechaDDMMYYYY(data.inicio)} hasta el ${fechaDDMMYYYY(data.fin)}`, 8, 16);
+
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(8.5);
+            doc.text(datosGenerales.empresa_nombre || 'DAS SOLUCIONES INTEGRALES, C.A.', pageW - 8, 10, { align: 'right' });
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(6);
+            const dir = doc.splitTextToSize(datosGenerales.empresa_direccion || '', 95);
+            doc.text(dir.slice(0, 2), pageW - 8, 13.5, { align: 'right' });
+            doc.setFontSize(6.5);
+            doc.text(`RIF: ${datosGenerales.empresa_rif || 'J-40282664-8'}`, pageW - 8, 13.5 + (Math.min(dir.length, 2) * 2.4) + 2, { align: 'right' });
+            doc.setDrawColor(120);
+            doc.setLineWidth(0.2);
+            doc.line(8, 23, pageW - 8, 23);
+        }
+
+        function filaPdfVentas(f, i) {
+            return [
+                String(i + 1), fechaDDMMYYYY(f.fecha), f.rif, f.nombre, f.tipoDoc, f.serial,
+                f.numero, f.tipoTran, f.afectada,
+                formatNumber(f.total), formatNumber(f.exento), formatNumber(f.base),
+                f.alic ? formatNumber(f.alic) : '', formatNumber(f.iva),
+                f.baseRet ? formatNumber(f.baseRet) : '', f.retenido ? formatNumber(f.retenido) : '',
+                f.porcRet !== '' ? formatNumber(f.porcRet) : '', f.nroComp, fechaDDMMYYYY(f.fechaRet)
+            ];
+        }
+
+        function filaPdfCompras(f, i) {
+            return [
+                String(i + 1), fechaDDMMYYYY(f.fecha), f.rif, f.nombre, f.tipoDoc,
+                f.numero, f.control, f.tipoTran, f.afectada,
+                formatNumber(f.total), formatNumber(f.exento), formatNumber(f.base),
+                f.alic ? formatNumber(f.alic) : '', formatNumber(f.iva),
+                f.baseRet ? formatNumber(f.baseRet) : '', f.porcRet !== '' ? formatNumber(f.porcRet) : '',
+                f.retenido ? formatNumber(f.retenido) : '', f.nroComp, fechaDDMMYYYY(f.fechaRet)
+            ];
+        }
+
+        function generarPdfLibro(data) {
+            if (!window.jspdf || !window.jspdf.jsPDF) {
+                throw new Error('No se cargó la librería de PDF. Verifica tu conexión y recarga la página.');
+            }
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'legal', compress: true });
+            const esVentas = data.tipo === 'ventas';
+            const t = data.totales;
+
+            const widthsVentas = [8, 13, 20, 58, 11, 13, 16, 11, 16, 20, 16, 19, 9, 17, 19, 16, 9, 27, 15];
+            const widthsCompras = [8, 13, 20, 56, 11, 16, 19, 11, 15, 20, 19, 19, 9, 17, 19, 9, 16, 26, 15];
+
+            const body = data.filas.map((f, i) => esVentas ? filaPdfVentas(f, i) : filaPdfCompras(f, i));
+            const celdasTotales = esVentas
+                ? [formatNumber(t.total), formatNumber(t.exento), formatNumber(t.base), '', formatNumber(t.iva), formatNumber(t.baseRet), formatNumber(t.retenido), '', '', '']
+                : [formatNumber(t.total), formatNumber(t.exento), formatNumber(t.base), '', formatNumber(t.iva), formatNumber(t.baseRet), '', formatNumber(t.retenido), '', ''];
+            body.push([
+                { content: 'TOTALES', colSpan: 2, styles: { halign: 'center' } },
+                '', '', '', '', '', '', '',
+                ...celdasTotales
+            ]);
+
+            const head = [
+                [
+                    { content: 'DATOS DEL DOCUMENTO', colSpan: 9, styles: { halign: 'center' } },
+                    { content: esVentas ? 'VENTAS DEL PERÍODO' : 'COMPRAS DEL PERÍODO', colSpan: 5, styles: { halign: 'center' } },
+                    { content: 'RETENCIÓN DE IVA', colSpan: 5, styles: { halign: 'center' } }
+                ],
+                esVentas
+                    ? ['Nro', 'Fecha', 'RIF', 'Nombre o razón social', 'Tipo Doc', 'Serial', 'Nro Doc', 'Tipo Tran', 'Nro Fac Afectada', 'Total con IVA', 'Exentas', 'Base Imponible', '% Alic', 'Monto IVA', 'Base Ret. IVA', 'Retenido', '% Ret', 'Nro Comp. Ret', 'Fecha Ret']
+                    : ['Nro', 'Fecha', 'RIF', 'Nombre o razón social', 'Tipo Doc', 'Número', 'Nro Control', 'Tipo Tran', 'Nro Fac Afectada', 'Total incl. IVA', 'Exentas / sin crédito', 'Base Imponible', '% Alic', 'Monto IVA', 'Base Ret. IVA', '% Ret', 'Monto Retenido', 'Nro Comp. Ret', 'Fecha Ret']
+            ];
+
+            doc.autoTable({
+                head,
+                body,
+                startY: 26,
+                margin: { left: 8, right: 8, top: 26, bottom: 12 },
+                theme: 'grid',
+                tableWidth: 339.6,
+                styles: {
+                    font: 'helvetica',
+                    fontSize: 5.7,
+                    cellPadding: 0.8,
+                    lineColor: [140, 140, 140],
+                    lineWidth: 0.1,
+                    textColor: 20,
+                    overflow: 'linebreak',
+                    valign: 'middle'
+                },
+                headStyles: {
+                    fillColor: [225, 228, 232],
+                    textColor: 0,
+                    fontStyle: 'bold',
+                    fontSize: 5.7,
+                    halign: 'center'
+                },
+                columnStyles: esVentas
+                    ? Object.fromEntries(widthsVentas.map((w, i) => [i, { cellWidth: w, halign: [0, 1, 4, 5, 6, 7, 8, 17, 18].includes(i) ? 'left' : (i === 3 ? 'left' : 'right') }]))
+                    : Object.fromEntries(widthsCompras.map((w, i) => [i, { cellWidth: w, halign: [0, 1, 4, 5, 6, 7, 8, 17, 18].includes(i) ? 'left' : (i === 3 ? 'left' : 'right') }])),
+                didParseCell: (hook) => {
+                    if (hook.section === 'body' && hook.row.index === body.length - 1) {
+                        hook.cell.styles.fontStyle = 'bold';
+                        hook.cell.styles.fillColor = [242, 242, 242];
+                    }
+                },
+                didDrawPage: (hook) => {
+                    dibujarEncabezadoLibro(doc, data);
+                }
+            });
+
+            // Resumen fiscal
+            const inicioResumen = doc.lastAutoTable.finalY + 6;
+            doc.autoTable({
+                head: [['Concepto', 'Base Imponible', 'IVA / ' + (esVentas ? 'Débito Fiscal' : 'Crédito Fiscal'), 'Retenido']],
+                body: data.resumen.map(r => [r.concepto, formatNumber(r.base), formatNumber(r.iva), formatNumber(r.retenido)]),
+                startY: inicioResumen,
+                margin: { left: 8, right: 8, bottom: 12 },
+                tableWidth: 200,
+                theme: 'grid',
+                styles: { font: 'helvetica', fontSize: 6.2, cellPadding: 1.1, lineColor: [140, 140, 140], lineWidth: 0.1, textColor: 20 },
+                headStyles: { fillColor: [225, 228, 232], textColor: 0, fontStyle: 'bold', halign: 'center' },
+                columnStyles: {
+                    0: { cellWidth: 92, halign: 'left' },
+                    1: { cellWidth: 34, halign: 'right' },
+                    2: { cellWidth: 40, halign: 'right' },
+                    3: { cellWidth: 34, halign: 'right' }
+                },
+                didParseCell: (hook) => {
+                    if (hook.section === 'body') {
+                        const concepto = String(hook.row.raw?.[0] || '');
+                        if (concepto.startsWith('Total') || concepto.startsWith('Débito') || concepto.startsWith('Crédito')) {
+                            hook.cell.styles.fontStyle = 'bold';
+                            hook.cell.styles.fillColor = [242, 242, 242];
+                        }
+                    }
+                }
+            });
+
+            const pageCount = doc.internal.getNumberOfPages();
+            const pageW = doc.internal.pageSize.getWidth();
+            const pageH = doc.internal.pageSize.getHeight();
+            for (let i = 1; i <= pageCount; i++) {
+                doc.setPage(i);
+                doc.setFont('helvetica', 'normal');
+                doc.setFontSize(6);
+                doc.setTextColor(60);
+                doc.text(`Fecha de emisión: ${hoyDDMMYYYY()}`, 8, pageH - 4);
+                doc.text(`Página ${i} de ${pageCount}`, pageW - 8, pageH - 4, { align: 'right' });
+            }
+            return doc;
+        }
+
+        function hoyDDMMYYYY() {
+            const d = new Date();
+            return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+        }
+
+        async function descargarLibroFiscalPdf(boton) {
+            const htmlOriginal = boton ? boton.innerHTML : null;
+            if (boton) {
+                boton.disabled = true;
+                boton.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Generando...';
+            }
+            try {
+                const data = await construirLibroFiscal();
+                renderizarLibroFiscal(data);
+                const doc = generarPdfLibro(data);
+                const nombre = data.tipo === 'ventas'
+                    ? `Libro_Ventas_IVA_${data.periodo}.pdf`
+                    : `Libro_Compras_IVA_${data.periodo}.pdf`;
+                doc.save(nombre);
+            } catch (e) {
+                console.error('ERROR_PDF_LIBRO: ' + e);
+                alert('No se pudo generar el PDF del libro: ' + e.message);
+            } finally {
+                if (boton) {
+                    boton.disabled = false;
+                    boton.innerHTML = htmlOriginal;
+                }
+            }
         }
 
         // ==========================================
