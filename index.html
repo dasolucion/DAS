@@ -193,6 +193,9 @@
             <button onclick="mostrarModulo('resumen-iva')" class="w-full text-left py-3 px-4 rounded-xl text-xs font-medium transition flex items-center gap-3 text-slate-300 hover:bg-slate-800 hover:text-white border border-transparent hover:border-slate-700">
                 <i class="fa-solid fa-file-invoice-dollar w-5 text-center text-blue-400"></i> Resumen de IVA
             </button>
+            <button onclick="mostrarModulo('contabilidad')" class="w-full text-left py-3 px-4 rounded-xl text-xs font-medium transition flex items-center gap-3 text-slate-300 hover:bg-slate-800 hover:text-white border border-transparent hover:border-slate-700">
+                <i class="fa-solid fa-book w-5 text-center text-violet-400"></i> Contabilidad
+            </button>
 
             <div class="border-t border-slate-800 my-3"></div>
 
@@ -1810,6 +1813,88 @@
                 </div>
             </section>
 
+            <!-- CONTABILIDAD -->
+            <section id="contabilidad" class="modulo hidden max-w-6xl mx-auto space-y-6">
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-2xl flex items-center gap-3">
+                    <div class="bg-slate-800 text-violet-400 p-2.5 rounded-xl border border-slate-700">
+                        <i class="fa-solid fa-book text-lg"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-bold text-white tracking-tight">Contabilidad</h2>
+                        <p class="text-xs text-slate-400">Asientos generados desde los pagos, transferencias y salidas — plan de cuentas básico</p>
+                    </div>
+                    <button onclick="cargarReportesContables()" class="ml-auto bg-slate-800 hover:bg-slate-700 text-white font-bold p-2.5 rounded-xl border border-slate-700 transition text-xs shadow-sm" title="Actualizar">
+                        <i class="fa-solid fa-rotate-right text-violet-400"></i>
+                    </button>
+                </div>
+
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+                    <div class="p-4 border-b border-slate-800 grid grid-cols-1 md:grid-cols-3 gap-3 items-end">
+                        <div>
+                            <label class="block text-[10px] font-medium text-slate-400 mb-1">Desde</label>
+                            <input type="date" id="cont-fecha-desde" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2 text-xs text-white font-mono outline-none focus:border-violet-500">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-medium text-slate-400 mb-1">Hasta</label>
+                            <input type="date" id="cont-fecha-hasta" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2 text-xs text-white font-mono outline-none focus:border-violet-500">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-medium text-slate-400 mb-1">Cuenta</label>
+                            <select id="cont-cuenta" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2 text-xs text-white outline-none focus:border-violet-500" onchange="renderLibroMayor()">
+                                <option value="">Todas...</option>
+                            </select>
+                        </div>
+                    </div>
+                    <h3 class="text-sm font-bold p-4 border-b border-slate-800 text-white flex items-center gap-2">
+                        <i class="fa-solid fa-list-ol text-violet-400"></i> Libro Mayor por cuenta
+                    </h3>
+                    <div class="overflow-x-auto max-h-96">
+                        <table class="w-full text-left border-collapse text-xs">
+                            <thead class="bg-slate-950 border-b border-slate-800 text-slate-400 uppercase tracking-wider text-[10px] sticky top-0">
+                                <tr>
+                                    <th class="p-3 font-medium">Fecha</th>
+                                    <th class="p-3 font-medium">Cuenta</th>
+                                    <th class="p-3 font-medium">Descripción</th>
+                                    <th class="p-3 font-medium text-right">Debe</th>
+                                    <th class="p-3 font-medium text-right">Haber</th>
+                                    <th class="p-3 font-medium text-right">Saldo</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabla-libro-mayor" class="divide-y divide-slate-800 text-slate-300 font-mono text-[11px]"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+                        <h3 class="text-sm font-bold p-4 border-b border-slate-800 text-white flex items-center gap-2">
+                            <i class="fa-solid fa-scale-balanced text-sky-400"></i> Balance de comprobación
+                        </h3>
+                        <div class="overflow-x-auto max-h-96">
+                            <table class="w-full text-left border-collapse text-xs">
+                                <thead class="bg-slate-950 border-b border-slate-800 text-slate-400 uppercase tracking-wider text-[10px]">
+                                    <tr><th class="p-3 font-medium">Código</th><th class="p-3 font-medium">Cuenta</th><th class="p-3 font-medium text-right">Debe</th><th class="p-3 font-medium text-right">Haber</th></tr>
+                                </thead>
+                                <tbody id="tabla-balance-comprobacion" class="divide-y divide-slate-800 text-slate-300 font-mono text-[11px]"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="bg-slate-900 border border-emerald-900/50 rounded-2xl overflow-hidden shadow-xl">
+                        <h3 class="text-sm font-bold p-4 border-b border-emerald-900/50 text-white flex items-center gap-2">
+                            <i class="fa-solid fa-chart-line text-emerald-400"></i> Estado de resultados
+                        </h3>
+                        <div id="contenido-estado-resultados" class="p-5 space-y-3 text-xs"></div>
+                    </div>
+                </div>
+
+                <div class="bg-slate-900 border border-violet-900/50 rounded-2xl overflow-hidden shadow-xl">
+                    <h3 class="text-sm font-bold p-4 border-b border-violet-900/50 text-white flex items-center gap-2">
+                        <i class="fa-solid fa-landmark text-violet-400"></i> Balance general
+                    </h3>
+                    <div id="contenido-balance-general" class="p-5 grid grid-cols-1 md:grid-cols-3 gap-6 text-xs"></div>
+                </div>
+            </section>
+
             <!-- BANCOS -->
             <section id="bancos" class="modulo hidden max-w-6xl mx-auto space-y-6">
                 <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-2xl flex items-center gap-3">
@@ -1855,7 +1940,13 @@
                             <label class="block text-[10px] font-medium text-slate-400 mb-1">Nombre del beneficiario</label>
                             <input type="text" id="salida-otro" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2 text-xs text-white outline-none focus:border-cyan-500">
                         </div>
-                        <div class="md:col-span-5">
+                        <div class="md:col-span-2">
+                            <label class="block text-[10px] font-medium text-violet-400 mb-1">Cuenta contable del gasto</label>
+                            <select id="salida-cuenta" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2 text-xs text-white outline-none focus:border-violet-500" required>
+                                <option value="">Seleccione cuenta...</option>
+                            </select>
+                        </div>
+                        <div class="md:col-span-3">
                             <label class="block text-[10px] font-medium text-slate-400 mb-1">Detalle</label>
                             <input type="text" id="salida-detalle" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2 text-xs text-white outline-none focus:border-cyan-500" placeholder="Ej. Pago de alquiler, compra de materiales...">
                         </div>
@@ -1865,6 +1956,42 @@
                             </button>
                         </div>
                     </form>
+                </div>
+
+                <!-- TRANSFERENCIAS ENTRE BANCOS -->
+                <div class="bg-slate-900 border border-sky-900/50 p-6 rounded-2xl shadow-xl no-print">
+                    <h3 class="text-sm font-bold text-white mb-5 pb-3 border-b border-slate-800 flex items-center gap-2">
+                        <i class="fa-solid fa-right-left text-sky-400"></i> Transferir saldo entre cuentas
+                    </h3>
+                    <p class="text-[11px] text-slate-400 mb-4">Ejemplo: traspasar IVA de facturas de Banesco a Banco de Venezuela. Se registra el movimiento en ambos bancos y se excluye de los totales de ingresos/egresos.</p>
+                    <form id="form-transferencia-banco" onsubmit="registrarTransferenciaBanco(event)" class="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
+                        <div>
+                            <label class="block text-[10px] font-medium text-slate-400 mb-1">Desde</label>
+                            <select id="transfer-origen" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2 text-xs text-white outline-none focus:border-sky-500" required></select>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-medium text-slate-400 mb-1">Hacia</label>
+                            <select id="transfer-destino" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2 text-xs text-white outline-none focus:border-sky-500" required></select>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-medium text-slate-400 mb-1">Fecha</label>
+                            <input type="date" id="transfer-fecha" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2 text-xs text-white font-mono outline-none focus:border-sky-500" required>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-medium text-emerald-400 mb-1">Monto (Bs)</label>
+                            <input type="number" step="0.01" min="0.01" id="transfer-monto" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2 text-xs text-emerald-300 font-mono font-bold outline-none focus:border-emerald-500" required>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-medium text-slate-400 mb-1">Concepto</label>
+                            <input type="text" id="transfer-concepto" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2 text-xs text-white outline-none focus:border-sky-500" placeholder="Ej. IVA de facturas" required>
+                        </div>
+                        <div class="md:col-span-5 flex justify-end">
+                            <button type="submit" class="bg-sky-600 hover:bg-sky-500 text-white font-bold px-5 py-2.5 rounded-xl text-xs flex items-center gap-2 shadow-lg shadow-sky-600/20">
+                                <i class="fa-solid fa-right-left"></i> Registrar transferencia
+                            </button>
+                        </div>
+                    </form>
+                    <p id="transfer-status" class="text-[11px] mt-3 font-mono text-slate-500"></p>
                 </div>
 
                 <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
@@ -2303,6 +2430,13 @@
                             <option value="">Seleccione un banco...</option>
                         </select>
                     </div>
+                    <div class="md:col-span-2 flex items-center gap-3 bg-slate-950 p-3.5 rounded-xl border border-slate-800">
+                        <input type="checkbox" id="pago-es-personal" class="w-4 h-4 accent-amber-500 cursor-pointer" onchange="togglePagoPersonal()">
+                        <label for="pago-es-personal" class="text-xs font-medium text-amber-300 cursor-pointer flex flex-col">
+                            <span>Pagado / cobrado en cuenta personal</span>
+                            <span class="text-[10px] text-slate-400 font-normal">Se oculta de los bancos, no afecta saldos y no genera asiento contable.</span>
+                        </label>
+                    </div>
                 </div>
                 <p class="text-[10px] text-slate-500">Puedes registrar un monto menor al saldo para abonos parciales; la cuenta se cierra cuando el saldo llegue a cero.</p>
 
@@ -2420,6 +2554,9 @@
         let comprasHistorialCache = [];
         let bancosCache = [];
         let movimientosBancosCache = [];
+        let planCuentasCache = [];
+        let asientosCache = [];
+        let asientoDetallesCache = [];
         let mapClientesGlobal = {};
         let mapClientesVendedor = {};
         let mapVendedoresGlobal = {};
@@ -2794,6 +2931,7 @@
             if(id === 'compras') { cargarOpcionesCompras(); cargarHistorialCompras(); estadoIA(configSistema.ia_activo ? 'Asistente IA activo' : 'Asistente IA desactivado (ver Parámetros)'); }
             if(id === 'cxp') cargarCxP();
             if(id === 'bancos') cargarModuloBancos();
+            if(id === 'contabilidad') cargarReportesContables();
             if(id === 'cxc') { cargarCxC(); }
             if(id === 'caja') cargarCaja();
             if(id === 'compromisos') cargarCompromisos(); 
@@ -5612,6 +5750,8 @@ function obtenerBaseImponibleFactura(v) {
             rellenar('pago-banco', false);
             rellenar('salida-banco', false);
             rellenar('filtro-banco-banco', true);
+            rellenar('transfer-origen', false);
+            rellenar('transfer-destino', false);
         }
 
         async function cargarBancosParametros() {
@@ -5685,12 +5825,14 @@ function obtenerBaseImponibleFactura(v) {
             document.getElementById('pago-saldo-mostrar').innerText = `Bs. ${formatNumber(datos.pendiente || 0)}`;
             document.getElementById('pago-monto').value = (datos.pendiente || 0).toFixed(2);
             document.getElementById('pago-fecha').value = new Date().toISOString().split('T')[0];
+            document.getElementById('pago-es-personal').checked = false;
             document.getElementById('modal-pago-titulo').innerText = datos.tipo === 'cobro' ? 'Registrar cobro' : 'Registrar pago a proveedor';
             document.getElementById('modal-pago-subtitulo').innerText = `${datos.contraparte || '-'} • Factura ${datos.factura || '-'}`;
 
             const select = document.getElementById('pago-banco');
             if (bancosCache.length === 0) cargarBancos();
             else select.value = bancosCache[0].id;
+            togglePagoPersonal();
 
             const modal = document.getElementById('modal-pago-banco');
             modal.classList.remove('hidden');
@@ -5703,6 +5845,110 @@ function obtenerBaseImponibleFactura(v) {
             modal.classList.remove('flex');
         }
 
+        // ===== CONTABILIDAD: PLAN DE CUENTAS Y ASIENTOS =====
+        async function cargarPlanCuentas() {
+            try {
+                const { data, error } = await db.from('plan_cuentas').select('*').order('orden');
+                if (error) throw error;
+                planCuentasCache = data || [];
+                const selSalida = document.getElementById('salida-cuenta');
+                if (selSalida) {
+                    const actual = selSalida.value;
+                    selSalida.innerHTML = '<option value="">Seleccione cuenta...</option>' + planCuentasCache
+                        .filter(c => c.tipo !== 'titulo' && c.activo)
+                        .map(c => `<option value="${c.codigo}">${c.codigo} — ${c.nombre}</option>`).join('');
+                    selSalida.value = actual;
+                }
+                const selCont = document.getElementById('cont-cuenta');
+                if (selCont) {
+                    const actual = selCont.value;
+                    selCont.innerHTML = '<option value="">Todas...</option>' + planCuentasCache
+                        .filter(c => c.tipo !== 'titulo')
+                        .map(c => `<option value="${c.codigo}">${c.codigo} — ${c.nombre}</option>`).join('');
+                    selCont.value = actual;
+                }
+                return planCuentasCache;
+            } catch (e) {
+                console.error('ERROR_PLAN_CUENTAS: ' + e);
+                return [];
+            }
+        }
+
+        function codigoCuentaBanco(bancoId) {
+            const b = bancosCache.find(x => String(x.id) === String(bancoId));
+            const nombre = String(b?.nombre || '').toLowerCase();
+            if (nombre.includes('banesco')) return '1.1.01.001';
+            if (nombre.includes('venezuela') || nombre.includes('bdv')) return '1.1.01.002';
+            return '1.1.01.001';
+        }
+
+        async function crearAsiento(fecha, descripcion, origenTipo, origenId, lineas) {
+            const limpias = lineas
+                .filter(l => Math.abs(parseFloat(l.debe) || 0) + Math.abs(parseFloat(l.haber) || 0) > 0.001)
+                .map(l => ({ cuenta: l.codigo, debe: r2(l.debe || 0), haber: r2(l.haber || 0) }));
+            if (!limpias.length) return null;
+            const { data: asiento, error } = await db.from('asientos').insert([{
+                fecha,
+                descripcion,
+                origen_tipo: origenTipo || null,
+                origen_id: origenId ? String(origenId) : null
+            }]).select();
+            if (error || !asiento?.[0]) throw new Error(error?.message || 'No se pudo crear el asiento');
+            const id = asiento[0].id;
+            const detalles = limpias.map((l, i) => ({
+                asiento_id: id,
+                cuenta_codigo: l.cuenta,
+                debe: l.debe,
+                haber: l.haber,
+                orden: i
+            }));
+            const { error: errDet } = await db.from('asiento_detalles').insert(detalles);
+            if (errDet) throw new Error(errDet.message);
+            return id;
+        }
+
+        async function desgloseVentaAsiento(ventaId) {
+            const { data: v } = await db.from('ventas').select('*').eq('id', ventaId).single();
+            if (!v) return null;
+            const d = desgloseVentaLibro(v);
+            const { data: detalles } = await db.from('venta_detalles')
+                .select('cantidad, precio_unitario, producto_id').eq('venta_id', ventaId);
+            const { data: productos } = await db.from('productos').select('id, tipo');
+            const mapTipo = {};
+            (productos || []).forEach(p => mapTipo[p.id] = p.tipo);
+            let merc = 0, serv = 0;
+            (detalles || []).forEach(it => {
+                const monto = (parseFloat(it.cantidad) || 0) * (parseFloat(it.precio_unitario) || 0);
+                if (mapTipo[it.producto_id] === 'Servicio') serv += monto;
+                else merc += monto;
+            });
+            const suma = merc + serv;
+            if (suma > 0 && d.base > 0) {
+                merc = d.base * (merc / suma);
+                serv = d.base * (serv / suma);
+            } else {
+                merc = d.base;
+                serv = 0;
+            }
+            return { total: d.total, iva: d.iva, exento: d.exento, mercancia: r2(merc), servicio: r2(serv) };
+        }
+
+        async function desgloseCompraAsiento(compraId) {
+            const { data: c } = await db.from('compras').select('*').eq('id', compraId).single();
+            if (!c) return null;
+            return { total: r2(c.total), iva: r2(c.impuestos), base: r2(c.subtotal), exento: r2(c.monto_exento) };
+        }
+
+        function togglePagoPersonal() {
+            const chk = document.getElementById('pago-es-personal');
+            const sel = document.getElementById('pago-banco');
+            if (!chk || !sel) return;
+            sel.disabled = chk.checked;
+            sel.required = !chk.checked;
+            if (chk.checked) sel.value = '';
+            else if (bancosCache.length) sel.value = bancosCache[0].id;
+        }
+
         async function guardarPagoBanco(e) {
             e.preventDefault();
             const tipo = document.getElementById('pago-tipo').value;
@@ -5711,20 +5957,63 @@ function obtenerBaseImponibleFactura(v) {
             const monto = parseFloat(document.getElementById('pago-monto').value) || 0;
             const fecha = document.getElementById('pago-fecha').value;
             const bancoId = document.getElementById('pago-banco').value;
+            const esPersonal = document.getElementById('pago-es-personal').checked;
             const contraparte = document.getElementById('pago-contraparte').value;
             const factura = document.getElementById('pago-factura').value;
             const clienteId = document.getElementById('pago-cliente-id').value;
             const vendedorId = document.getElementById('pago-vendedor-id').value;
             const ventaId = document.getElementById('pago-venta-id').value;
 
-            if (!bancoId) return alert('Selecciona un banco.');
             if (!fecha) return alert('Selecciona la fecha del pago.');
+            if (!esPersonal && !bancoId) return alert('Selecciona un banco.');
             if (monto <= 0) return alert('El monto debe ser mayor a cero.');
             if (monto > saldo + 0.01) return alert(`El monto supera el saldo pendiente (Bs. ${formatNumber(saldo)}).`);
 
             const restante = Math.max(0, saldo - monto);
+            await cargarPlanCuentas();
+            const cuentaBanco = esPersonal ? null : codigoCuentaBanco(bancoId);
+            let asientoId = null;
+
+            if (!esPersonal && saldo > 0) {
+                let lineas = [];
+                if (tipo === 'cobro' && ventaId) {
+                    const d = await desgloseVentaAsiento(ventaId);
+                    if (!d) throw new Error('No se encontró la venta para el asiento.');
+                    const factor = Math.min(1, monto / (d.total || saldo));
+                    lineas = [
+                        { codigo: cuentaBanco, debe: monto, haber: 0 },
+                        { codigo: '4.01.001', debe: 0, haber: d.mercancia * factor },
+                        { codigo: '4.02.001', debe: 0, haber: d.servicio * factor },
+                        { codigo: '4.03.001', debe: 0, haber: d.exento * factor },
+                        { codigo: '2.1.04.001', debe: 0, haber: d.iva * factor }
+                    ];
+                } else if (tipo === 'cobro') {
+                    lineas = [
+                        { codigo: cuentaBanco, debe: monto, haber: 0 },
+                        { codigo: '1.1.02.001', debe: 0, haber: monto }
+                    ];
+                } else {
+                    const d = await desgloseCompraAsiento(id);
+                    if (!d) throw new Error('No se encontró la compra para el asiento.');
+                    const factor = Math.min(1, monto / (d.total || saldo));
+                    lineas = [
+                        { codigo: '5.02.001', debe: d.base * factor, haber: 0 },
+                        { codigo: '5.02.002', debe: d.exento * factor, haber: 0 },
+                        { codigo: '1.1.04.001', debe: d.iva * factor, haber: 0 },
+                        { codigo: cuentaBanco, debe: 0, haber: monto }
+                    ];
+                }
+                asientoId = await crearAsiento(
+                    fecha,
+                    `${tipo === 'cobro' ? 'Cobro' : 'Pago'} ${contraparte} — Factura ${factura || '-'}${restante > 0.01 ? ' (abono)' : ''}`,
+                    tipo,
+                    id,
+                    lineas
+                );
+            }
+
             const movimiento = {
-                banco_id: Number(bancoId),
+                banco_id: esPersonal ? null : Number(bancoId),
                 fecha,
                 tipo: tipo === 'cobro' ? 'ingreso' : 'egreso',
                 monto,
@@ -5733,7 +6022,10 @@ function obtenerBaseImponibleFactura(v) {
                 vendedor_id: vendedorId || null,
                 venta_id: ventaId || null,
                 nota_entrega_id: (!ventaId && tipo === 'cobro') ? id : null,
-                compra_id: tipo === 'pago' ? Number(id) : null
+                compra_id: tipo === 'pago' ? Number(id) : null,
+                es_personal: esPersonal,
+                cuenta_codigo: cuentaBanco,
+                asiento_id: asientoId
             };
 
             const { error } = await db.from('banco_movimientos').insert([movimiento]);
@@ -5887,6 +6179,7 @@ function obtenerBaseImponibleFactura(v) {
                         const desde = normalizarFechaYMD(b.fecha_conciliacion);
                         let ing = 0, egr = 0;
                         movimientosBancosCache.forEach(m => {
+                            if (m.es_personal) return;
                             const f = normalizarFechaYMD(m.fecha);
                             if (Number(m.banco_id) !== Number(b.id) || (desde && f && f < desde)) return;
                             if (m.tipo === 'ingreso') ing += parseFloat(m.monto) || 0;
@@ -5925,6 +6218,7 @@ function obtenerBaseImponibleFactura(v) {
             const mapVendedores = Object.fromEntries(Object.entries(mapVendedoresGlobal || {}));
 
             const filtrados = movimientosBancosCache.filter(m => {
+                if (m.es_personal) return false;
                 const f = normalizarFechaYMD(m.fecha);
                 if (desde && f && f < desde) return false;
                 if (hasta && f && f > hasta) return false;
@@ -5940,8 +6234,10 @@ function obtenerBaseImponibleFactura(v) {
             let ing = 0, egr = 0;
             tbody.innerHTML = filtrados.length
                 ? filtrados.map(m => {
-                    if (m.tipo === 'ingreso') ing += parseFloat(m.monto) || 0;
-                    else egr += parseFloat(m.monto) || 0;
+                    if (!m.transferencia_id) {
+                        if (m.tipo === 'ingreso') ing += parseFloat(m.monto) || 0;
+                        else egr += parseFloat(m.monto) || 0;
+                    }
                     const esIngreso = m.tipo === 'ingreso';
                     return `
                         <tr class="hover:bg-slate-800/40">
@@ -5979,10 +6275,22 @@ function obtenerBaseImponibleFactura(v) {
                 ? (document.getElementById('salida-otro').value || '').trim()
                 : selBen;
             const detalle = (document.getElementById('salida-detalle').value || '').trim();
+            const cuenta = document.getElementById('salida-cuenta').value;
 
-            if (!banco || !fecha || monto <= 0 || !contraparte) {
-                return alert('Completa banco, fecha, monto y beneficiario.');
+            if (!banco || !fecha || monto <= 0 || !contraparte || !cuenta) {
+                return alert('Completa banco, fecha, monto, beneficiario y cuenta contable.');
             }
+            await cargarPlanCuentas();
+            const asientoId = await crearAsiento(
+                fecha,
+                detalle || `Salida de dinero a ${contraparte}`,
+                'egreso',
+                null,
+                [
+                    { codigo: cuenta, debe: monto, haber: 0 },
+                    { codigo: codigoCuentaBanco(banco), debe: 0, haber: monto }
+                ]
+            );
             const { error } = await db.from('banco_movimientos').insert([{
                 banco_id: Number(banco),
                 fecha,
@@ -5993,12 +6301,222 @@ function obtenerBaseImponibleFactura(v) {
                 vendedor_id: null,
                 venta_id: null,
                 nota_entrega_id: null,
-                compra_id: null
+                compra_id: null,
+                cuenta_codigo: codigoCuentaBanco(banco),
+                asiento_id: asientoId
             }]);
             if (error) return alert('No se pudo registrar la salida: ' + error.message);
             document.getElementById('form-salida-bancaria').reset();
             document.getElementById('salida-otro-wrap').classList.add('hidden');
             await cargarModuloBancos();
+        }
+
+        function saldoDisponibleBanco(bancoId) {
+            const banco = bancosCache.find(b => String(b.id) === String(bancoId));
+            if (!banco) return 0;
+            const desde = normalizarFechaYMD(banco.fecha_conciliacion);
+            let saldo = parseFloat(banco.saldo_inicial) || 0;
+            movimientosBancosCache.forEach(m => {
+                if (m.es_personal || String(m.banco_id) !== String(bancoId)) return;
+                const f = normalizarFechaYMD(m.fecha);
+                if (desde && f && f < desde) return;
+                saldo += m.tipo === 'ingreso' ? (parseFloat(m.monto) || 0) : -(parseFloat(m.monto) || 0);
+            });
+            return saldo;
+        }
+
+        async function registrarTransferenciaBanco(e) {
+            e.preventDefault();
+            const origen = document.getElementById('transfer-origen').value;
+            const destino = document.getElementById('transfer-destino').value;
+            const fecha = document.getElementById('transfer-fecha').value;
+            const monto = parseFloat(document.getElementById('transfer-monto').value) || 0;
+            const concepto = (document.getElementById('transfer-concepto').value || '').trim();
+            const status = document.getElementById('transfer-status');
+
+            if (!origen || !destino || !fecha || monto <= 0 || !concepto) {
+                return alert('Completa todas las condiciones de la transferencia.');
+            }
+            if (origen === destino) return alert('La cuenta origen y destino deben ser distintas.');
+            if (monto > saldoDisponibleBanco(origen) + 0.01) {
+                return alert(`Saldo insuficiente en la cuenta origen (disponible Bs. ${formatNumber(saldoDisponibleBanco(origen))}).`);
+            }
+
+            await cargarPlanCuentas();
+            const { data: transf, error } = await db.from('banco_transferencias').insert([{
+                fecha,
+                banco_origen_id: Number(origen),
+                banco_destino_id: Number(destino),
+                monto,
+                concepto
+            }]).select();
+            if (error || !transf?.[0]) return alert('No se pudo registrar la transferencia: ' + (error?.message || 'Error'));
+
+            const codOrigen = codigoCuentaBanco(origen);
+            const codDestino = codigoCuentaBanco(destino);
+            const asientoId = await crearAsiento(
+                fecha,
+                `Transferencia ${concepto}`,
+                'transferencia',
+                transf[0].id,
+                [
+                    { codigo: codDestino, debe: monto, haber: 0 },
+                    { codigo: codOrigen, debe: 0, haber: monto }
+                ]
+            );
+
+            const nombreOrigen = bancosCache.find(b => String(b.id) === origen)?.nombre || 'origen';
+            const nombreDestino = bancosCache.find(b => String(b.id) === destino)?.nombre || 'destino';
+            const { error: errMov } = await db.from('banco_movimientos').insert([
+                {
+                    banco_id: Number(origen), fecha, tipo: 'egreso', monto,
+                    contraparte: nombreDestino, detalle: `Transferencia a ${nombreDestino} — ${concepto}`,
+                    transferencia_id: transf[0].id, cuenta_codigo: codOrigen, asiento_id: asientoId
+                },
+                {
+                    banco_id: Number(destino), fecha, tipo: 'ingreso', monto,
+                    contraparte: nombreOrigen, detalle: `Transferencia desde ${nombreOrigen} — ${concepto}`,
+                    transferencia_id: transf[0].id, cuenta_codigo: codDestino, asiento_id: asientoId
+                }
+            ]);
+            if (errMov) return alert('La transferencia se registró pero fallaron los movimientos: ' + errMov.message);
+
+            if (status) status.innerText = '✅ Transferencia registrada y conciliada contablemente.';
+            document.getElementById('form-transferencia-banco').reset();
+            await cargarModuloBancos();
+        }
+
+        // ==========================================
+        // REPORTES CONTABLES
+        // ==========================================
+        async function cargarReportesContables() {
+            try {
+                await cargarPlanCuentas();
+                const [resA, resD] = await Promise.all([
+                    db.from('asientos').select('*').order('fecha', { ascending: false }),
+                    db.from('asiento_detalles').select('*').order('orden')
+                ]);
+                asientosCache = resA.data || [];
+                asientoDetallesCache = resD.data || [];
+                renderLibroMayor();
+                renderBalanceComprobacion();
+                renderEstadoResultados();
+                renderBalanceGeneral();
+            } catch (e) {
+                console.error('ERROR_REPORTES_CONTABLES: ' + e);
+            }
+        }
+
+        function datosAsientosFiltrados() {
+            const desde = document.getElementById('cont-fecha-desde')?.value || '';
+            const hasta = document.getElementById('cont-fecha-hasta')?.value || '';
+            const cuenta = document.getElementById('cont-cuenta')?.value || '';
+            const mapa = Object.fromEntries(asientosCache.map(a => [a.id, a]));
+            return asientoDetallesCache
+                .filter(d => {
+                    const a = mapa[d.asiento_id];
+                    if (!a) return false;
+                    const f = normalizarFechaYMD(a.fecha);
+                    if (desde && f && f < desde) return false;
+                    if (hasta && f && f > hasta) return false;
+                    if (cuenta && d.cuenta_codigo !== cuenta) return false;
+                    return true;
+                })
+                .map(d => ({ ...d, asiento: mapa[d.asiento_id] }))
+                .sort((a, b) => String(a.asiento.fecha).localeCompare(String(b.asiento.fecha)) || a.asiento.id - b.asiento.id);
+        }
+
+        function renderLibroMayor() {
+            const tbody = document.getElementById('tabla-libro-mayor');
+            if (!tbody) return;
+            const filas = datosAsientosFiltrados();
+            let saldo = 0;
+            tbody.innerHTML = filas.length
+                ? filas.map(d => {
+                    saldo += (parseFloat(d.debe) || 0) - (parseFloat(d.haber) || 0);
+                    const c = planCuentasCache.find(p => p.codigo === d.cuenta_codigo);
+                    return `
+                        <tr class="hover:bg-slate-800/40">
+                            <td class="p-3">${fechaDDMMYYYY(d.asiento.fecha)}</td>
+                            <td class="p-3">${d.cuenta_codigo}</td>
+                            <td class="p-3 text-slate-200">${d.asiento.descripcion || '-'}</td>
+                            <td class="p-3 text-right text-sky-400">${formatNumber(d.debe)}</td>
+                            <td class="p-3 text-right text-violet-400">${formatNumber(d.haber)}</td>
+                            <td class="p-3 text-right font-bold">${formatNumber(saldo)}</td>
+                        </tr>`;
+                }).join('')
+                : '<tr><td colspan="6" class="p-8 text-center text-slate-500 italic">No hay asientos en el período.</td></tr>';
+        }
+
+        function renderBalanceComprobacion() {
+            const tbody = document.getElementById('tabla-balance-comprobacion');
+            if (!tbody) return;
+            const totales = {};
+            datosAsientosFiltrados().forEach(d => {
+                const c = d.cuenta_codigo;
+                totales[c] = totales[c] || { debe: 0, haber: 0 };
+                totales[c].debe += parseFloat(d.debe) || 0;
+                totales[c].haber += parseFloat(d.haber) || 0;
+            });
+            let sd = 0, sh = 0;
+            tbody.innerHTML = Object.keys(totales).sort().map(c => {
+                const t = totales[c];
+                sd += t.debe; sh += t.haber;
+                const cuenta = planCuentasCache.find(p => p.codigo === c);
+                return `<tr><td class="p-3">${c}</td><td class="p-3 text-slate-200">${cuenta?.nombre || '-'}</td><td class="p-3 text-right">${formatNumber(t.debe)}</td><td class="p-3 text-right">${formatNumber(t.haber)}</td></tr>`;
+            }).join('') || '<tr><td colspan="4" class="p-6 text-center text-slate-500 italic">Sin movimientos.</td></tr>';
+            tbody.innerHTML += `<tr class="bg-slate-950 font-bold text-white"><td colspan="2" class="p-3 text-right">TOTALES</td><td class="p-3 text-right">${formatNumber(sd)}</td><td class="p-3 text-right">${formatNumber(sh)}</td></tr>`;
+        }
+
+        function saldoPorTipo(tipos) {
+            return datosAsientosFiltrados()
+                .filter(d => {
+                    const c = planCuentasCache.find(p => p.codigo === d.cuenta_codigo);
+                    return c && tipos.includes(c.tipo);
+                })
+                .reduce((s, d) => {
+                    const c = planCuentasCache.find(p => p.codigo === d.cuenta_codigo);
+                    const debe = parseFloat(d.debe) || 0;
+                    const haber = parseFloat(d.haber) || 0;
+                    return s + (c?.naturaleza === 'deudor' ? (debe - haber) : (haber - debe));
+                }, 0);
+        }
+
+        function renderEstadoResultados() {
+            const el = document.getElementById('contenido-estado-resultados');
+            if (!el) return;
+            const ingresos = saldoPorTipo(['ingreso']) - saldoPorTipo(['contra_ingreso']);
+            const gastos = saldoPorTipo(['gasto', 'costo']);
+            const utilidad = ingresos - gastos;
+            el.innerHTML = `
+                <div class="flex justify-between border-b border-slate-800 pb-2"><span class="text-slate-300">Ingresos operativos</span><span class="font-mono font-bold text-emerald-400">Bs. ${formatNumber(ingresos)}</span></div>
+                <div class="flex justify-between border-b border-slate-800 pb-2"><span class="text-slate-300">Costos y gastos</span><span class="font-mono font-bold text-rose-400">Bs. ${formatNumber(gastos)}</span></div>
+                <div class="flex justify-between text-base font-bold pt-2"><span class="text-white">Utilidad del período</span><span class="font-mono ${utilidad >= 0 ? 'text-emerald-400' : 'text-rose-400'}">Bs. ${formatNumber(utilidad)}</span></div>`;
+        }
+
+        function renderBalanceGeneral() {
+            const el = document.getElementById('contenido-balance-general');
+            if (!el) return;
+            const activo = saldoPorTipo(['activo']);
+            const pasivo = saldoPorTipo(['pasivo']);
+            const capital = saldoPorTipo(['capital']);
+            const resultado = saldoPorTipo(['ingreso']) - saldoPorTipo(['contra_ingreso','gasto','costo']);
+            el.innerHTML = `
+                <div class="bg-slate-950 border border-slate-800 rounded-xl p-4">
+                    <p class="text-[10px] text-slate-400 uppercase tracking-wider mb-1">Activo</p>
+                    <p class="text-xl font-mono font-bold text-sky-400">Bs. ${formatNumber(activo)}</p>
+                </div>
+                <div class="bg-slate-950 border border-slate-800 rounded-xl p-4">
+                    <p class="text-[10px] text-slate-400 uppercase tracking-wider mb-1">Pasivo</p>
+                    <p class="text-xl font-mono font-bold text-amber-400">Bs. ${formatNumber(pasivo)}</p>
+                </div>
+                <div class="bg-slate-950 border border-slate-800 rounded-xl p-4">
+                    <p class="text-[10px] text-slate-400 uppercase tracking-wider mb-1">Capital + Resultado</p>
+                    <p class="text-xl font-mono font-bold text-violet-400">Bs. ${formatNumber(capital + resultado)}</p>
+                    <p class="text-[10px] ${Math.abs(activo - (pasivo + capital + resultado)) < 0.05 ? 'text-emerald-400' : 'text-rose-400'} mt-2 font-mono">
+                        ${Math.abs(activo - (pasivo + capital + resultado)) < 0.05 ? '✓ Cuadra' : '⚠ No cuadra'}
+                    </p>
+                </div>`;
         }
 
         // ==========================================
@@ -8127,6 +8645,7 @@ console.log("📡 ENVIANDO A LA EDGE FUNCTION SUPABASE (facturacion-thefactory).
             await cargarConfiguracionSistema();
             await cargarVendedores();
             await cargarBancos();
+            await cargarPlanCuentas();
             configurarPullToRefresh();
             mostrarModulo('dashboard'); 
             obtenerTasaBCV(true); 
