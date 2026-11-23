@@ -1386,6 +1386,7 @@
                             </h4>
                             <button type="button" onclick="descartarBorradorIA()" class="text-rose-400 hover:text-rose-300 text-xs font-semibold"><i class="fa-solid fa-xmark"></i> Descartar</button>
                         </div>
+                        <div id="ia-draft-alerta" class="hidden mb-4 bg-amber-950/40 border border-amber-800 text-amber-300 text-[11px] px-3 py-2 rounded-xl"></div>
                         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                             <div class="md:col-span-2">
                                 <label class="block text-[10px] font-medium text-slate-400 mb-1">Proveedor</label>
@@ -3954,6 +3955,31 @@
             }
         }
 
+        // Los montos pueden venir como "64.111,11" (es-VE), "64,111.11" (en-US)
+        // o "64111.11". parseFloat() trunca en la coma, por eso se normaliza antes.
+        function parseMontoIA(valor) {
+            if (typeof valor === 'number') return isFinite(valor) ? valor : 0;
+            let s = String(valor ?? '').trim().replace(/[^\d.,-]/g, '');
+            if (!s) return 0;
+            const ultimoPunto = s.lastIndexOf('.');
+            const ultimaComa = s.lastIndexOf(',');
+            if (ultimoPunto >= 0 && ultimaComa >= 0) {
+                const decimal = ultimoPunto > ultimaComa ? '.' : ',';
+                const miles = decimal === '.' ? ',' : '.';
+                s = s.split(miles).join('').replace(decimal, '.');
+            } else if (ultimaComa >= 0) {
+                const decimales = s.length - ultimaComa - 1;
+                s = decimales === 1 || decimales === 2
+                    ? s.replace(',', '.')
+                    : s.replace(/,/g, '');
+            } else if (ultimoPunto >= 0) {
+                const decimales = s.length - ultimoPunto - 1;
+                if (decimales === 3 && ultimoPunto > 0) s = s.replace('.', '');
+            }
+            const n = parseFloat(s);
+            return isFinite(n) ? n : 0;
+        }
+
         function archivoABase64(archivo) {
             return new Promise((resolve, reject) => {
                 const lector = new FileReader();
@@ -3972,7 +3998,7 @@
 
             const prompt = `Analiza la factura de compra adjunta y extrae únicamente los datos visibles.
 Devuelve un objeto JSON con estas claves: proveedor (razón social del emisor), fecha (AAAA-MM-DD), numero_factura, numero_control, subtotal (base gravada sin IVA), monto_exento, impuestos (monto de IVA), total (total a pagar).
-Usa números con punto decimal y sin símbolos de moneda. Si un dato no es legible, usa "" en textos y 0 en números. No inventes información.`;
+Escribe los montos SOLO con dígitos y punto decimal, SIN separador de miles y SIN símbolos de moneda (ejemplo: 64111.11, no "64.111,11"). Si un dato no es legible, usa "" en textos y 0 en números. No inventes información.`;
 
             const esquema = {
                 type: 'OBJECT',
@@ -4017,14 +4043,29 @@ Usa números con punto decimal y sin símbolos de moneda. Si un dato no es legib
         function mostrarBorradorIA(datos, archivo) {
             borradorIA = { ...datos, archivo };
             const set = (id, valor) => { const el = document.getElementById(id); if (el) el.value = valor ?? ''; };
+            const m = (clave) => parseMontoIA(datos[clave]);
             set('ia-draft-proveedor', datos.proveedor || '');
             set('ia-draft-fecha', normalizarFechaYMD(datos.fecha) || new Date().toISOString().split('T')[0]);
             set('ia-draft-factura', datos.numero_factura || '');
             set('ia-draft-control', datos.numero_control || '');
-            set('ia-draft-subtotal', (parseFloat(datos.subtotal) || 0).toFixed(2));
-            set('ia-draft-exento', (parseFloat(datos.monto_exento) || 0).toFixed(2));
-            set('ia-draft-iva', (parseFloat(datos.impuestos) || 0).toFixed(2));
-            set('ia-draft-total', (parseFloat(datos.total) || 0).toFixed(2));
+            set('ia-draft-subtotal', m('subtotal').toFixed(2));
+            set('ia-draft-exento', m('monto_exento').toFixed(2));
+            set('ia-draft-iva', m('impuestos').toFixed(2));
+            set('ia-draft-total', m('total').toFixed(2));
+
+            const alerta = document.getElementById('ia-draft-alerta');
+            if (alerta) {
+                const suma = m('subtotal') + m('monto_exento') + m('impuestos');
+                const total = m('total');
+                if (total > 0 && Math.abs(suma - total) > 0.5) {
+                    alerta.classList.remove('hidden');
+                    alerta.innerText = `⚠️ El total detectado (${formatNumber(total)}) no coincide con base + exento + IVA (${formatNumber(suma)}). Revisa los montos antes de aprobar.`;
+                } else {
+                    alerta.classList.add('hidden');
+                    alerta.innerText = '';
+                }
+            }
+            console.log('MONTOS_IA_CRUDOS: ' + JSON.stringify({ subtotal: datos.subtotal, exento: datos.monto_exento, iva: datos.impuestos, total: datos.total }));
             const panel = document.getElementById('ia-borrador');
             if (panel) panel.classList.remove('hidden');
         }
@@ -4068,7 +4109,7 @@ Usa números con punto decimal y sin símbolos de moneda. Si un dato no es legib
             const original = boton ? boton.innerHTML : null;
             if (boton) { boton.disabled = true; boton.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Guardando...'; }
             try {
-                const valor = (id) => parseFloat(document.getElementById(id).value) || 0;
+                const valor = (id) => parseMontoIA(document.getElementById(id).value);
                 const texto = (id) => (document.getElementById(id).value || '').trim();
                 const proveedor = texto('ia-draft-proveedor');
                 if (!proveedor) throw new Error('El proveedor es obligatorio.');
