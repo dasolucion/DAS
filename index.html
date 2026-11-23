@@ -5666,19 +5666,23 @@ function obtenerBaseImponibleFactura(v) {
                 if(resNotas.data) {
                     resNotas.data.forEach(n => {
                         const cliInfo = mapClientes[n.cliente_id] || {};
-                        const tasaRef = parseFloat(n.tasa) || datosGenerales.tasa || 1;
-                        const pendiente = Math.max(0, (parseFloat(n.total) || 0) - (pagosNota[n.id] || 0));
+                        const tasaRef = parseFloat(datosGenerales.tasa) || 1;
+                        const totalUsd = parseFloat(n.total_usd) || 0;
+                        const totalBs = totalUsd * tasaRef;
+                        // Los abonos se guardan en Bs en banco_movimientos.
+                        const pendienteBs = Math.max(0, totalBs - (pagosNota[n.id] || 0));
+                        const pendienteUsd = pendienteBs / tasaRef;
                         listadoMixto.push({
                             id: n.id, tipo: 'nota',
                             fecha: n.fecha || n.created_at,
                             cliente: cliInfo.descripcion || 'Desconocido',
                             clienteId: n.cliente_id || '',
-                            factura: n.numero_documento || '',
+                            factura: n.numero_documento || `NOTA-${String(n.id).padStart(6, '0')}`,
                             vendedorId: mapClientesVendedor[n.cliente_id] || '',
-                            pendiente,
-                            baseNetaBs: pendiente,
+                            pendiente: pendienteBs,
+                            baseNetaBs: pendienteBs,
                             ivaRecibidoBs: null,
-                            cobrarUsd: pendiente / tasaRef
+                            cobrarUsd: pendienteUsd
                         });
                     });
                 }
