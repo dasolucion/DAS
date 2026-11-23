@@ -16,6 +16,11 @@
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: #475569; }
 
+        .menu-grupo > summary { list-style: none; cursor: pointer; }
+        .menu-grupo > summary::-webkit-details-marker { display: none; }
+        .menu-grupo[open] .menu-chevron { transform: rotate(180deg); }
+        .menu-chevron { transition: transform 150ms ease; }
+
         .doc-factura-hoja {
             width: 210mm;
             min-height: 148mm;
@@ -132,57 +137,75 @@
             </button>
         </div>
         
-        <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
+        <nav class="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
             <button onclick="mostrarModulo('dashboard')" class="w-full text-left py-3 px-4 rounded-xl text-xs font-medium transition flex items-center gap-3 text-slate-300 hover:bg-slate-800 hover:text-white border border-transparent hover:border-slate-700 bg-slate-800/30">
                 <i class="fa-solid fa-chart-pie w-5 text-center text-purple-400"></i> Dashboard
             </button>
             <button onclick="mostrarModulo('compromisos')" class="w-full text-left py-3 px-4 rounded-xl text-xs font-medium transition flex items-center gap-3 text-slate-300 hover:bg-slate-800 hover:text-white border border-transparent hover:border-slate-700">
                 <i class="fa-solid fa-list-check w-5 text-center text-fuchsia-400"></i> Compromisos
             </button>
+
+            <details id="menu-archivos" class="menu-grupo pt-2">
+                <summary class="w-full py-3 px-4 rounded-xl text-xs font-bold uppercase tracking-wider transition flex items-center gap-3 text-slate-400 hover:bg-slate-800 hover:text-white border border-transparent hover:border-slate-700">
+                    <i class="fa-solid fa-folder-open w-5 text-center text-sky-400"></i> Archivos
+                    <i class="fa-solid fa-chevron-down menu-chevron ml-auto text-[9px]"></i>
+                </summary>
+                <div class="ml-6 pl-3 border-l border-slate-800 space-y-1 mt-1 mb-2">
+                    <button onclick="mostrarModulo('productos')" class="w-full text-left py-2 px-3 rounded-lg text-[11px] transition flex items-center gap-3 text-slate-300 hover:bg-slate-800 hover:text-white"><i class="fa-solid fa-boxes-stacked w-4 text-center text-sky-400"></i> Productos / Servicios</button>
+                    <button onclick="mostrarModulo('clientes')" class="w-full text-left py-2 px-3 rounded-lg text-[11px] transition flex items-center gap-3 text-slate-300 hover:bg-slate-800 hover:text-white"><i class="fa-solid fa-users w-4 text-center text-sky-400"></i> Clientes</button>
+                    <button onclick="mostrarModulo('proveedores')" class="w-full text-left py-2 px-3 rounded-lg text-[11px] transition flex items-center gap-3 text-slate-300 hover:bg-slate-800 hover:text-white"><i class="fa-solid fa-truck-fast w-4 text-center text-teal-400"></i> Proveedores</button>
+                    <button onclick="mostrarModulo('vendedores')" class="w-full text-left py-2 px-3 rounded-lg text-[11px] transition flex items-center gap-3 text-slate-300 hover:bg-slate-800 hover:text-white"><i class="fa-solid fa-id-badge w-4 text-center text-pink-400"></i> Vendedores</button>
+                </div>
+            </details>
+
+            <details id="menu-compras" class="menu-grupo">
+                <summary class="w-full py-3 px-4 rounded-xl text-xs font-bold uppercase tracking-wider transition flex items-center gap-3 text-slate-400 hover:bg-slate-800 hover:text-white border border-transparent hover:border-slate-700">
+                    <i class="fa-solid fa-cart-flatbed w-5 text-center text-orange-400"></i> Compras
+                    <i class="fa-solid fa-chevron-down menu-chevron ml-auto text-[9px]"></i>
+                </summary>
+                <div class="ml-6 pl-3 border-l border-slate-800 space-y-1 mt-1 mb-2">
+                    <button onclick="mostrarModulo('compras')" class="w-full text-left py-2 px-3 rounded-lg text-[11px] transition flex items-center gap-3 text-slate-300 hover:bg-slate-800 hover:text-white"><i class="fa-solid fa-cart-flatbed w-4 text-center text-orange-400"></i> Registro de Compras</button>
+                </div>
+            </details>
+
+            <details id="menu-ventas" class="menu-grupo">
+                <summary class="w-full py-3 px-4 rounded-xl text-xs font-bold uppercase tracking-wider transition flex items-center gap-3 text-slate-400 hover:bg-slate-800 hover:text-white border border-transparent hover:border-slate-700">
+                    <i class="fa-solid fa-cart-shopping w-5 text-center text-emerald-400"></i> Ventas
+                    <i class="fa-solid fa-chevron-down menu-chevron ml-auto text-[9px]"></i>
+                </summary>
+                <div class="ml-6 pl-3 border-l border-slate-800 space-y-1 mt-1 mb-2">
+                    <button onclick="mostrarModulo('presupuestos')" class="w-full text-left py-2 px-3 rounded-lg text-[11px] transition flex items-center gap-3 text-slate-300 hover:bg-slate-800 hover:text-white"><i class="fa-solid fa-file-invoice w-4 text-center text-amber-400"></i> Presupuestos</button>
+                    <button onclick="mostrarModulo('notas')" class="w-full text-left py-2 px-3 rounded-lg text-[11px] transition flex items-center gap-3 text-slate-300 hover:bg-slate-800 hover:text-white"><i class="fa-solid fa-file-lines w-4 text-center text-cyan-400"></i> Notas de Entrega</button>
+                    <button onclick="mostrarModulo('ventas')" class="w-full text-left py-2 px-3 rounded-lg text-[11px] transition flex items-center gap-3 text-slate-300 hover:bg-slate-800 hover:text-white"><i class="fa-solid fa-cart-shopping w-4 text-center text-emerald-400"></i> Facturación / Ventas</button>
+                    <button onclick="mostrarModulo('notas-credito')" class="w-full text-left py-2 px-3 rounded-lg text-[11px] transition flex items-center gap-3 text-slate-300 hover:bg-slate-800 hover:text-white"><i class="fa-solid fa-file-arrow-down w-4 text-center text-rose-400"></i> Notas de Crédito</button>
+                </div>
+            </details>
+
+            <details id="menu-reportes" class="menu-grupo">
+                <summary class="w-full py-3 px-4 rounded-xl text-xs font-bold uppercase tracking-wider transition flex items-center gap-3 text-slate-400 hover:bg-slate-800 hover:text-white border border-transparent hover:border-slate-700">
+                    <i class="fa-solid fa-chart-column w-5 text-center text-blue-400"></i> Reportes
+                    <i class="fa-solid fa-chevron-down menu-chevron ml-auto text-[9px]"></i>
+                </summary>
+                <div class="ml-6 pl-3 border-l border-slate-800 space-y-1 mt-1 mb-2">
+                    <button onclick="mostrarModulo('cxc')" class="w-full text-left py-2 px-3 rounded-lg text-[11px] transition flex items-center gap-3 text-slate-300 hover:bg-slate-800 hover:text-white"><i class="fa-solid fa-wallet w-4 text-center text-rose-400"></i> Cuentas por Cobrar</button>
+                    <button onclick="mostrarModulo('libros-fiscales')" class="w-full text-left py-2 px-3 rounded-lg text-[11px] transition flex items-center gap-3 text-slate-300 hover:bg-slate-800 hover:text-white"><i class="fa-solid fa-book-open w-4 text-center text-blue-400"></i> Libros Fiscales</button>
+                    <button onclick="mostrarModulo('resumen-iva')" class="w-full text-left py-2 px-3 rounded-lg text-[11px] transition flex items-center gap-3 text-slate-300 hover:bg-slate-800 hover:text-white"><i class="fa-solid fa-file-invoice-dollar w-4 text-center text-blue-400"></i> Resumen de IVA</button>
+                </div>
+            </details>
+
+            <details id="menu-otros" class="menu-grupo">
+                <summary class="w-full py-3 px-4 rounded-xl text-xs font-bold uppercase tracking-wider transition flex items-center gap-3 text-slate-400 hover:bg-slate-800 hover:text-white border border-transparent hover:border-slate-700">
+                    <i class="fa-solid fa-layer-group w-5 text-center text-slate-400"></i> Otros
+                    <i class="fa-solid fa-chevron-down menu-chevron ml-auto text-[9px]"></i>
+                </summary>
+                <div class="ml-6 pl-3 border-l border-slate-800 space-y-1 mt-1 mb-2">
+                    <button onclick="mostrarModulo('islr')" class="w-full text-left py-2 px-3 rounded-lg text-[11px] transition flex items-center gap-3 text-slate-300 hover:bg-slate-800 hover:text-white"><i class="fa-solid fa-scale-balanced w-4 text-center text-amber-400"></i> Proyección ISLR</button>
+                    <button onclick="mostrarModulo('caja')" class="w-full text-left py-2 px-3 rounded-lg text-[11px] transition flex items-center gap-3 text-slate-300 hover:bg-slate-800 hover:text-white"><i class="fa-solid fa-vault w-4 text-center text-lime-400"></i> Caja</button>
+                </div>
+            </details>
+
             <button onclick="mostrarModulo('parametros')" class="w-full text-left py-3 px-4 rounded-xl text-xs font-medium transition flex items-center gap-3 text-slate-300 hover:bg-slate-800 hover:text-white border border-transparent hover:border-slate-700 mt-2">
                 <i class="fa-solid fa-gears w-5 text-center text-indigo-400"></i> Parámetros
-            </button>
-            <button onclick="mostrarModulo('vendedores')" class="w-full text-left py-3 px-4 rounded-xl text-xs font-medium transition flex items-center gap-3 text-slate-300 hover:bg-slate-800 hover:text-white border border-transparent hover:border-slate-700">
-                <i class="fa-solid fa-id-badge w-5 text-center text-pink-400"></i> Vendedores
-            </button>
-            <button onclick="mostrarModulo('productos')" class="w-full text-left py-3 px-4 rounded-xl text-xs font-medium transition flex items-center gap-3 text-slate-300 hover:bg-slate-800 hover:text-white border border-transparent hover:border-slate-700 mt-2">
-                <i class="fa-solid fa-boxes-stacked w-5 text-center text-sky-400"></i> Prod/Servicios
-            </button>
-            <button onclick="mostrarModulo('clientes')" class="w-full text-left py-3 px-4 rounded-xl text-xs font-medium transition flex items-center gap-3 text-slate-300 hover:bg-slate-800 hover:text-white border border-transparent hover:border-slate-700">
-                <i class="fa-solid fa-users w-5 text-center text-sky-400"></i> Clientes
-            </button>
-            <button onclick="mostrarModulo('proveedores')" class="w-full text-left py-3 px-4 rounded-xl text-xs font-medium transition flex items-center gap-3 text-slate-300 hover:bg-slate-800 hover:text-white border border-transparent hover:border-slate-700">
-                <i class="fa-solid fa-truck-fast w-5 text-center text-teal-400"></i> Proveedores
-            </button>
-            <button onclick="mostrarModulo('presupuestos')" class="w-full text-left py-3 px-4 rounded-xl text-xs font-medium transition flex items-center gap-3 text-slate-300 hover:bg-slate-800 hover:text-white border border-transparent hover:border-slate-700">
-                <i class="fa-solid fa-file-invoice w-5 text-center text-amber-400"></i> Presupuestos
-            </button>
-            <button onclick="mostrarModulo('notas')" class="w-full text-left py-3 px-4 rounded-xl text-xs font-medium transition flex items-center gap-3 text-slate-300 hover:bg-slate-800 hover:text-white border border-transparent hover:border-slate-700">
-                <i class="fa-solid fa-file-lines w-5 text-center text-cyan-400"></i> Notas de Entrega
-            </button>
-            <button onclick="mostrarModulo('notas-credito')" class="w-full text-left py-3 px-4 rounded-xl text-xs font-medium transition flex items-center gap-3 text-slate-300 hover:bg-slate-800 hover:text-white border border-transparent hover:border-slate-700">
-                <i class="fa-solid fa-file-arrow-down w-5 text-center text-rose-400"></i> Notas de Crédito
-            </button>
-            <button onclick="mostrarModulo('ventas')" class="w-full text-left py-3 px-4 rounded-xl text-xs font-medium transition flex items-center gap-3 text-slate-300 hover:bg-slate-800 hover:text-white border border-transparent hover:border-slate-700">
-                <i class="fa-solid fa-cart-shopping w-5 text-center text-emerald-400"></i> Ventas
-            </button>
-            <button onclick="mostrarModulo('compras')" class="w-full text-left py-3 px-4 rounded-xl text-xs font-medium transition flex items-center gap-3 text-slate-300 hover:bg-slate-800 hover:text-white border border-transparent hover:border-slate-700">
-                <i class="fa-solid fa-cart-flatbed w-5 text-center text-orange-400"></i> Compras
-            </button>
-            <button onclick="mostrarModulo('cxc')" class="w-full text-left py-3 px-4 rounded-xl text-xs font-medium transition flex items-center gap-3 text-slate-300 hover:bg-slate-800 hover:text-white border border-transparent hover:border-slate-700">
-                <i class="fa-solid fa-wallet w-5 text-center text-rose-400"></i> Cuentas por Cobrar
-            </button>
-            <button onclick="mostrarModulo('resumen-iva')" class="w-full text-left py-3 px-4 rounded-xl text-xs font-medium transition flex items-center gap-3 text-slate-300 hover:bg-slate-800 hover:text-white border border-transparent hover:border-slate-700 mt-2">
-                <i class="fa-solid fa-file-invoice-dollar w-5 text-center text-blue-400"></i> Resumen de IVA
-            </button>
-            <button onclick="mostrarModulo('libros-fiscales')" class="w-full text-left py-3 px-4 rounded-xl text-xs font-medium transition flex items-center gap-3 text-slate-300 hover:bg-slate-800 hover:text-white border border-transparent hover:border-slate-700">
-                <i class="fa-solid fa-book-open w-5 text-center text-blue-400"></i> Libros Fiscales
-            </button>
-            <button onclick="mostrarModulo('islr')" class="w-full text-left py-3 px-4 rounded-xl text-xs font-medium transition flex items-center gap-3 text-slate-300 hover:bg-slate-800 hover:text-white border border-transparent hover:border-slate-700">
-                <i class="fa-solid fa-scale-balanced w-5 text-center text-amber-400"></i> Proyección ISLR
-            </button>
-            <button onclick="mostrarModulo('caja')" class="w-full text-left py-3 px-4 rounded-xl text-xs font-medium transition flex items-center gap-3 text-slate-300 hover:bg-slate-800 hover:text-white border border-transparent hover:border-slate-700">
-                <i class="fa-solid fa-vault w-5 text-center text-lime-400"></i> Caja
             </button>
         </nav>
         
@@ -249,7 +272,7 @@
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <div class="bg-slate-900 border border-purple-900/50 rounded-2xl overflow-hidden shadow-xl p-5">
                         <h3 class="text-sm font-bold text-purple-400 mb-4 flex items-center gap-2">
-                            <i class="fa-solid fa-chart-column"></i> Ventas vs Compras - Últimos 3 Meses
+                            <i class="fa-solid fa-chart-column"></i> Ventas vs Compras - Últimos 3 Meses (Bs)
                         </h3>
                         <div class="h-64"><canvas id="graficaVentas3Meses"></canvas></div>
                     </div>
@@ -2547,6 +2570,16 @@
             if (modSeleccionado) {
                 modSeleccionado.classList.remove('hidden');
                 modSeleccionado.classList.add('block');
+                const gruposPorModulo = {
+                    productos: 'menu-archivos', clientes: 'menu-archivos', proveedores: 'menu-archivos', vendedores: 'menu-archivos',
+                    compras: 'menu-compras',
+                    presupuestos: 'menu-ventas', notas: 'menu-ventas', ventas: 'menu-ventas', 'notas-credito': 'menu-ventas',
+                    cxc: 'menu-reportes', 'libros-fiscales': 'menu-reportes', 'resumen-iva': 'menu-reportes',
+                    islr: 'menu-otros', caja: 'menu-otros'
+                };
+                const idGrupo = gruposPorModulo[id];
+                const grupo = idGrupo ? document.getElementById(idGrupo) : null;
+                if (grupo) grupo.open = true;
             }
             
             if(window.innerWidth < 768 && !document.getElementById('sidebar').classList.contains('-translate-x-full')){
@@ -2556,7 +2589,6 @@
             if(id === 'dashboard') cargarDashboard();
             if(id === 'resumen-iva') cargarResumenIVA();
             if(id === 'libros-fiscales') inicializarLibrosFiscales();
-            if(id === 'islr') cargarProyeccionIS
             if(id === 'islr') cargarProyeccionISLR();
             if(id === 'parametros') actualizarVistasDatosLocales();
             if(id === 'vendedores') cargarVendedores();
@@ -6208,8 +6240,8 @@ function obtenerBaseImponibleFactura(v) {
                         const fechaV = new Date(ymd + 'T00:00:00');
                         const mesDiff = (hoy.getMonth() - fechaV.getMonth()) + (12 * (hoy.getFullYear() - fechaV.getFullYear()));
                         if (mesDiff >= 0 && mesDiff <= 2) {
-                            const tasa = v.tasa || datosGenerales.tasa || 1;
-                            dataVentas[2 - mesDiff] += (parseFloat(v.total) / tasa);
+                            // Ambas series se muestran en Bs para que la comparación sea válida.
+                            dataVentas[2 - mesDiff] += parseFloat(v.total) || 0;
                         }
                     });
                 }
@@ -6233,7 +6265,7 @@ function obtenerBaseImponibleFactura(v) {
                     data: {
                         labels: labelsMeses,
                         datasets: [
-                            { label: 'Ventas ($)', data: dataVentas, backgroundColor: '#10b981' },
+                            { label: 'Ventas (Bs)', data: dataVentas, backgroundColor: '#10b981' },
                             { label: 'Compras (Bs)', data: dataCompras, backgroundColor: '#f97316' }
                         ]
                     },
