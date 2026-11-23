@@ -163,6 +163,9 @@
             <button onclick="mostrarModulo('compras')" class="w-full text-left py-3 px-4 rounded-xl text-xs font-medium transition flex items-center gap-3 text-slate-300 hover:bg-slate-800 hover:text-white border border-transparent hover:border-slate-700">
                 <i class="fa-solid fa-cart-flatbed w-5 text-center text-orange-400"></i> Compras
             </button>
+            <button onclick="mostrarModulo('cxp')" class="w-full text-left py-3 px-4 rounded-xl text-xs font-medium transition flex items-center gap-3 text-slate-300 hover:bg-slate-800 hover:text-white border border-transparent hover:border-slate-700">
+                <i class="fa-solid fa-file-invoice-dollar w-5 text-center text-amber-400"></i> Cuentas por Pagar
+            </button>
 
             <div class="border-t border-slate-800 my-3"></div>
 
@@ -195,6 +198,9 @@
 
             <button onclick="mostrarModulo('islr')" class="w-full text-left py-3 px-4 rounded-xl text-xs font-medium transition flex items-center gap-3 text-slate-300 hover:bg-slate-800 hover:text-white border border-transparent hover:border-slate-700">
                 <i class="fa-solid fa-scale-balanced w-5 text-center text-amber-400"></i> Proyección ISLR
+            </button>
+            <button onclick="mostrarModulo('bancos')" class="w-full text-left py-3 px-4 rounded-xl text-xs font-medium transition flex items-center gap-3 text-slate-300 hover:bg-slate-800 hover:text-white border border-transparent hover:border-slate-700">
+                <i class="fa-solid fa-building-columns w-5 text-center text-cyan-400"></i> Bancos
             </button>
             <button onclick="mostrarModulo('caja')" class="w-full text-left py-3 px-4 rounded-xl text-xs font-medium transition flex items-center gap-3 text-slate-300 hover:bg-slate-800 hover:text-white border border-transparent hover:border-slate-700">
                 <i class="fa-solid fa-vault w-5 text-center text-lime-400"></i> Caja
@@ -540,6 +546,52 @@
                         </div>
                     </form>
                     <p id="ia-config-status" class="text-[11px] mt-3 font-mono text-slate-500"></p>
+                </div>
+
+                <!-- BANCOS -->
+                <div class="bg-slate-900 border border-cyan-900/50 p-6 rounded-2xl shadow-xl no-print">
+                    <div class="flex flex-wrap items-center justify-between gap-3 mb-5 pb-3 border-b border-slate-800">
+                        <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                            <i class="fa-solid fa-building-columns text-cyan-400"></i> Bancos — Conciliación y saldo inicial
+                        </h3>
+                        <button type="button" onclick="cargarBancosParametros()" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 font-bold p-2 rounded-xl text-xs" title="Actualizar"><i class="fa-solid fa-rotate-right text-cyan-400"></i></button>
+                    </div>
+                    <p class="text-[11px] text-slate-400 mb-4">
+                        La <b>fecha de conciliación</b> marca el inicio de los movimientos que afectan el saldo. Lo anterior se oculta en el módulo Bancos.
+                    </p>
+                    <form id="form-banco" onsubmit="guardarBanco(event)" class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+                        <input type="hidden" id="banco-id">
+                        <div>
+                            <label class="block text-[10px] font-medium text-slate-400 mb-1">Banco</label>
+                            <input type="text" id="banco-nombre" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2 text-xs text-white outline-none focus:border-cyan-500" placeholder="Ej. Banesco" required>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-medium text-slate-400 mb-1">Fecha de conciliación</label>
+                            <input type="date" id="banco-fecha" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2 text-xs text-white font-mono outline-none focus:border-cyan-500" required>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-medium text-emerald-400 mb-1">Saldo (Bs)</label>
+                            <input type="number" step="0.01" id="banco-saldo" value="0" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2 text-xs text-emerald-300 font-mono font-bold outline-none focus:border-emerald-500" required>
+                        </div>
+                        <div class="flex gap-2">
+                            <button type="submit" class="flex-1 bg-cyan-600 hover:bg-cyan-500 text-white font-bold px-4 py-2.5 rounded-xl text-xs flex items-center justify-center gap-2"><i class="fa-solid fa-save"></i> Guardar banco</button>
+                            <button type="button" onclick="limpiarFormBanco()" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 px-3 rounded-xl text-xs" title="Limpiar"><i class="fa-solid fa-rotate-left"></i></button>
+                        </div>
+                    </form>
+                    <div class="mt-5 overflow-x-auto">
+                        <table class="w-full text-left border-collapse text-xs">
+                            <thead class="bg-slate-950 border-b border-slate-800 text-slate-400 uppercase tracking-wider text-[10px]">
+                                <tr>
+                                    <th class="p-3 font-medium">Banco</th>
+                                    <th class="p-3 font-medium">Fecha conciliación</th>
+                                    <th class="p-3 font-medium text-right">Saldo inicial</th>
+                                    <th class="p-3 font-medium text-right">Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabla-bancos-parametros" class="divide-y divide-slate-800 text-slate-300 font-mono text-[11px]"></tbody>
+                        </table>
+                    </div>
+                    <p id="banco-config-status" class="text-[11px] mt-3 font-mono text-slate-500"></p>
                 </div>
             </section>
 
@@ -1309,12 +1361,6 @@
                                 <option value="">Seleccione un Proveedor...</option>
                             </select>
                         </div>
-                        <div class="md:col-span-4 flex items-center gap-3 bg-slate-950 border border-cyan-800/50 rounded-xl p-3">
-                            <input type="checkbox" id="comp-es-personal" class="w-4 h-4 bg-slate-950 border-slate-700 rounded accent-cyan-500 cursor-pointer">
-                            <label for="comp-es-personal" class="text-xs font-medium text-cyan-300 cursor-pointer">
-                                <i class="fa-solid fa-user-tie"></i> ¿Esta factura es mía como persona natural? <span class="text-slate-500">(Se registrará como factura propia)</span>
-                            </label>
-                        </div>
                         <div>
                             <label class="block text-xs font-medium text-slate-300 mb-1">Fecha</label>
                             <input type="date" id="comp-fecha" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-orange-500 transition" required>
@@ -1348,32 +1394,6 @@
                         <div>
                             <label class="block text-xs font-medium text-slate-300 mb-1">Total (Bs)</label>
                             <input type="number" step="0.01" id="comp-total" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-xs text-orange-400 font-bold outline-none cursor-not-allowed" readonly>
-                        </div>
-                        <div class="md:col-span-4 bg-slate-950 border border-rose-900/40 rounded-xl p-4 space-y-4">
-                            <div class="flex items-center gap-3">
-                                <input type="checkbox" id="comp-ret-check" class="w-4 h-4 bg-slate-950 border-slate-700 rounded accent-rose-500 cursor-pointer" onchange="calcularRetencionCompraFormulario()">
-                                <label for="comp-ret-check" class="text-xs font-medium text-rose-300 cursor-pointer">
-                                    <i class="fa-solid fa-file-invoice-dollar"></i> Registrar Retención de IVA de esta compra <span class="text-slate-500">(opcional)</span>
-                                </label>
-                            </div>
-                            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                                <div>
-                                    <label class="block text-[10px] font-medium text-slate-400 mb-1">Nº Comprobante</label>
-                                    <input type="text" id="comp-ret-nro" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2 text-xs text-white font-mono outline-none focus:border-rose-500" placeholder="Ej: 20261100001234">
-                                </div>
-                                <div>
-                                    <label class="block text-[10px] font-medium text-slate-400 mb-1">% Retenido</label>
-                                    <input type="number" step="0.01" min="0" max="100" id="comp-ret-porc" value="75" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2 text-xs text-white font-mono outline-none focus:border-rose-500" oninput="calcularRetencionCompraFormulario()">
-                                </div>
-                                <div>
-                                    <label class="block text-[10px] font-medium text-rose-400 mb-1">Monto Retenido (Bs)</label>
-                                    <input type="number" step="0.01" min="0" id="comp-ret-monto" value="0" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2 text-xs text-rose-300 font-mono font-bold outline-none focus:border-rose-500">
-                                </div>
-                                <div>
-                                    <label class="block text-[10px] font-medium text-amber-400 mb-1">Fecha Retención</label>
-                                    <input type="date" id="comp-ret-fecha" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2 text-xs text-amber-300 font-mono outline-none focus:border-amber-500">
-                                </div>
-                            </div>
                         </div>
                         <div class="md:col-span-4 flex items-end">
                             <button type="submit" class="w-full md:w-auto bg-orange-600 hover:bg-orange-500 text-white font-bold px-6 py-2.5 rounded-xl transition shadow-lg shadow-orange-600/20 text-xs flex items-center justify-center gap-2">
@@ -1508,6 +1528,56 @@
                                 </tr>
                             </thead>
                             <tbody id="tabla-historial-compras" class="divide-y border-slate-800"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- CUENTAS POR PAGAR -->
+            <section id="cxp" class="modulo hidden max-w-6xl mx-auto space-y-6">
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-2xl flex items-center gap-3">
+                    <div class="bg-slate-800 text-amber-400 p-2.5 rounded-xl border border-slate-700">
+                        <i class="fa-solid fa-file-invoice-dollar text-lg"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-bold text-white tracking-tight">Cuentas por Pagar</h2>
+                        <p class="text-xs text-slate-400">Compras pendientes de pago — registra abonos con fecha, monto y banco</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="bg-slate-900 border border-amber-900/50 rounded-2xl p-5">
+                        <p class="text-[10px] text-slate-400 mb-1 uppercase tracking-wider">Total por pagar</p>
+                        <p id="cxp-total" class="text-xl font-mono font-bold text-amber-400">Bs. 0,00</p>
+                    </div>
+                    <div class="bg-slate-900 border border-emerald-900/50 rounded-2xl p-5">
+                        <p class="text-[10px] text-slate-400 mb-1 uppercase tracking-wider">Abonado</p>
+                        <p id="cxp-abonado" class="text-xl font-mono font-bold text-emerald-400">Bs. 0,00</p>
+                    </div>
+                    <div class="bg-slate-900 border border-sky-900/50 rounded-2xl p-5">
+                        <p class="text-[10px] text-slate-400 mb-1 uppercase tracking-wider">Compras pendientes</p>
+                        <p id="cxp-cantidad" class="text-xl font-mono font-bold text-sky-400">0</p>
+                    </div>
+                </div>
+
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+                    <h3 class="text-sm font-bold p-4 border-b border-slate-800 text-white flex items-center gap-2">
+                        <i class="fa-solid fa-clock-rotate-left text-amber-400"></i> Detalle de compras pendientes
+                    </h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse text-xs">
+                            <thead class="bg-slate-950 border-b border-slate-800 text-slate-400 uppercase tracking-wider text-[10px]">
+                                <tr>
+                                    <th class="p-3 font-medium">Fecha</th>
+                                    <th class="p-3 font-medium">Proveedor</th>
+                                    <th class="p-3 font-medium">Factura</th>
+                                    <th class="p-3 font-medium text-right">Total compra</th>
+                                    <th class="p-3 font-medium text-right">Abonado</th>
+                                    <th class="p-3 font-medium text-right">Saldo</th>
+                                    <th class="p-3 font-medium text-right">Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabla-cxp" class="divide-y divide-slate-800 text-slate-300 font-mono text-[11px]"></tbody>
                         </table>
                     </div>
                 </div>
@@ -1736,6 +1806,125 @@
                                 <tbody id="tabla-libro-resumen" class="divide-y divide-slate-800 text-slate-300 font-mono text-[11px]"></tbody>
                             </table>
                         </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- BANCOS -->
+            <section id="bancos" class="modulo hidden max-w-6xl mx-auto space-y-6">
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-2xl flex items-center gap-3">
+                    <div class="bg-slate-800 text-cyan-400 p-2.5 rounded-xl border border-slate-700">
+                        <i class="fa-solid fa-building-columns text-lg"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-bold text-white tracking-tight">Bancos</h2>
+                        <p class="text-xs text-slate-400">Saldos y movimientos desde la fecha de conciliación configurada en Parámetros</p>
+                    </div>
+                    <button onclick="cargarModuloBancos()" class="ml-auto bg-slate-800 hover:bg-slate-700 text-white font-bold p-2.5 rounded-xl border border-slate-700 transition text-xs shadow-sm" title="Actualizar">
+                        <i class="fa-solid fa-rotate-right text-cyan-400"></i>
+                    </button>
+                </div>
+
+                <div id="bancos-saldos" class="grid grid-cols-1 md:grid-cols-3 gap-4"></div>
+
+                <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-xl no-print">
+                    <h3 class="text-sm font-bold text-white mb-5 pb-3 border-b border-slate-800 flex items-center gap-2">
+                        <i class="fa-solid fa-arrow-up-right-from-square text-rose-400"></i> Registrar salida de dinero
+                    </h3>
+                    <form id="form-salida-bancaria" onsubmit="guardarSalidaBancaria(event)" class="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
+                        <div>
+                            <label class="block text-[10px] font-medium text-slate-400 mb-1">Banco</label>
+                            <select id="salida-banco" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2 text-xs text-white outline-none focus:border-cyan-500" required></select>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-medium text-slate-400 mb-1">Fecha</label>
+                            <input type="date" id="salida-fecha" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2 text-xs text-white font-mono outline-none focus:border-cyan-500" required>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-medium text-rose-400 mb-1">Monto (Bs)</label>
+                            <input type="number" step="0.01" min="0.01" id="salida-monto" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2 text-xs text-rose-300 font-mono font-bold outline-none focus:border-rose-500" required>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-medium text-slate-400 mb-1">Beneficiario</label>
+                            <select id="salida-beneficiario" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2 text-xs text-white outline-none focus:border-cyan-500" onchange="toggleOtroBeneficiario()" required>
+                                <option value="">Seleccione...</option>
+                                <option value="__otro">Otro...</option>
+                            </select>
+                        </div>
+                        <div id="salida-otro-wrap" class="hidden">
+                            <label class="block text-[10px] font-medium text-slate-400 mb-1">Nombre del beneficiario</label>
+                            <input type="text" id="salida-otro" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2 text-xs text-white outline-none focus:border-cyan-500">
+                        </div>
+                        <div class="md:col-span-5">
+                            <label class="block text-[10px] font-medium text-slate-400 mb-1">Detalle</label>
+                            <input type="text" id="salida-detalle" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2 text-xs text-white outline-none focus:border-cyan-500" placeholder="Ej. Pago de alquiler, compra de materiales...">
+                        </div>
+                        <div class="md:col-span-5 flex justify-end">
+                            <button type="submit" class="bg-rose-600 hover:bg-rose-500 text-white font-bold px-5 py-2.5 rounded-xl transition shadow-lg shadow-rose-600/20 text-xs flex items-center gap-2">
+                                <i class="fa-solid fa-arrow-right-from-bracket"></i> Registrar salida
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+                    <div class="p-4 border-b border-slate-800 grid grid-cols-1 md:grid-cols-5 gap-3 items-end">
+                        <div>
+                            <label class="block text-[10px] font-medium text-slate-400 mb-1">Desde</label>
+                            <input type="date" id="filtro-banco-desde" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2 text-xs text-white font-mono outline-none focus:border-cyan-500">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-medium text-slate-400 mb-1">Hasta</label>
+                            <input type="date" id="filtro-banco-hasta" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2 text-xs text-white font-mono outline-none focus:border-cyan-500">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-medium text-slate-400 mb-1">Banco</label>
+                            <select id="filtro-banco-banco" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2 text-xs text-white outline-none focus:border-cyan-500" onchange="aplicarFiltrosBancos()">
+                                <option value="">Todos...</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-medium text-slate-400 mb-1">Vendedor</label>
+                            <select id="filtro-banco-vendedor" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2 text-xs text-white outline-none focus:border-cyan-500" onchange="aplicarFiltrosBancos()">
+                                <option value="">Todos...</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-medium text-slate-400 mb-1">Contraparte</label>
+                            <select id="filtro-banco-contraparte" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2 text-xs text-white outline-none focus:border-cyan-500" onchange="aplicarFiltrosBancos()">
+                                <option value="">Todos...</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 px-4 pb-4">
+                        <div class="bg-emerald-950/40 border border-emerald-900/50 rounded-xl p-3">
+                            <p class="text-[10px] text-emerald-400 uppercase tracking-wider">Ingresos filtrados</p>
+                            <p id="bancos-total-ingresos" class="text-lg font-mono font-bold text-emerald-400">Bs. 0,00</p>
+                        </div>
+                        <div class="bg-rose-950/40 border border-rose-900/50 rounded-xl p-3">
+                            <p class="text-[10px] text-rose-400 uppercase tracking-wider">Egresos filtrados</p>
+                            <p id="bancos-total-egresos" class="text-lg font-mono font-bold text-rose-400">Bs. 0,00</p>
+                        </div>
+                        <div class="bg-slate-950 border border-slate-800 rounded-xl p-3">
+                            <p class="text-[10px] text-slate-400 uppercase tracking-wider">Neto filtrado</p>
+                            <p id="bancos-total-neto" class="text-lg font-mono font-bold text-white">Bs. 0,00</p>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse text-xs">
+                            <thead class="bg-slate-950 border-b border-slate-800 text-slate-400 uppercase tracking-wider text-[10px]">
+                                <tr>
+                                    <th class="p-3 font-medium">Fecha</th>
+                                    <th class="p-3 font-medium">Tipo</th>
+                                    <th class="p-3 font-medium">Contraparte</th>
+                                    <th class="p-3 font-medium">Detalle</th>
+                                    <th class="p-3 font-medium">Banco</th>
+                                    <th class="p-3 font-medium">Vendedor</th>
+                                    <th class="p-3 font-medium text-right">Monto</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabla-bancos" class="divide-y divide-slate-800 text-slate-300 font-mono text-[11px]"></tbody>
+                        </table>
                     </div>
                 </div>
             </section>
@@ -2068,64 +2257,60 @@
         </div>
     </div>
 
-    <div id="modal-retencion-compra" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/85 backdrop-blur-sm p-4 overflow-y-auto">
+    <div id="modal-pago-banco" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/85 backdrop-blur-sm p-4 overflow-y-auto">
         <div class="w-full max-w-lg bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl relative my-auto">
             <div class="flex items-center justify-between pb-4 border-b border-slate-800 mb-5">
                 <div class="flex items-center gap-3">
-                    <div class="p-2.5 rounded-xl text-base bg-rose-950 border border-rose-800 text-rose-400">
-                        <i class="fa-solid fa-file-invoice-dollar"></i>
+                    <div class="p-2.5 rounded-xl text-base bg-emerald-950 border border-emerald-800 text-emerald-400">
+                        <i class="fa-solid fa-hand-holding-dollar"></i>
                     </div>
                     <div>
-                        <h3 class="text-base font-bold text-white tracking-tight">Retención de IVA en Compra</h3>
-                        <p id="modal-retencion-compra-sub" class="text-xs text-slate-400">Proveedor • Factura</p>
+                        <h3 id="modal-pago-titulo" class="text-base font-bold text-white tracking-tight">Registrar pago</h3>
+                        <p id="modal-pago-subtitulo" class="text-xs text-slate-400">Cliente • Factura</p>
                     </div>
                 </div>
-                <button type="button" onclick="cerrarModalRetencionCompra()" class="text-slate-400 hover:text-white text-lg">
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
+                <button type="button" onclick="cerrarModalPago()" class="text-slate-400 hover:text-white text-lg"><i class="fa-solid fa-xmark"></i></button>
             </div>
 
-            <form id="form-retencion-compra" onsubmit="guardarRetencionCompra(event)" class="space-y-4">
-                <input type="hidden" id="modal-compra-ret-id">
-                <div class="flex items-center gap-3 bg-slate-950 p-3.5 rounded-xl border border-slate-800">
-                    <input type="checkbox" id="modal-compra-ret-check" class="w-5 h-5 bg-slate-900 border-slate-700 rounded accent-rose-500 cursor-pointer">
-                    <label for="modal-compra-ret-check" class="text-xs font-bold text-white cursor-pointer flex flex-col">
-                        <span>¿Aplicar Retención de IVA?</span>
-                        <span class="text-[10px] text-slate-400 font-normal">Se reflejará en el Libro de Compras IVA del período.</span>
-                    </label>
+            <form id="form-pago-banco" onsubmit="guardarPagoBanco(event)" class="space-y-4">
+                <input type="hidden" id="pago-tipo">
+                <input type="hidden" id="pago-id">
+                <input type="hidden" id="pago-cliente-id">
+                <input type="hidden" id="pago-venta-id">
+                <input type="hidden" id="pago-compra-id">
+                <input type="hidden" id="pago-contraparte">
+                <input type="hidden" id="pago-factura">
+                <input type="hidden" id="pago-saldo">
+                <input type="hidden" id="pago-vendedor-id">
+
+                <div class="bg-slate-950 border border-slate-800 rounded-xl p-3.5 flex justify-between items-center">
+                    <span class="text-xs text-slate-400">Saldo pendiente</span>
+                    <span id="pago-saldo-mostrar" class="text-lg font-mono font-bold text-amber-400">Bs. 0,00</span>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-[11px] font-medium text-slate-300 mb-1">Nº Comprobante / Retención</label>
-                        <input type="text" id="modal-compra-ret-nro" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white font-mono outline-none focus:border-rose-500" placeholder="Ej: 20261100001234">
+                        <label class="block text-[11px] font-medium text-emerald-400 mb-1">Monto a pagar (Bs)</label>
+                        <input type="number" step="0.01" min="0.01" id="pago-monto" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-emerald-300 font-mono font-bold outline-none focus:border-emerald-500" required>
                     </div>
                     <div>
-                        <label class="block text-[11px] font-medium text-slate-300 mb-1">Porcentaje Retenido (%)</label>
-                        <input type="number" step="0.01" min="0" max="100" id="modal-compra-ret-porc" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white font-mono outline-none focus:border-rose-500" oninput="calcularMontoModalRetencionCompra()">
+                        <label class="block text-[11px] font-medium text-slate-300 mb-1">Fecha del pago</label>
+                        <input type="date" id="pago-fecha" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white font-mono outline-none focus:border-sky-500" required>
                     </div>
-                    <div>
-                        <label class="block text-[11px] font-medium text-rose-400 mb-1">Monto Retenido (Bs)</label>
-                        <input type="number" step="0.01" min="0" id="modal-compra-ret-monto" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-rose-300 font-mono font-bold outline-none focus:border-rose-500">
-                    </div>
-                    <div>
-                        <label class="block text-[11px] font-medium text-amber-400 mb-1">Fecha de la Retención (Mes Fiscal)</label>
-                        <input type="date" id="modal-compra-ret-fecha" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-amber-300 font-mono outline-none focus:border-amber-500">
+                    <div class="md:col-span-2">
+                        <label class="block text-[11px] font-medium text-slate-300 mb-1">Banco donde entró / salió</label>
+                        <select id="pago-banco" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-sky-500" required>
+                            <option value="">Seleccione un banco...</option>
+                        </select>
                     </div>
                 </div>
+                <p class="text-[10px] text-slate-500">Puedes registrar un monto menor al saldo para abonos parciales; la cuenta se cierra cuando el saldo llegue a cero.</p>
 
-                <div class="flex justify-between items-center pt-3 border-t border-slate-800">
-                    <button type="button" onclick="quitarRetencionCompra()" class="text-rose-400 hover:text-rose-300 text-xs font-semibold flex items-center gap-1.5 px-3 py-2 rounded-xl hover:bg-rose-950/30 transition">
-                        <i class="fa-solid fa-trash-can"></i> Quitar Retención
+                <div class="flex justify-end gap-2 pt-3 border-t border-slate-800">
+                    <button type="button" onclick="cerrarModalPago()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold px-4 py-2.5 rounded-xl text-xs transition border border-slate-700">Cancelar</button>
+                    <button type="submit" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-5 py-2.5 rounded-xl text-xs transition shadow-lg shadow-emerald-600/20 flex items-center gap-2">
+                        <i class="fa-solid fa-check"></i> Confirmar pago
                     </button>
-                    <div class="flex gap-2">
-                        <button type="button" onclick="cerrarModalRetencionCompra()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold px-4 py-2.5 rounded-xl text-xs transition border border-slate-700">
-                            Cerrar
-                        </button>
-                        <button type="submit" class="bg-rose-600 hover:bg-rose-500 text-white font-bold px-5 py-2.5 rounded-xl text-xs transition shadow-lg shadow-rose-600/20 flex items-center gap-1.5">
-                            <i class="fa-solid fa-floppy-disk"></i> Guardar Retención
-                        </button>
-                    </div>
                 </div>
             </form>
         </div>
@@ -2233,6 +2418,8 @@
         let ventasHistorialCache = [];
         let ventasNCCache = {};
         let comprasHistorialCache = [];
+        let bancosCache = [];
+        let movimientosBancosCache = [];
         let mapClientesGlobal = {};
         let mapClientesVendedor = {};
         let mapVendedoresGlobal = {};
@@ -2583,7 +2770,7 @@
             if(id === 'resumen-iva') cargarResumenIVA();
             if(id === 'libros-fiscales') inicializarLibrosFiscales();
             if(id === 'islr') cargarProyeccionISLR();
-            if(id === 'parametros') actualizarVistasDatosLocales();
+            if(id === 'parametros') { actualizarVistasDatosLocales(); cargarBancosParametros(); }
             if(id === 'vendedores') cargarVendedores();
             if(id === 'productos') cargarProductos();
             if(id === 'clientes') { cargarClientes(); cargarSelectVendedores(); }
@@ -2605,6 +2792,8 @@
                 }, 100);
             }
             if(id === 'compras') { cargarOpcionesCompras(); cargarHistorialCompras(); estadoIA(configSistema.ia_activo ? 'Asistente IA activo' : 'Asistente IA desactivado (ver Parámetros)'); }
+            if(id === 'cxp') cargarCxP();
+            if(id === 'bancos') cargarModuloBancos();
             if(id === 'cxc') { cargarCxC(); }
             if(id === 'caja') cargarCaja();
             if(id === 'compromisos') cargarCompromisos(); 
@@ -3965,20 +4154,6 @@
         // ==========================================
         // COMPRAS (CON FILTROS INTEGRADOS)
         // ==========================================
-        function calcularRetencionCompraFormulario() {
-            const check = document.getElementById('comp-ret-check');
-            if (!check) return;
-            const iva = parseFloat(document.getElementById('comp-iva').value) || 0;
-            const porc = parseFloat(document.getElementById('comp-ret-porc').value) || 0;
-            if (check.checked) {
-                document.getElementById('comp-ret-monto').value = (iva * (porc / 100)).toFixed(2);
-                const fecha = document.getElementById('comp-ret-fecha');
-                if (!fecha.value) fecha.value = document.getElementById('comp-fecha').value || new Date().toISOString().split('T')[0];
-            } else {
-                document.getElementById('comp-ret-monto').value = '0.00';
-            }
-        }
-
         // ===== ASISTENTE IA: COMPRA DESDE FOTO (GEMINI) =====
         let borradorIA = null;
 
@@ -4183,7 +4358,7 @@ Escribe los montos SOLO con dígitos y punto decimal, SIN separador de miles y S
                     monto_exento: valor('ia-draft-exento'),
                     impuestos: valor('ia-draft-iva'),
                     total: valor('ia-draft-total'),
-                    es_factura_personal: false
+                    cxp: true
                 }]).select();
                 if (error) throw error;
 
@@ -4253,18 +4428,7 @@ Escribe los montos SOLO con dígitos y punto decimal, SIN separador de miles y S
                 monto_exento: parseFloat(document.getElementById('comp-exento').value) || 0,
                 impuestos: parseFloat(document.getElementById('comp-iva').value),
                 total: parseFloat(document.getElementById('comp-total').value),
-                es_factura_personal: document.getElementById('comp-es-personal').checked,
-                retencion_iva_check: document.getElementById('comp-ret-check').checked,
-                retencion_iva_porc: parseFloat(document.getElementById('comp-ret-porc').value) || 0,
-                retencion_iva_monto: document.getElementById('comp-ret-check').checked
-                    ? (parseFloat(document.getElementById('comp-ret-monto').value) || 0)
-                    : 0,
-                retencion_iva_comprobante: document.getElementById('comp-ret-check').checked
-                    ? ((document.getElementById('comp-ret-nro').value || '').trim() || null)
-                    : null,
-                retencion_iva_fecha: document.getElementById('comp-ret-check').checked
-                    ? (document.getElementById('comp-ret-fecha').value || null)
-                    : null
+                cxp: true
             };
 
             const { data: filaCompra, error } = await db.from('compras').insert([nuevaCompra]).select();
@@ -4276,13 +4440,7 @@ Escribe los montos SOLO con dígitos y punto decimal, SIN separador de miles y S
                     await subirCopiaCompra(filaCompra[0].id, archivo);
                 }
                 document.getElementById('form-compra').reset();
-                document.getElementById('comp-es-personal').checked = false;
                 document.getElementById('comp-exento').value = 0;
-                document.getElementById('comp-ret-check').checked = false;
-                document.getElementById('comp-ret-porc').value = 75;
-                document.getElementById('comp-ret-monto').value = 0;
-                document.getElementById('comp-ret-nro').value = '';
-                document.getElementById('comp-ret-fecha').value = '';
                 cargarHistorialCompras();
                 cargarResumenIVA();
                 if(document.getElementById('islr') && !document.getElementById('islr').classList.contains('hidden')) {
@@ -4429,14 +4587,10 @@ Escribe los montos SOLO con dígitos y punto decimal, SIN separador de miles y S
                 const totalBs = parseFloat(c.total) || 0;
                 totalBsFiltro += totalBs;
 
-                const badgePersonal = c.es_factura_personal 
-                    ? '<span class="bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 px-1.5 py-0.5 rounded text-[9px] font-bold ml-1.5">Personal</span>'
-                    : '';
-
                 tbody.innerHTML += `
                     <tr class="hover:bg-slate-800/50 transition border-b border-slate-800">
                         <td class="p-4 text-slate-400 font-mono text-[11px]">${formatearFechaMostrar(c.fecha || c.created_at)}</td>
-                        <td class="p-4 font-medium text-white">${c.descripcion} ${badgePersonal}</td>
+                        <td class="p-4 font-medium text-white">${c.descripcion}</td>
                         <td class="p-4 font-mono text-slate-300 text-[11px]">${c.numero_factura || '-'}</td>
                         <td class="p-4 font-mono text-emerald-400 text-[11px]">${c.numero_control || '-'}</td>
                         <td class="p-4 font-mono text-slate-400 text-[11px]">Bs. ${formatNumber(c.subtotal)}</td>
@@ -4444,7 +4598,6 @@ Escribe los montos SOLO con dígitos y punto decimal, SIN separador de miles y S
                         <td class="p-4 font-mono text-slate-400 text-[11px]">Bs. ${formatNumber(c.impuestos)}</td>
                         <td class="p-4 font-mono font-bold text-orange-400 text-[11px]">Bs. ${formatNumber(c.total)}</td>
                         <td class="p-4 text-right">
-                            <button onclick="abrirModalRetencionCompra('${c.id}')" class="${c.retencion_iva_check ? 'text-rose-400 hover:text-rose-300' : 'text-slate-500 hover:text-rose-400'} font-medium px-2" title="${c.retencion_iva_check ? `Retención IVA: Bs. ${formatNumber(c.retencion_iva_monto || 0)} (${c.retencion_iva_porc || 75}%)` : 'Registrar retención de IVA'}"><i class="fa-${c.retencion_iva_check ? 'solid' : 'regular'} fa-file-invoice-dollar"></i></button>
                             ${c.imagen_url ? `<button onclick="verCopiaCompra('${c.imagen_url}')" class="text-emerald-400 hover:text-emerald-300 font-medium px-2" title="Ver copia de la factura"><i class="fa-solid fa-eye"></i></button>` : `<button onclick="adjuntarCopiaCompra('${c.id}')" class="text-slate-500 hover:text-emerald-400 font-medium px-2" title="Adjuntar copia de la factura"><i class="fa-solid fa-paperclip"></i></button>`}
                             <button onclick="eliminarCompra('${c.id}')" class="text-rose-400 hover:text-rose-300 font-medium px-2"><i class="fa-solid fa-trash"></i></button>
                         </td>
@@ -4463,85 +4616,6 @@ Escribe los montos SOLO con dígitos y punto decimal, SIN separador de miles y S
             else { cargarHistorialCompras(); cargarResumenIVA(); }
         }
 
-        // ===== RETENCIÓN DE IVA EN COMPRAS =====
-        let retencionCompraSeleccionada = null;
-
-        function abrirModalRetencionCompra(compraId) {
-            const compra = comprasHistorialCache.find(c => String(c.id) === String(compraId));
-            if (!compra) return alert('Compra no encontrada.');
-            retencionCompraSeleccionada = compra;
-
-            document.getElementById('modal-compra-ret-id').value = compra.id;
-            document.getElementById('modal-retencion-compra-sub').innerText =
-                `${compra.descripcion || 'Proveedor'} • Factura ${compra.numero_factura || '-'}`;
-
-            document.getElementById('modal-compra-ret-check').checked = !!compra.retencion_iva_check;
-            document.getElementById('modal-compra-ret-nro').value = compra.retencion_iva_comprobante || '';
-            document.getElementById('modal-compra-ret-porc').value =
-                (compra.retencion_iva_porc !== undefined && compra.retencion_iva_porc !== null)
-                    ? compra.retencion_iva_porc : 75;
-            document.getElementById('modal-compra-ret-monto').value =
-                (compra.retencion_iva_check && compra.retencion_iva_monto !== null && compra.retencion_iva_monto !== undefined)
-                    ? parseFloat(compra.retencion_iva_monto).toFixed(2)
-                    : ((parseFloat(compra.impuestos) || 0) * 0.75).toFixed(2);
-            document.getElementById('modal-compra-ret-fecha').value =
-                normalizarFechaYMD(compra.retencion_iva_fecha) || normalizarFechaYMD(compra.fecha);
-
-            const modal = document.getElementById('modal-retencion-compra');
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-        }
-
-        function cerrarModalRetencionCompra() {
-            const modal = document.getElementById('modal-retencion-compra');
-            modal.classList.add('hidden');
-            modal.classList.remove('flex');
-            retencionCompraSeleccionada = null;
-        }
-
-        function calcularMontoModalRetencionCompra() {
-            if (!retencionCompraSeleccionada) return;
-            const porc = parseFloat(document.getElementById('modal-compra-ret-porc').value) || 0;
-            const iva = parseFloat(retencionCompraSeleccionada.impuestos) || 0;
-            document.getElementById('modal-compra-ret-monto').value = (iva * (porc / 100)).toFixed(2);
-        }
-
-        async function guardarRetencionCompra(e) {
-            e.preventDefault();
-            if (!retencionCompraSeleccionada) return;
-            const check = document.getElementById('modal-compra-ret-check').checked;
-            const payload = {
-                retencion_iva_check: check,
-                retencion_iva_porc: parseFloat(document.getElementById('modal-compra-ret-porc').value) || 0,
-                retencion_iva_monto: check ? (parseFloat(document.getElementById('modal-compra-ret-monto').value) || 0) : 0,
-                retencion_iva_comprobante: check ? ((document.getElementById('modal-compra-ret-nro').value || '').trim() || null) : null,
-                retencion_iva_fecha: check ? (document.getElementById('modal-compra-ret-fecha').value || null) : null
-            };
-            const { error } = await db.from('compras').update(payload).eq('id', retencionCompraSeleccionada.id);
-            if (error) return alert('Error guardando retención: ' + error.message);
-            cerrarModalRetencionCompra();
-            await cargarHistorialCompras();
-            await cargarResumenIVA();
-        }
-
-        async function quitarRetencionCompra() {
-            if (!retencionCompraSeleccionada) return;
-            if (!confirm('¿Quitar la retención de IVA de esta compra?')) return;
-            const { error } = await db.from('compras').update({
-                retencion_iva_check: false,
-                retencion_iva_monto: 0,
-                retencion_iva_comprobante: null,
-                retencion_iva_fecha: null
-            }).eq('id', retencionCompraSeleccionada.id);
-            if (error) return alert('Error: ' + error.message);
-            cerrarModalRetencionCompra();
-            await cargarHistorialCompras();
-            await cargarResumenIVA();
-        }
-
-        // ==========================================
-        // VENTAS, CHECKLISTS DE RETENCIONES Y FILTROS
-        // ==========================================
         let carritoVentas = [];
         let subtotalVenta = 0, impuestosVenta = 0, totalFacturaVenta = 0, islrVenta = 0, totalCobrarVenta = 0;
 
@@ -5381,10 +5455,17 @@ function obtenerBaseImponibleFactura(v) {
                 const mapClientes = {};
                 if(clientesData) clientesData.forEach(c => mapClientes[c.id] = c);
 
-                const [resVentas, resNotas] = await Promise.all([
+                const [resVentas, resNotas, resPagos] = await Promise.all([
                     db.from('ventas').select('*').eq('cxc', true),
-                    db.from('notas_entrega').select('*').eq('cxc', true)
+                    db.from('notas_entrega').select('*').eq('cxc', true),
+                    db.from('banco_movimientos').select('venta_id, nota_entrega_id, monto').eq('tipo', 'ingreso')
                 ]);
+                const pagosVenta = {};
+                const pagosNota = {};
+                (resPagos.data || []).forEach(p => {
+                    if (p.venta_id) pagosVenta[p.venta_id] = (pagosVenta[p.venta_id] || 0) + (parseFloat(p.monto) || 0);
+                    if (p.nota_entrega_id) pagosNota[p.nota_entrega_id] = (pagosNota[p.nota_entrega_id] || 0) + (parseFloat(p.monto) || 0);
+                });
                 const notasCreditoCxC = await traerNC('venta_id,total,iva');
                 const mapNcVenta = {};
                 notasCreditoCxC.forEach(n => {
@@ -5420,14 +5501,19 @@ function obtenerBaseImponibleFactura(v) {
                         }
                         
                         const baseNetaCobrar = Math.max(0, v.total - retIva - islrRetenido - ncVenta.total);
+                        const pendiente = Math.max(0, baseNetaCobrar - (pagosVenta[v.id] || 0));
                         const tasaRef = v.tasa || datosGenerales.tasa || 1;
-                        const porCobrarUsd = baseNetaCobrar / tasaRef;
+                        const porCobrarUsd = pendiente / tasaRef;
 
                         listadoMixto.push({
                             id: v.id, tipo: 'venta',
                             fecha: v.fecha || v.created_at,
                             cliente: cliInfo.descripcion || 'Desconocido',
-                            baseNetaBs: baseNetaCobrar,
+                            clienteId: v.cliente_id || '',
+                            factura: v.factura || '',
+                            vendedorId: mapClientesVendedor[v.cliente_id] || '',
+                            pendiente,
+                            baseNetaBs: pendiente,
                             ivaRecibidoBs: ivaRecibido,
                             cobrarUsd: porCobrarUsd
                         });
@@ -5437,13 +5523,19 @@ function obtenerBaseImponibleFactura(v) {
                 if(resNotas.data) {
                     resNotas.data.forEach(n => {
                         const cliInfo = mapClientes[n.cliente_id] || {};
+                        const tasaRef = parseFloat(n.tasa) || datosGenerales.tasa || 1;
+                        const pendiente = Math.max(0, (parseFloat(n.total) || 0) - (pagosNota[n.id] || 0));
                         listadoMixto.push({
                             id: n.id, tipo: 'nota',
                             fecha: n.fecha || n.created_at,
                             cliente: cliInfo.descripcion || 'Desconocido',
-                            baseNetaBs: null,
+                            clienteId: n.cliente_id || '',
+                            factura: n.numero_documento || '',
+                            vendedorId: mapClientesVendedor[n.cliente_id] || '',
+                            pendiente,
+                            baseNetaBs: pendiente,
                             ivaRecibidoBs: null,
-                            cobrarUsd: n.total_usd
+                            cobrarUsd: pendiente / tasaRef
                         });
                     });
                 }
@@ -5480,7 +5572,7 @@ function obtenerBaseImponibleFactura(v) {
                             <td class="p-4 font-mono font-bold text-violet-400 text-[11px]">${valIvaRecibido}</td>
                             <td class="p-4 font-mono font-bold text-sky-400 text-[11px]">$${formatNumber(item.cobrarUsd)}</td>
                             <td class="p-4 text-right">
-                                <button onclick="marcarComoPagado('${item.id}', '${item.tipo}')" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded-lg text-[10px] font-bold transition shadow-lg shadow-emerald-600/20 flex items-center justify-end gap-1 float-right">
+                                <button onclick="marcarComoPagado('${item.id}', '${item.tipo}', ${item.pendiente || 0}, '${String(item.cliente || 'Cliente').replace(/'/g, "\\'")}', '${item.factura || ''}', '${item.clienteId || ''}', '${item.vendedorId || ''}')" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded-lg text-[10px] font-bold transition shadow-lg shadow-emerald-600/20 flex items-center justify-end gap-1 float-right">
                                     <i class="fa-solid fa-check"></i> Marcar Pagado
                                 </button>
                             </td>
@@ -5492,33 +5584,421 @@ function obtenerBaseImponibleFactura(v) {
             } catch (err) { console.error("Error en CxC", err); }
         }
 
-        async function marcarComoPagado(id, tipo) {
-            if (!confirm('¿Desea registrar esta cuenta como pagada?')) return;
-            
-            const tabla = tipo === 'venta' ? 'ventas' : 'notas_entrega';
-            const { data: doc } = await db.from(tabla).select('factura, cliente_id').eq('id', id).single();
-            const { error } = await db.from(tabla).update({ cxc: false }).eq('id', id);
-            
-            if (!error && doc) {
-                let descripcionBusqueda = (tipo === 'venta' && doc.factura) 
-                    ? `%${doc.factura}%` 
-                    : `%${id.substring(0,6).toUpperCase()}%`;
+        // ===== PAGOS CON BANCO (CxC / CxP) =====
+        async function cargarBancos() {
+            try {
+                const { data, error } = await db.from('bancos').select('*').order('nombre');
+                if (error) throw error;
+                bancosCache = data || [];
+                actualizarSelectsBancos();
+                return bancosCache;
+            } catch (e) {
+                console.error('ERROR_CARGAR_BANCOS: ' + e);
+                return [];
+            }
+        }
 
-                await db.from('tareas')
-                    .update({ estado: 'Completada' })
-                    .eq('cliente_id', doc.cliente_id)
-                    .eq('tipo', 'Cobro')
-                    .like('descripcion', descripcionBusqueda);
+        function actualizarSelectsBancos() {
+            const rellenar = (id, conTodos) => {
+                const sel = document.getElementById(id);
+                if (!sel) return;
+                const actual = sel.value;
+                sel.innerHTML = conTodos ? '<option value="">Todos...</option>' : '<option value="">Seleccione un banco...</option>';
+                bancosCache.forEach(b => {
+                    sel.innerHTML += `<option value="${b.id}">${b.nombre}</option>`;
+                });
+                sel.value = actual;
+            };
+            rellenar('pago-banco', false);
+            rellenar('salida-banco', false);
+            rellenar('filtro-banco-banco', true);
+        }
+
+        async function cargarBancosParametros() {
+            await cargarBancos();
+            const tbody = document.getElementById('tabla-bancos-parametros');
+            if (!tbody) return;
+            tbody.innerHTML = bancosCache.length
+                ? bancosCache.map(b => `
+                    <tr class="hover:bg-slate-800/50">
+                        <td class="p-3 font-medium text-white">${b.nombre}</td>
+                        <td class="p-3">${fechaDDMMYYYY(b.fecha_conciliacion)}</td>
+                        <td class="p-3 text-right text-emerald-400">Bs. ${formatNumber(b.saldo_inicial)}</td>
+                        <td class="p-3 text-right">
+                            <button onclick="editarBanco('${b.id}')" class="text-sky-400 hover:text-sky-300 px-2" title="Editar"><i class="fa-solid fa-pen"></i></button>
+                        </td>
+                    </tr>`).join('')
+                : '<tr><td colspan="4" class="p-6 text-center text-slate-500 italic">No hay bancos configurados.</td></tr>';
+        }
+
+        function editarBanco(id) {
+            const b = bancosCache.find(x => String(x.id) === String(id));
+            if (!b) return;
+            document.getElementById('banco-id').value = b.id;
+            document.getElementById('banco-nombre').value = b.nombre || '';
+            document.getElementById('banco-fecha').value = normalizarFechaYMD(b.fecha_conciliacion);
+            document.getElementById('banco-saldo').value = parseFloat(b.saldo_inicial) || 0;
+        }
+
+        function limpiarFormBanco() {
+            document.getElementById('form-banco').reset();
+            document.getElementById('banco-id').value = '';
+            document.getElementById('banco-saldo').value = 0;
+        }
+
+        async function guardarBanco(e) {
+            e.preventDefault();
+            const id = document.getElementById('banco-id').value;
+            const payload = {
+                nombre: (document.getElementById('banco-nombre').value || '').trim(),
+                fecha_conciliacion: document.getElementById('banco-fecha').value,
+                saldo_inicial: parseFloat(document.getElementById('banco-saldo').value) || 0,
+                updated_at: new Date().toISOString()
+            };
+            if (!payload.nombre || !payload.fecha_conciliacion) return alert('Completa nombre y fecha de conciliación.');
+            const query = id
+                ? db.from('bancos').update(payload).eq('id', id)
+                : db.from('bancos').insert([payload]);
+            const { error } = await query;
+            const status = document.getElementById('banco-config-status');
+            if (error) {
+                if (status) status.innerText = '❌ ' + error.message;
+                alert('No se pudo guardar el banco: ' + error.message);
+                return;
             }
-            
-            if (error) alert('Error al actualizar: ' + error.message);
-            else {
-                cargarCxC();
-                cargarDashboard();
-                cargarCompromisos();
-                if(tipo === 'venta') cargarHistorialVentas();
-                if(tipo === 'nota') cargarHistorialNotas();
+            if (status) status.innerText = '✅ Banco guardado.';
+            limpiarFormBanco();
+            await cargarBancosParametros();
+            if (!document.getElementById('bancos').classList.contains('hidden')) await cargarModuloBancos();
+        }
+
+        function abrirModalPago(datos) {
+            document.getElementById('pago-tipo').value = datos.tipo;
+            document.getElementById('pago-id').value = datos.id || '';
+            document.getElementById('pago-cliente-id').value = datos.clienteId || '';
+            document.getElementById('pago-venta-id').value = datos.tipo === 'cobro' ? datos.id : '';
+            document.getElementById('pago-compra-id').value = datos.tipo === 'pago' ? datos.id : '';
+            document.getElementById('pago-contraparte').value = datos.contraparte || '';
+            document.getElementById('pago-factura').value = datos.factura || '';
+            document.getElementById('pago-saldo').value = String(datos.pendiente || 0);
+            document.getElementById('pago-vendedor-id').value = datos.vendedorId || '';
+            document.getElementById('pago-saldo-mostrar').innerText = `Bs. ${formatNumber(datos.pendiente || 0)}`;
+            document.getElementById('pago-monto').value = (datos.pendiente || 0).toFixed(2);
+            document.getElementById('pago-fecha').value = new Date().toISOString().split('T')[0];
+            document.getElementById('modal-pago-titulo').innerText = datos.tipo === 'cobro' ? 'Registrar cobro' : 'Registrar pago a proveedor';
+            document.getElementById('modal-pago-subtitulo').innerText = `${datos.contraparte || '-'} • Factura ${datos.factura || '-'}`;
+
+            const select = document.getElementById('pago-banco');
+            if (bancosCache.length === 0) cargarBancos();
+            else select.value = bancosCache[0].id;
+
+            const modal = document.getElementById('modal-pago-banco');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function cerrarModalPago() {
+            const modal = document.getElementById('modal-pago-banco');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        async function guardarPagoBanco(e) {
+            e.preventDefault();
+            const tipo = document.getElementById('pago-tipo').value;
+            const id = document.getElementById('pago-id').value;
+            const saldo = parseFloat(document.getElementById('pago-saldo').value) || 0;
+            const monto = parseFloat(document.getElementById('pago-monto').value) || 0;
+            const fecha = document.getElementById('pago-fecha').value;
+            const bancoId = document.getElementById('pago-banco').value;
+            const contraparte = document.getElementById('pago-contraparte').value;
+            const factura = document.getElementById('pago-factura').value;
+            const clienteId = document.getElementById('pago-cliente-id').value;
+            const vendedorId = document.getElementById('pago-vendedor-id').value;
+            const ventaId = document.getElementById('pago-venta-id').value;
+
+            if (!bancoId) return alert('Selecciona un banco.');
+            if (!fecha) return alert('Selecciona la fecha del pago.');
+            if (monto <= 0) return alert('El monto debe ser mayor a cero.');
+            if (monto > saldo + 0.01) return alert(`El monto supera el saldo pendiente (Bs. ${formatNumber(saldo)}).`);
+
+            const restante = Math.max(0, saldo - monto);
+            const movimiento = {
+                banco_id: Number(bancoId),
+                fecha,
+                tipo: tipo === 'cobro' ? 'ingreso' : 'egreso',
+                monto,
+                contraparte,
+                detalle: `${tipo === 'cobro' ? 'Pago de' : 'Pago a'} ${contraparte} — Factura ${factura || '-'}${restante > 0.01 ? ' (abono)' : ''}`,
+                vendedor_id: vendedorId || null,
+                venta_id: ventaId || null,
+                nota_entrega_id: (!ventaId && tipo === 'cobro') ? id : null,
+                compra_id: tipo === 'pago' ? Number(id) : null
+            };
+
+            const { error } = await db.from('banco_movimientos').insert([movimiento]);
+            if (error) return alert('No se pudo registrar el movimiento: ' + error.message);
+
+            if (restante <= 0.01) {
+                if (tipo === 'cobro') {
+                    const tabla = ventaId ? 'ventas' : 'notas_entrega';
+                    await db.from(tabla).update({ cxc: false }).eq('id', id);
+                    if (clienteId) {
+                        const busqueda = factura ? `%${factura}%` : `%${String(id).substring(0, 6).toUpperCase()}%`;
+                        await db.from('tareas').update({ estado: 'Completada' })
+                            .eq('cliente_id', clienteId).eq('tipo', 'Cobro').like('descripcion', busqueda);
+                    }
+                } else {
+                    await db.from('compras').update({ cxp: false }).eq('id', Number(id));
+                }
             }
+
+            cerrarModalPago();
+            await Promise.all([
+                cargarCxC(), cargarCxP(), cargarHistorialCompras(),
+                cargarHistorialVentas(), cargarModuloBancos(), cargarDashboard(), cargarCompromisos()
+            ]);
+        }
+
+        async function marcarComoPagado(id, tipo, pendiente, contraparte, factura, clienteId, vendedorId) {
+            await cargarBancos();
+            abrirModalPago({
+                tipo: 'cobro',
+                id,
+                pendiente: parseFloat(pendiente) || 0,
+                contraparte: contraparte || 'Cliente',
+                factura: factura || '-',
+                clienteId: clienteId || '',
+                vendedorId: vendedorId || ''
+            });
+        }
+
+        // ==========================================
+        // CUENTAS POR PAGAR
+        // ==========================================
+        async function cargarCxP() {
+            try {
+                const { data: compras, error } = await db.from('compras').select('*').eq('cxp', true).order('fecha', { ascending: false });
+                if (error) throw error;
+                const { data: movs } = await db.from('banco_movimientos').select('compra_id, monto').eq('tipo', 'egreso');
+                const pagado = {};
+                (movs || []).forEach(m => {
+                    if (m.compra_id != null) pagado[m.compra_id] = (pagado[m.compra_id] || 0) + (parseFloat(m.monto) || 0);
+                });
+
+                const tbody = document.getElementById('tabla-cxp');
+                if (!tbody) return;
+                tbody.innerHTML = '';
+                let totalPendiente = 0, totalAbonado = 0, cantidad = 0;
+
+                (compras || []).forEach(c => {
+                    const total = parseFloat(c.total) || 0;
+                    const abonado = pagado[c.id] || 0;
+                    const saldo = Math.max(0, total - abonado);
+                    if (saldo <= 0.01) return;
+                    totalPendiente += saldo;
+                    totalAbonado += abonado;
+                    cantidad++;
+
+                    tbody.innerHTML += `
+                        <tr class="hover:bg-slate-800/50 transition border-b border-slate-800">
+                            <td class="p-3">${formatearFechaMostrar(c.fecha)}</td>
+                            <td class="p-3 text-slate-200">${c.descripcion || 'Proveedor'}</td>
+                            <td class="p-3">${c.numero_factura || '-'}</td>
+                            <td class="p-3 text-right">Bs. ${formatNumber(total)}</td>
+                            <td class="p-3 text-right text-emerald-400">Bs. ${formatNumber(abonado)}</td>
+                            <td class="p-3 text-right text-amber-400 font-bold">Bs. ${formatNumber(saldo)}</td>
+                            <td class="p-3 text-right">
+                                <button onclick="pagarCompra('${c.id}', ${saldo}, '${String(c.descripcion || 'Proveedor').replace(/'/g, "\\'")}', '${c.numero_factura || ''}')" class="bg-amber-600 hover:bg-amber-500 text-white px-3 py-1.5 rounded-lg text-[10px] font-bold transition">
+                                    <i class="fa-solid fa-check mr-1"></i> Marcar pagado
+                                </button>
+                            </td>
+                        </tr>`;
+                });
+
+                if (cantidad === 0) {
+                    tbody.innerHTML = '<tr><td colspan="7" class="p-8 text-center text-slate-500 italic">No hay compras pendientes de pago.</td></tr>';
+                }
+                document.getElementById('cxp-total').innerText = `Bs. ${formatNumber(totalPendiente)}`;
+                document.getElementById('cxp-abonado').innerText = `Bs. ${formatNumber(totalAbonado)}`;
+                document.getElementById('cxp-cantidad').innerText = String(cantidad);
+            } catch (e) {
+                console.error('ERROR_CXP: ' + e);
+            }
+        }
+
+        async function pagarCompra(id, pendiente, proveedor, factura) {
+            await cargarBancos();
+            abrirModalPago({
+                tipo: 'pago',
+                id,
+                pendiente,
+                contraparte: proveedor || 'Proveedor',
+                factura: factura || '-'
+            });
+        }
+
+        // ==========================================
+        // MÓDULO BANCOS
+        // ==========================================
+        async function cargarModuloBancos() {
+            try {
+                await cargarBancos();
+                const fechaSalida = document.getElementById('salida-fecha');
+                if (fechaSalida && !fechaSalida.value) fechaSalida.value = new Date().toISOString().split('T')[0];
+
+                const { data: movs, error } = await db.from('banco_movimientos').select('*').order('fecha', { ascending: false });
+                if (error) throw error;
+                movimientosBancosCache = movs || [];
+
+                const { data: vends } = await db.from('vendedores').select('id, nombre');
+                const mapVend = {};
+                (vends || []).forEach(v => mapVend[v.id] = v.nombre);
+
+                const { data: provs } = await db.from('proveedores').select('descripcion').order('descripcion');
+                const selBen = document.getElementById('salida-beneficiario');
+                if (selBen) {
+                    const actual = selBen.value;
+                    selBen.innerHTML = '<option value="">Seleccione...</option>'
+                        + (provs || []).map(p => `<option value="${String(p.descripcion).replace(/"/g, '&quot;')}">${p.descripcion}</option>`).join('')
+                        + '<option value="__otro">Otro...</option>';
+                    selBen.value = actual;
+                }
+
+                const selVend = document.getElementById('filtro-banco-vendedor');
+                if (selVend) {
+                    const actual = selVend.value;
+                    selVend.innerHTML = '<option value="">Todos...</option>';
+                    Object.entries(mapVend).forEach(([idV, nom]) => { selVend.innerHTML += `<option value="${idV}">${nom}</option>`; });
+                    selVend.value = actual;
+                }
+
+                const selCon = document.getElementById('filtro-banco-contraparte');
+                if (selCon) {
+                    const actual = selCon.value;
+                    const nombres = [...new Set(movimientosBancosCache.map(m => m.contraparte).filter(Boolean))].sort();
+                    selCon.innerHTML = '<option value="">Todos...</option>' + nombres.map(n => `<option value="${n}">${n}</option>`).join('');
+                    selCon.value = actual;
+                }
+
+                const contenedor = document.getElementById('bancos-saldos');
+                if (contenedor) {
+                    contenedor.innerHTML = bancosCache.map(b => {
+                        const desde = normalizarFechaYMD(b.fecha_conciliacion);
+                        let ing = 0, egr = 0;
+                        movimientosBancosCache.forEach(m => {
+                            const f = normalizarFechaYMD(m.fecha);
+                            if (Number(m.banco_id) !== Number(b.id) || (desde && f && f < desde)) return;
+                            if (m.tipo === 'ingreso') ing += parseFloat(m.monto) || 0;
+                            else egr += parseFloat(m.monto) || 0;
+                        });
+                        const saldo = (parseFloat(b.saldo_inicial) || 0) + ing - egr;
+                        return `
+                            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5">
+                                <p class="text-[10px] text-slate-400 mb-1 uppercase tracking-wider">${b.nombre}</p>
+                                <p class="text-xl font-mono font-bold ${saldo >= 0 ? 'text-emerald-400' : 'text-rose-400'}">Bs. ${formatNumber(saldo)}</p>
+                                <p class="text-[10px] text-slate-500 mt-1 font-mono">Desde ${fechaDDMMYYYY(b.fecha_conciliacion)}</p>
+                                <div class="flex justify-between text-[10px] font-mono mt-3 pt-2 border-t border-slate-800">
+                                    <span class="text-emerald-400">+ ${formatNumber(ing)}</span>
+                                    <span class="text-rose-400">- ${formatNumber(egr)}</span>
+                                </div>
+                            </div>`;
+                    }).join('') || '<p class="text-slate-500 italic text-xs">Configure bancos en Parámetros.</p>';
+                }
+
+                aplicarFiltrosBancos();
+            } catch (e) {
+                console.error('ERROR_MODULO_BANCOS: ' + e);
+            }
+        }
+
+        function aplicarFiltrosBancos() {
+            const tbody = document.getElementById('tabla-bancos');
+            if (!tbody) return;
+            const desde = document.getElementById('filtro-banco-desde')?.value || '';
+            const hasta = document.getElementById('filtro-banco-hasta')?.value || '';
+            const banco = document.getElementById('filtro-banco-banco')?.value || '';
+            const vendedor = document.getElementById('filtro-banco-vendedor')?.value || '';
+            const contraparte = document.getElementById('filtro-banco-contraparte')?.value || '';
+
+            const mapBancos = Object.fromEntries(bancosCache.map(b => [String(b.id), b.nombre]));
+            const mapVendedores = Object.fromEntries(Object.entries(mapVendedoresGlobal || {}));
+
+            const filtrados = movimientosBancosCache.filter(m => {
+                const f = normalizarFechaYMD(m.fecha);
+                if (desde && f && f < desde) return false;
+                if (hasta && f && f > hasta) return false;
+                if (banco && String(m.banco_id) !== banco) return false;
+                if (vendedor && String(m.vendedor_id || '') !== vendedor) return false;
+                if (contraparte && (m.contraparte || '') !== contraparte) return false;
+                const bancoObj = bancosCache.find(b => Number(b.id) === Number(m.banco_id));
+                const fechaCorte = bancoObj ? normalizarFechaYMD(bancoObj.fecha_conciliacion) : '';
+                if (fechaCorte && f && f < fechaCorte) return false;
+                return true;
+            });
+
+            let ing = 0, egr = 0;
+            tbody.innerHTML = filtrados.length
+                ? filtrados.map(m => {
+                    if (m.tipo === 'ingreso') ing += parseFloat(m.monto) || 0;
+                    else egr += parseFloat(m.monto) || 0;
+                    const esIngreso = m.tipo === 'ingreso';
+                    return `
+                        <tr class="hover:bg-slate-800/40">
+                            <td class="p-3">${fechaDDMMYYYY(m.fecha)}</td>
+                            <td class="p-3"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${esIngreso ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'}">${esIngreso ? 'Ingreso' : 'Egreso'}</span></td>
+                            <td class="p-3 text-slate-200">${m.contraparte || '-'}</td>
+                            <td class="p-3">${m.detalle || '-'}</td>
+                            <td class="p-3">${mapBancos[String(m.banco_id)] || '-'}</td>
+                            <td class="p-3">${mapVendedores[String(m.vendedor_id)] || '-'}</td>
+                            <td class="p-3 text-right ${esIngreso ? 'text-emerald-400' : 'text-rose-400'} font-bold">${esIngreso ? '+' : '-'} Bs. ${formatNumber(m.monto)}</td>
+                        </tr>`;
+                }).join('')
+                : '<tr><td colspan="7" class="p-8 text-center text-slate-500 italic">No hay movimientos con estos filtros.</td></tr>';
+
+            document.getElementById('bancos-total-ingresos').innerText = `Bs. ${formatNumber(ing)}`;
+            document.getElementById('bancos-total-egresos').innerText = `Bs. ${formatNumber(egr)}`;
+            document.getElementById('bancos-total-neto').innerText = `Bs. ${formatNumber(ing - egr)}`;
+        }
+
+        function toggleOtroBeneficiario() {
+            const sel = document.getElementById('salida-beneficiario');
+            const wrap = document.getElementById('salida-otro-wrap');
+            if (!sel || !wrap) return;
+            if (sel.value === '__otro') wrap.classList.remove('hidden');
+            else wrap.classList.add('hidden');
+        }
+
+        async function guardarSalidaBancaria(e) {
+            e.preventDefault();
+            const banco = document.getElementById('salida-banco').value;
+            const fecha = document.getElementById('salida-fecha').value;
+            const monto = parseFloat(document.getElementById('salida-monto').value) || 0;
+            const selBen = document.getElementById('salida-beneficiario').value;
+            const contraparte = selBen === '__otro'
+                ? (document.getElementById('salida-otro').value || '').trim()
+                : selBen;
+            const detalle = (document.getElementById('salida-detalle').value || '').trim();
+
+            if (!banco || !fecha || monto <= 0 || !contraparte) {
+                return alert('Completa banco, fecha, monto y beneficiario.');
+            }
+            const { error } = await db.from('banco_movimientos').insert([{
+                banco_id: Number(banco),
+                fecha,
+                tipo: 'egreso',
+                monto,
+                contraparte,
+                detalle: detalle || `Salida de dinero a ${contraparte}`,
+                vendedor_id: null,
+                venta_id: null,
+                nota_entrega_id: null,
+                compra_id: null
+            }]);
+            if (error) return alert('No se pudo registrar la salida: ' + error.message);
+            document.getElementById('form-salida-bancaria').reset();
+            document.getElementById('salida-otro-wrap').classList.add('hidden');
+            await cargarModuloBancos();
         }
 
         // ==========================================
@@ -6063,7 +6543,7 @@ function obtenerBaseImponibleFactura(v) {
                 }
 
                 const { data: compras } = await db.from('compras')
-                    .select('fecha, subtotal, monto_exento, impuestos, es_factura_personal')
+                    .select('fecha, subtotal, monto_exento, impuestos')
                     .gte('fecha', `${year}-01-01`).lte('fecha', `${year}-12-31`);
 
                 if (compras) {
@@ -6078,12 +6558,8 @@ function obtenerBaseImponibleFactura(v) {
                         const iva = parseFloat(c.impuestos) || 0;
                         const totalCompra = sub + exento + iva;
 
-                        if (c.es_factura_personal) {
-                            dataMeses[mes].facturasPropias += totalCompra;
-                        } else {
-                            dataMeses[mes].comprasTerceros += totalCompra;
-                            dataMeses[mes].ivaPagar -= iva;
-                        }
+                        dataMeses[mes].comprasTerceros += totalCompra;
+                        dataMeses[mes].ivaPagar -= iva;
                     });
                 }
             } catch (err) { console.warn("Caja Error:", err); }
@@ -7267,17 +7743,14 @@ console.log("📡 ENVIANDO A LA EDGE FUNCTION SUPABASE (facturacion-thefactory).
                 const exento = r2(c.monto_exento);
                 const subtotal = r2(c.subtotal);
                 const ivaReal = r2(c.impuestos);
-                const personal = !!c.es_factura_personal;
-                const base = personal ? 0 : subtotal;
-                const iva = personal ? 0 : ivaReal;
-                const sinCredito = personal ? total : exento;
-                const conRet = !!c.retencion_iva_check;
-                const porcRet = parseFloat(c.retencion_iva_porc) || 75;
-                const retenido = conRet
-                    ? (c.retencion_iva_monto !== null && c.retencion_iva_monto !== undefined
-                        ? r2(c.retencion_iva_monto)
-                        : r2(iva * (porcRet / 100)))
-                    : 0;
+                const base = subtotal;
+                const iva = ivaReal;
+                const sinCredito = exento;
+                // El formato SENIAT conserva las columnas de retención, pero DAS
+                // no practica retenciones de IVA en compras: se dejan en cero.
+                const conRet = false;
+                const porcRet = 75;
+                const retenido = 0;
 
                 filas.push({
                     fecha: normalizarFechaYMD(c.fecha),
@@ -7297,8 +7770,7 @@ console.log("📡 ENVIANDO A LA EDGE FUNCTION SUPABASE (facturacion-thefactory).
                     retenido,
                     porcRet: conRet ? porcRet : '',
                     nroComp: conRet ? (c.retencion_iva_comprobante || '') : '',
-                    fechaRet: conRet ? normalizarFechaYMD(c.retencion_iva_fecha || c.fecha) : '',
-                    personal
+                    fechaRet: conRet ? normalizarFechaYMD(c.retencion_iva_fecha || c.fecha) : ''
                 });
             });
 
@@ -7654,6 +8126,7 @@ console.log("📡 ENVIANDO A LA EDGE FUNCTION SUPABASE (facturacion-thefactory).
             await cargarDatosGenerales();
             await cargarConfiguracionSistema();
             await cargarVendedores();
+            await cargarBancos();
             configurarPullToRefresh();
             mostrarModulo('dashboard'); 
             obtenerTasaBCV(true); 
