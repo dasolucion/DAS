@@ -42,6 +42,12 @@ Si la aprobación está desactivada, el paso 4 se ejecuta automáticamente despu
 
 Los montos se normalizan antes de mostrarlos: se aceptan tanto formatos venezolanos (`64.111,11`) como internacionales (`64,111.11`). Si el total no coincide con base + exento + IVA, el borrador muestra una advertencia para revisar los valores.
 
+Al aprobar la compra:
+- Se crea el **proveedor** automáticamente si no existe en el catálogo.
+- Se evita un **duplicado** si ya existe una compra del mismo proveedor con ese número de factura.
+- Se **comprime la imagen** (máx. 1600 px, JPEG) antes de subirla al bucket `facturas-compras`.
+- Si falla la subida de la imagen, la compra **sí queda guardada** y el mensaje lo indica; se puede adjuntar después con el botón 📎 del historial.
+
 ### Notas
 - La API Key se guarda en `configuracion_sistema` y se usa desde el navegador contra `generativelanguage.googleapis.com`. Para un despliegue multiusuario conviene moverla a una Edge Function proxy.
 - La IA de texto/voz para **generar facturas de venta** (borrador → aprobación → emisión) queda para la siguiente fase; la Speech API del navegador es compatible con Chromium y requiere permiso de micrófono.
