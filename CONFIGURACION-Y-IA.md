@@ -46,3 +46,11 @@ Si la aprobación está desactivada, el paso 4 se ejecuta automáticamente despu
 
 ## SQL
 - `SUPABASE-CONFIGURACION-SISTEMA.sql`: tabla de configuración y política RLS.
+
+## Instalar el sistema en otro proyecto (reventa / otro usuario)
+1. Crear un proyecto Supabase nuevo y ejecutar los SQL del repositorio (`CONFIGURACION`, `NOTAS-CREDITO`, `COMPRAS`, `STORAGE`, etc.).
+2. Desplegar la Edge Function desde una carpeta con `supabase/functions/facturacion-thefactory/index.ts`:
+   `supabase functions deploy facturacion-thefactory --no-verify-jwt`
+3. Publicar `index.html` y el resto de archivos estáticos (el repositorio incluye `.nojekyll` para servirlos sin Jekyll).
+4. Abrir **Parámetros** y cargar la URL, usuario, clave y serie propios; luego **Probar conexión**. No hace falta editar código ni credenciales en el servidor.
+5. Para la IA, obtener una API Key de Gemini gratuita y cargarla en **Parámetros → Asistente IA**.
