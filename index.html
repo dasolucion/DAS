@@ -430,6 +430,92 @@
                         </div>
                     </form>
                 </div>
+
+                <!-- FACTURACIÓN DIGITAL / THE FACTORY -->
+                <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-xl no-print">
+                    <div class="flex flex-wrap items-center justify-between gap-3 mb-5 pb-3 border-b border-slate-800">
+                        <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                            <i class="fa-solid fa-file-invoice text-rose-400"></i> Facturación Digital — The Factory HKA
+                        </h3>
+                        <label class="flex items-center gap-2 text-xs font-bold cursor-pointer text-slate-400" id="label-tfhka-activo">
+                            <input type="checkbox" id="conf-tfhka-activo" class="w-4 h-4 accent-emerald-500 cursor-pointer"> Módulo activo
+                        </label>
+                    </div>
+                    <p class="text-[11px] text-slate-400 mb-5">
+                        Configure aquí la <b>URL</b>, el <b>usuario</b>, la <b>clave</b> y la <b>serie</b> suministrados por The Factory. Para cambiar de demo a producción, reemplace la URL y las credenciales aquí; no se requiere modificar el código.
+                    </p>
+                    <form id="form-config-tfhka" onsubmit="guardarConfigTFHKA(event)" class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div class="md:col-span-2">
+                            <label class="block text-xs font-medium text-slate-300 mb-1">URL base del servicio</label>
+                            <input type="url" id="conf-tfhka-url" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white font-mono outline-none focus:border-rose-500 transition" placeholder="https://demoemisionv2.thefactoryhka.com.ve">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-300 mb-1">Usuario</label>
+                            <input type="text" id="conf-tfhka-usuario" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white font-mono outline-none focus:border-rose-500 transition" autocomplete="off">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-300 mb-1">Clave</label>
+                            <div class="flex gap-2">
+                                <input type="password" id="conf-tfhka-clave" class="flex-1 bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white font-mono outline-none focus:border-rose-500 transition" autocomplete="new-password">
+                                <button type="button" onclick="toggleVerClave('conf-tfhka-clave', this)" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 px-3 rounded-xl text-xs" title="Ver / ocultar"><i class="fa-solid fa-eye"></i></button>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-300 mb-1">Serie fiscal</label>
+                            <input type="text" id="conf-tfhka-serie" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white font-mono outline-none focus:border-rose-500 transition" placeholder="Ej. 00-00">
+                        </div>
+                        <div class="flex items-end gap-2">
+                            <button type="submit" class="bg-rose-600 hover:bg-rose-500 text-white font-bold px-5 py-2.5 rounded-xl transition shadow-lg shadow-rose-600/20 text-xs flex items-center gap-2">
+                                <i class="fa-solid fa-save"></i> Guardar The Factory
+                            </button>
+                            <button type="button" onclick="probarConexionTFHKA(this)" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 font-bold px-4 py-2.5 rounded-xl transition text-xs flex items-center gap-2">
+                                <i class="fa-solid fa-plug"></i> Probar conexión
+                            </button>
+                        </div>
+                    </form>
+                    <p id="tfhka-config-status" class="text-[11px] mt-3 font-mono text-slate-500"></p>
+                </div>
+
+                <!-- ASISTENTE IA -->
+                <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-xl no-print">
+                    <div class="flex flex-wrap items-center justify-between gap-3 mb-5 pb-3 border-b border-slate-800">
+                        <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                            <i class="fa-solid fa-wand-magic-sparkles text-violet-400"></i> Asistente IA (Gemini — plan gratuito)
+                        </h3>
+                        <label class="flex items-center gap-2 text-xs font-bold cursor-pointer text-violet-400">
+                            <input type="checkbox" id="conf-ia-activo" class="w-4 h-4 accent-violet-500 cursor-pointer"> Módulo activo
+                        </label>
+                    </div>
+                    <p class="text-[11px] text-slate-400 mb-5">
+                        Permite registrar compras desde una foto. La IA lee la factura y prepara un borrador. Con la aprobación activa, el borrador se muestra para revisión y no se guarda hasta que lo confirmes; si la desactivas, se guarda automáticamente.
+                    </p>
+                    <form id="form-config-ia" onsubmit="guardarConfigIA(event)" class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                        <div class="md:col-span-2">
+                            <label class="block text-xs font-medium text-slate-300 mb-1">API Key de Gemini (Google AI Studio)</label>
+                            <div class="flex gap-2">
+                                <input type="password" id="conf-ia-api-key" class="flex-1 bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white font-mono outline-none focus:border-violet-500 transition" autocomplete="new-password" placeholder="AIza...">
+                                <button type="button" onclick="toggleVerClave('conf-ia-api-key', this)" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 px-3 rounded-xl text-xs" title="Ver / ocultar"><i class="fa-solid fa-eye"></i></button>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-300 mb-1">Modelo</label>
+                            <input type="text" id="conf-ia-modelo" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white font-mono outline-none focus:border-violet-500 transition">
+                        </div>
+                        <div class="md:col-span-3 flex items-center gap-3 bg-slate-950 p-3.5 rounded-xl border border-slate-800">
+                            <input type="checkbox" id="conf-ia-aprobacion" class="w-4 h-4 accent-violet-500 cursor-pointer">
+                            <label for="conf-ia-aprobacion" class="text-xs font-bold text-white cursor-pointer flex flex-col">
+                                <span>Exigir revisión y aprobación antes de guardar / emitir</span>
+                                <span class="text-[10px] text-slate-400 font-normal">Recomendado mientras se ajusta la integración. Al desactivarlo, la IA ejecuta de forma autónoma.</span>
+                            </label>
+                        </div>
+                        <div class="md:col-span-3 flex justify-end">
+                            <button type="submit" class="bg-violet-600 hover:bg-violet-500 text-white font-bold px-5 py-2.5 rounded-xl transition shadow-lg shadow-violet-600/20 text-xs flex items-center gap-2">
+                                <i class="fa-solid fa-save"></i> Guardar configuración IA
+                            </button>
+                        </div>
+                    </form>
+                    <p id="ia-config-status" class="text-[11px] mt-3 font-mono text-slate-500"></p>
+                </div>
             </section>
 
             <!-- NUEVO: VENDEDORES -->
@@ -1272,6 +1358,77 @@
                     </form>
                 </div>
 
+                <!-- IA: REGISTRO DE COMPRA DESDE FOTO -->
+                <div class="bg-slate-900 border border-violet-900/50 p-6 rounded-2xl shadow-xl no-print">
+                    <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+                        <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                            <i class="fa-solid fa-wand-magic-sparkles text-violet-400"></i> Registrar compra desde foto (IA)
+                        </h3>
+                        <span id="ia-compra-estado" class="text-[10px] font-mono bg-slate-950 border border-slate-800 text-slate-400 px-2.5 py-1 rounded-lg"></span>
+                    </div>
+                    <p class="text-[11px] text-slate-400 mb-4">
+                        Sube la foto (o PDF) de la factura de compra. Gemini extrae los datos y prepara un borrador; con la aprobación activa no se guarda hasta que lo confirmes.
+                    </p>
+                    <div class="flex flex-wrap items-end gap-3">
+                        <div class="flex-1 min-w-[220px]">
+                            <label class="block text-[10px] font-medium text-slate-400 mb-1">Foto / PDF de la factura</label>
+                            <input type="file" id="comp-ia-archivo" accept="image/*,application/pdf" class="w-full text-xs text-slate-400 file:mr-3 file:px-3 file:py-2 file:rounded-lg file:border-0 file:bg-violet-600/20 file:text-violet-300 file:text-xs file:font-bold hover:file:bg-violet-600/30">
+                        </div>
+                        <button type="button" onclick="analizarCompraIA(this)" class="bg-violet-600 hover:bg-violet-500 text-white font-bold px-5 py-2.5 rounded-xl transition shadow-lg shadow-violet-600/20 text-xs flex items-center gap-2">
+                            <i class="fa-solid fa-scan"></i> Analizar con IA
+                        </button>
+                    </div>
+
+                    <div id="ia-borrador" class="hidden mt-5 pt-5 border-t border-slate-800">
+                        <div class="flex items-center justify-between mb-4">
+                            <h4 class="text-xs font-bold text-violet-300 flex items-center gap-2">
+                                <i class="fa-solid fa-file-circle-check"></i> Borrador generado — revisa antes de guardar
+                            </h4>
+                            <button type="button" onclick="descartarBorradorIA()" class="text-rose-400 hover:text-rose-300 text-xs font-semibold"><i class="fa-solid fa-xmark"></i> Descartar</button>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                            <div class="md:col-span-2">
+                                <label class="block text-[10px] font-medium text-slate-400 mb-1">Proveedor</label>
+                                <input type="text" id="ia-draft-proveedor" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2 text-xs text-white outline-none focus:border-violet-500">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-medium text-slate-400 mb-1">Fecha</label>
+                                <input type="date" id="ia-draft-fecha" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2 text-xs text-white outline-none focus:border-violet-500">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-medium text-slate-400 mb-1">Nº Factura</label>
+                                <input type="text" id="ia-draft-factura" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2 text-xs text-white font-mono outline-none focus:border-violet-500">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-medium text-slate-400 mb-1">Nº Control</label>
+                                <input type="text" id="ia-draft-control" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2 text-xs text-white font-mono outline-none focus:border-violet-500">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-medium text-slate-400 mb-1">Subtotal Gravado</label>
+                                <input type="number" step="0.01" id="ia-draft-subtotal" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2 text-xs text-white font-mono outline-none focus:border-violet-500">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-medium text-slate-400 mb-1">Exento</label>
+                                <input type="number" step="0.01" id="ia-draft-exento" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2 text-xs text-white font-mono outline-none focus:border-violet-500">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-medium text-slate-400 mb-1">IVA</label>
+                                <input type="number" step="0.01" id="ia-draft-iva" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2 text-xs text-white font-mono outline-none focus:border-violet-500">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-medium text-emerald-400 mb-1">Total (Bs)</label>
+                                <input type="number" step="0.01" id="ia-draft-total" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2 text-xs text-emerald-300 font-mono font-bold outline-none focus:border-emerald-500">
+                            </div>
+                        </div>
+                        <div class="flex justify-end gap-2 mt-5">
+                            <button type="button" onclick="descartarBorradorIA()" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 font-bold px-4 py-2.5 rounded-xl text-xs transition">Cancelar</button>
+                            <button type="button" onclick="guardarCompraIA(this)" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-5 py-2.5 rounded-xl transition shadow-lg shadow-emerald-600/20 text-xs flex items-center gap-2">
+                                <i class="fa-solid fa-check"></i> Aprobar y guardar compra
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- HISTORIAL DE COMPRAS CON FILTROS -->
                 <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
                     <div class="p-5 border-b border-slate-800 flex flex-wrap items-center justify-between gap-3">
@@ -2011,6 +2168,35 @@
             empresa_nombre: 'DAS SOLUCIONES INTEGRALES, C.A.', empresa_rif: 'J-40282664-8',
             empresa_direccion: '', empresa_telefono: ''
         };
+        let configSistema = {
+            id: 1,
+            tfhka_activo: true,
+            tfhka_url: 'https://demoemisionv2.thefactoryhka.com.ve',
+            tfhka_usuario: '',
+            tfhka_clave: '',
+            tfhka_serie: '',
+            ia_activo: false,
+            ia_api_key: '',
+            ia_modelo: 'gemini-2.5-flash-lite',
+            ia_exigir_aprobacion: true
+        };
+
+        // Bloque de credenciales que viaja a la Edge Function. Nunca se envia
+        // directamente a The Factory desde el navegador.
+        function configTF() {
+            if (!configSistema.tfhka_activo) return {};
+            return {
+                config: {
+                    url: configSistema.tfhka_url || '',
+                    usuario: configSistema.tfhka_usuario || '',
+                    clave: configSistema.tfhka_clave || '',
+                    serie: configSistema.tfhka_serie || ''
+                }
+            };
+        }
+
+        function serieFiscalTF() { return configSistema.tfhka_serie || ''; }
+
         const nombresMeses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
 
         let chartVentas3Meses = null;
@@ -2220,6 +2406,129 @@
             btn.disabled = false;
         }
 
+        // ==========================================
+        // CONFIGURACIÓN DEL SISTEMA (THE FACTORY / IA)
+        // ==========================================
+        async function cargarConfiguracionSistema() {
+            try {
+                const { data, error } = await db.from('configuracion_sistema').select('*').eq('id', 1).maybeSingle();
+                if (error) throw error;
+                if (data) configSistema = { ...configSistema, ...data };
+                reflejarConfiguracionSistema();
+            } catch (e) {
+                console.warn('No se pudo cargar configuracion_sistema:', e.message);
+            }
+        }
+
+        function reflejarConfiguracionSistema() {
+            const set = (id, valor) => { const el = document.getElementById(id); if (el) el.value = valor ?? ''; };
+            const chk = (id, valor) => { const el = document.getElementById(id); if (el) el.checked = !!valor; };
+            chk('conf-tfhka-activo', configSistema.tfhka_activo);
+            set('conf-tfhka-url', configSistema.tfhka_url);
+            set('conf-tfhka-usuario', configSistema.tfhka_usuario);
+            set('conf-tfhka-clave', configSistema.tfhka_clave);
+            set('conf-tfhka-serie', configSistema.tfhka_serie);
+            chk('conf-ia-activo', configSistema.ia_activo);
+            set('conf-ia-api-key', configSistema.ia_api_key);
+            set('conf-ia-modelo', configSistema.ia_modelo || 'gemini-2.5-flash-lite');
+            chk('conf-ia-aprobacion', configSistema.ia_exigir_aprobacion !== false);
+            const label = document.getElementById('label-tfhka-activo');
+            if (label) label.className = `flex items-center gap-2 text-xs font-bold cursor-pointer ${configSistema.tfhka_activo ? 'text-emerald-400' : 'text-slate-400'}`;
+        }
+
+        function toggleVerClave(id, boton) {
+            const inp = document.getElementById(id);
+            if (!inp) return;
+            const ver = inp.type === 'password';
+            inp.type = ver ? 'text' : 'password';
+            if (boton) boton.innerHTML = `<i class="fa-solid fa-${ver ? 'eye-slash' : 'eye'}"></i>`;
+        }
+
+        async function guardarConfigTFHKA(e) {
+            e.preventDefault();
+            const btn = document.querySelector('#form-config-tfhka button[type="submit"]');
+            const original = btn ? btn.innerHTML : null;
+            if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>'; }
+            try {
+                const payload = {
+                    tfhka_activo: document.getElementById('conf-tfhka-activo').checked,
+                    tfhka_url: (document.getElementById('conf-tfhka-url').value || '').trim(),
+                    tfhka_usuario: (document.getElementById('conf-tfhka-usuario').value || '').trim(),
+                    tfhka_clave: document.getElementById('conf-tfhka-clave').value,
+                    tfhka_serie: (document.getElementById('conf-tfhka-serie').value || '').trim(),
+                    updated_at: new Date().toISOString()
+                };
+                if (!payload.tfhka_url) throw new Error('La URL es obligatoria.');
+                const { data, error } = await db.from('configuracion_sistema').update(payload).eq('id', 1).select();
+                if (error) throw error;
+                configSistema = { ...configSistema, ...(data?.[0] || payload) };
+                reflejarConfiguracionSistema();
+                document.getElementById('tfhka-config-status').innerText = '✅ Configuración de The Factory guardada.';
+            } catch (err) {
+                console.error('ERROR_CONFIG_TFHKA: ' + err);
+                document.getElementById('tfhka-config-status').innerText = '❌ ' + err.message;
+                alert('No se pudo guardar la configuración: ' + err.message);
+            } finally {
+                if (btn) { btn.disabled = false; btn.innerHTML = original; }
+            }
+        }
+
+        async function guardarConfigIA(e) {
+            e.preventDefault();
+            const btn = document.querySelector('#form-config-ia button[type="submit"]');
+            const original = btn ? btn.innerHTML : null;
+            if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>'; }
+            try {
+                const payload = {
+                    ia_activo: document.getElementById('conf-ia-activo').checked,
+                    ia_api_key: (document.getElementById('conf-ia-api-key').value || '').trim(),
+                    ia_modelo: (document.getElementById('conf-ia-modelo').value || '').trim() || 'gemini-2.5-flash-lite',
+                    ia_exigir_aprobacion: document.getElementById('conf-ia-aprobacion').checked,
+                    updated_at: new Date().toISOString()
+                };
+                const { data, error } = await db.from('configuracion_sistema').update(payload).eq('id', 1).select();
+                if (error) throw error;
+                configSistema = { ...configSistema, ...(data?.[0] || payload) };
+                reflejarConfiguracionSistema();
+                document.getElementById('ia-config-status').innerText = '✅ Configuración de IA guardada.';
+            } catch (err) {
+                console.error('ERROR_CONFIG_IA: ' + err);
+                document.getElementById('ia-config-status').innerText = '❌ ' + err.message;
+                alert('No se pudo guardar la configuración de IA: ' + err.message);
+            } finally {
+                if (btn) { btn.disabled = false; btn.innerHTML = original; }
+            }
+        }
+
+        async function probarConexionTFHKA(boton) {
+            const html = boton ? boton.innerHTML : null;
+            if (boton) { boton.disabled = true; boton.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>'; }
+            const status = document.getElementById('tfhka-config-status');
+            try {
+                const config = {
+                    url: (document.getElementById('conf-tfhka-url').value || '').trim(),
+                    usuario: (document.getElementById('conf-tfhka-usuario').value || '').trim(),
+                    clave: document.getElementById('conf-tfhka-clave').value,
+                    serie: (document.getElementById('conf-tfhka-serie').value || '').trim()
+                };
+                if (!config.url || !config.usuario || !config.clave) throw new Error('Completa URL, usuario y clave.');
+                const res = await fetch(`${supabaseUrl}/functions/v1/facturacion-thefactory/api/Autenticacion`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${supabaseKey}`, 'apikey': supabaseKey },
+                    body: JSON.stringify({ config })
+                });
+                const data = await res.json().catch(() => ({}));
+                if (!res.ok || data.status !== 'ok') throw new Error(data.mensaje || ('HTTP ' + res.status));
+                status.innerText = '✅ Conexión con The Factory exitosa.';
+            } catch (e) {
+                console.error('ERROR_PRUEBA_TFHKA: ' + e);
+                status.innerText = '❌ ' + e.message;
+                alert('Prueba fallida: ' + e.message);
+            } finally {
+                if (boton) { boton.disabled = false; boton.innerHTML = html; }
+            }
+        }
+
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
             const overlay = document.getElementById('sidebar-overlay');
@@ -2269,7 +2578,7 @@
                     if (inpC) inpC.value = '1';
                 }, 100);
             }
-            if(id === 'compras') { cargarOpcionesCompras(); cargarHistorialCompras(); }
+            if(id === 'compras') { cargarOpcionesCompras(); cargarHistorialCompras(); estadoIA(configSistema.ia_activo ? 'Asistente IA activo' : 'Asistente IA desactivado (ver Parámetros)'); }
             if(id === 'cxc') { cargarCxC(); }
             if(id === 'caja') cargarCaja();
             if(id === 'compromisos') cargarCompromisos(); 
@@ -3634,6 +3943,165 @@
             }
         }
 
+        // ===== ASISTENTE IA: COMPRA DESDE FOTO (GEMINI) =====
+        let borradorIA = null;
+
+        function estadoIA(texto, error = false) {
+            const el = document.getElementById('ia-compra-estado');
+            if (el) {
+                el.innerText = texto;
+                el.className = `text-[10px] font-mono bg-slate-950 border ${error ? 'border-rose-900 text-rose-400' : 'border-slate-800 text-slate-400'} px-2.5 py-1 rounded-lg`;
+            }
+        }
+
+        function archivoABase64(archivo) {
+            return new Promise((resolve, reject) => {
+                const lector = new FileReader();
+                lector.onload = () => resolve(String(lector.result || '').split(',')[1] || '');
+                lector.onerror = () => reject(new Error('No se pudo leer el archivo.'));
+                lector.readAsDataURL(archivo);
+            });
+        }
+
+        async function consultarGeminiCompra(archivo) {
+            const apiKey = configSistema.ia_api_key;
+            if (!apiKey) throw new Error('Configura la API Key de Gemini en Parámetros.');
+            const modelo = configSistema.ia_modelo || 'gemini-2.5-flash-lite';
+            const base64 = await archivoABase64(archivo);
+            if (!base64) throw new Error('El archivo está vacío.');
+
+            const prompt = `Analiza la factura de compra adjunta y extrae únicamente los datos visibles.
+Devuelve un objeto JSON con estas claves: proveedor (razón social del emisor), fecha (AAAA-MM-DD), numero_factura, numero_control, subtotal (base gravada sin IVA), monto_exento, impuestos (monto de IVA), total (total a pagar).
+Usa números con punto decimal y sin símbolos de moneda. Si un dato no es legible, usa "" en textos y 0 en números. No inventes información.`;
+
+            const esquema = {
+                type: 'OBJECT',
+                properties: {
+                    proveedor: { type: 'STRING' },
+                    fecha: { type: 'STRING' },
+                    numero_factura: { type: 'STRING' },
+                    numero_control: { type: 'STRING' },
+                    subtotal: { type: 'STRING' },
+                    monto_exento: { type: 'STRING' },
+                    impuestos: { type: 'STRING' },
+                    total: { type: 'STRING' }
+                },
+                required: ['proveedor', 'fecha', 'subtotal', 'impuestos', 'total']
+            };
+
+            const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(modelo)}:generateContent`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
+                body: JSON.stringify({
+                    contents: [{
+                        parts: [
+                            { inline_data: { mime_type: archivo.type || 'image/jpeg', data: base64 } },
+                            { text: prompt }
+                        ]
+                    }],
+                    generationConfig: { responseMimeType: 'application/json', responseSchema: esquema }
+                })
+            });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok) {
+                const msg = data?.error?.message || ('HTTP ' + res.status);
+                throw new Error('Gemini: ' + msg);
+            }
+            const texto = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+            const limpio = texto.replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/, '').trim();
+            let parsed;
+            try { parsed = JSON.parse(limpio); } catch (_) { throw new Error('La IA no devolvió un JSON válido.'); }
+            return parsed;
+        }
+
+        function mostrarBorradorIA(datos, archivo) {
+            borradorIA = { ...datos, archivo };
+            const set = (id, valor) => { const el = document.getElementById(id); if (el) el.value = valor ?? ''; };
+            set('ia-draft-proveedor', datos.proveedor || '');
+            set('ia-draft-fecha', normalizarFechaYMD(datos.fecha) || new Date().toISOString().split('T')[0]);
+            set('ia-draft-factura', datos.numero_factura || '');
+            set('ia-draft-control', datos.numero_control || '');
+            set('ia-draft-subtotal', (parseFloat(datos.subtotal) || 0).toFixed(2));
+            set('ia-draft-exento', (parseFloat(datos.monto_exento) || 0).toFixed(2));
+            set('ia-draft-iva', (parseFloat(datos.impuestos) || 0).toFixed(2));
+            set('ia-draft-total', (parseFloat(datos.total) || 0).toFixed(2));
+            const panel = document.getElementById('ia-borrador');
+            if (panel) panel.classList.remove('hidden');
+        }
+
+        function descartarBorradorIA() {
+            borradorIA = null;
+            const panel = document.getElementById('ia-borrador');
+            if (panel) panel.classList.add('hidden');
+            const inp = document.getElementById('comp-ia-archivo');
+            if (inp) inp.value = '';
+            estadoIA('Borrador descartado.');
+        }
+
+        async function analizarCompraIA(boton) {
+            const html = boton ? boton.innerHTML : null;
+            if (boton) { boton.disabled = true; boton.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Analizando...'; }
+            try {
+                if (!configSistema.ia_activo) throw new Error('Activa el asistente IA en Parámetros.');
+                const archivo = document.getElementById('comp-ia-archivo')?.files?.[0];
+                if (!archivo) throw new Error('Selecciona una foto o PDF de la factura.');
+                estadoIA('Analizando la factura con Gemini...');
+                const datos = await consultarGeminiCompra(archivo);
+                mostrarBorradorIA(datos, archivo);
+                estadoIA('Borrador listo para revisión.');
+
+                if (!configSistema.ia_exigir_aprobacion) {
+                    estadoIA('Aprobación desactivada: guardando automáticamente...');
+                    await guardarCompraIA();
+                }
+            } catch (e) {
+                console.error('ERROR_IA_COMPRA: ' + e);
+                estadoIA('❌ ' + e.message, true);
+                alert('No se pudo analizar la compra: ' + e.message);
+            } finally {
+                if (boton) { boton.disabled = false; boton.innerHTML = html; }
+            }
+        }
+
+        async function guardarCompraIA(boton) {
+            if (!borradorIA) return alert('No hay un borrador para guardar.');
+            const original = boton ? boton.innerHTML : null;
+            if (boton) { boton.disabled = true; boton.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Guardando...'; }
+            try {
+                const valor = (id) => parseFloat(document.getElementById(id).value) || 0;
+                const texto = (id) => (document.getElementById(id).value || '').trim();
+                const proveedor = texto('ia-draft-proveedor');
+                if (!proveedor) throw new Error('El proveedor es obligatorio.');
+
+                const { data: fila, error } = await db.from('compras').insert([{
+                    descripcion: proveedor,
+                    fecha: texto('ia-draft-fecha') || new Date().toISOString().split('T')[0],
+                    numero_factura: texto('ia-draft-factura') || null,
+                    numero_control: texto('ia-draft-control') || null,
+                    subtotal: valor('ia-draft-subtotal'),
+                    monto_exento: valor('ia-draft-exento'),
+                    impuestos: valor('ia-draft-iva'),
+                    total: valor('ia-draft-total'),
+                    es_factura_personal: false
+                }]).select();
+                if (error) throw error;
+
+                if (fila?.[0] && borradorIA.archivo) {
+                    await subirCopiaCompra(fila[0].id, borradorIA.archivo);
+                }
+                descartarBorradorIA();
+                estadoIA('✅ Compra guardada y aprobada.');
+                await cargarHistorialCompras();
+                await cargarResumenIVA();
+            } catch (e) {
+                console.error('ERROR_GUARDAR_IA_COMPRA: ' + e);
+                estadoIA('❌ ' + e.message, true);
+                alert('No se pudo guardar la compra: ' + e.message);
+            } finally {
+                if (boton) { boton.disabled = false; boton.innerHTML = original; }
+            }
+        }
+
         async function cargarOpcionesCompras() {
             try {
                 const { data: provs } = await db.from('proveedores').select('id, descripcion').order('descripcion');
@@ -4389,7 +4857,7 @@
                         'Authorization': `Bearer ${supabaseKey}`,
                         'apikey': supabaseKey
                     },
-                    body: JSON.stringify({ serie: "", tipoDocumento: "01", numeroDocumento: String(numeroDocumento) })
+                    body: JSON.stringify({ ...configTF(), serie: serieFiscalTF(), tipoDocumento: "01", numeroDocumento: String(numeroDocumento) })
                 });
                 const data = await res.json().catch(() => ({}));
                 if (!res.ok || !data.archivo) {
@@ -4702,14 +5170,14 @@ function obtenerBaseImponibleFactura(v) {
                     };
                     const { data: sessionRet } = await db.auth.getSession();
                     const accessTokenRet = sessionRet?.session?.access_token || supabaseKey;
-                    const resRet = await fetch(`${supabaseUrl}/functions/v1/facturacion-thefactory`, {
+                    const resRet = await fetch(`${supabaseUrl}/functions/v1/facturacion-thefactory/api/AplicarRetencion`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
                             'Authorization': `Bearer ${accessTokenRet}`,
                             'apikey': supabaseKey
                         },
-                        body: JSON.stringify(payloadRetencion)
+                        body: JSON.stringify({ ...payloadRetencion, ...configTF() })
                     });
                     const resRetData = await resRet.json().catch(() => ({}));
                     console.log("RETENCION_ENVIADA_TFHKA: " + JSON.stringify(resRetData));
@@ -5796,6 +6264,10 @@ function obtenerBaseImponibleFactura(v) {
 
         async function enviarAFacturacionDigital(ventaId, numFactura, numControl, fechaFactura, clienteData, carritoVentas, totales, tasaUsada, formaPago) {
     try {
+     if (!configSistema.tfhka_activo) {
+         console.warn('Facturación digital desactivada desde Parámetros. Se omitió el envío a The Factory.');
+         return false;
+     }
      console.log("🚀 INICIANDO ENVÍO A TFHKA PARA LA FACTURA:", numFactura);
         // 1. Formatear Fecha y Hora para la API
         const [anio, mes, dia] = fechaFactura.split('-');
@@ -5869,7 +6341,7 @@ function obtenerBaseImponibleFactura(v) {
                     identificacionDocumento: {
                         tipoDocumento: "01",
                         numeroDocumento: numFactura,
-                        serie: "",
+                        serie: serieFiscalTF(),
                         fechaEmision: fechaFormat,
                         fechaVencimiento: fechaFormat,
                         horaEmision: horaFormat,
@@ -5924,7 +6396,7 @@ console.log("📡 ENVIANDO A LA EDGE FUNCTION SUPABASE (facturacion-thefactory).
                 'Authorization': `Bearer ${accessTokenTFHKA}`,
                 'apikey': supabaseKey
             },
-            body: JSON.stringify(payload)
+            body: JSON.stringify({ ...payload, ...configTF() })
         });
 
         const resultado = await respuestaBackend.json().catch(() => ({}));
@@ -5942,7 +6414,8 @@ console.log("📡 ENVIANDO A LA EDGE FUNCTION SUPABASE (facturacion-thefactory).
                         'apikey': supabaseKey
                     },
                     body: JSON.stringify({
-                        serie: "",
+                        ...configTF(),
+                        serie: serieFiscalTF(),
                         tipoDocumento: "01",
                         numeroDocumento: String(resultado?.resultado?.numeroDocumento || resultado?.Resultado?.numeroDocumento || numFactura || ''),
                         correos: [clienteData?.correo || clienteData?.email || 'correo@ejemplo.com'].filter(c => typeof c === 'string' && c.includes('@'))
@@ -5963,7 +6436,7 @@ console.log("📡 ENVIANDO A LA EDGE FUNCTION SUPABASE (facturacion-thefactory).
                         'Authorization': `Bearer ${accessTokenTFHKA}`,
                         'apikey': supabaseKey
                     },
-                    body: JSON.stringify({ tipoDocumento: "01", numeroDocumento: String(numFactura), serie: "" })
+                    body: JSON.stringify({ ...configTF(), tipoDocumento: "01", numeroDocumento: String(numFactura), serie: serieFiscalTF() })
                 });
                 const estadoData = await resEstado.json().catch(() => ({}));
                 const controlFiscal = estadoData?.estado?.numeroControl || resultado?.resultado?.numeroControl || '';
@@ -6215,7 +6688,7 @@ console.log("📡 ENVIANDO A LA EDGE FUNCTION SUPABASE (facturacion-thefactory).
                         identificacionDocumento: {
                             tipoDocumento: '02',
                             numeroDocumento: numNC,
-                            serie: '',
+                            serie: serieFiscalTF(),
                             fechaEmision: f.fecha,
                             fechaVencimiento: f.fecha,
                             horaEmision: f.hora,
@@ -6257,8 +6730,9 @@ console.log("📡 ENVIANDO A LA EDGE FUNCTION SUPABASE (facturacion-thefactory).
                     detallesItems: detalles
                 }};
 
+                if (!configSistema.tfhka_activo) throw new Error('La facturación digital está desactivada en Parámetros.');
                 const H = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${supabaseKey}`, 'apikey': supabaseKey };
-                const res = await fetch(`${supabaseUrl}/functions/v1/facturacion-thefactory/api/Emision`, { method: 'POST', headers: H, body: JSON.stringify(payload) });
+                const res = await fetch(`${supabaseUrl}/functions/v1/facturacion-thefactory/api/Emision`, { method: 'POST', headers: H, body: JSON.stringify({ ...payload, ...configTF() }) });
                 const resultado = await res.json().catch(() => ({}));
                 const codigo = String(resultado.codigo ?? '');
                 if (!res.ok || codigo !== '200') {
@@ -6270,7 +6744,7 @@ console.log("📡 ENVIANDO A LA EDGE FUNCTION SUPABASE (facturacion-thefactory).
                 try {
                     const re = await fetch(`${supabaseUrl}/functions/v1/facturacion-thefactory/api/EstadoDocumento`, {
                         method: 'POST', headers: H,
-                        body: JSON.stringify({ tipoDocumento: '02', numeroDocumento: numNC, serie: '' })
+                        body: JSON.stringify({ ...configTF(), tipoDocumento: '02', numeroDocumento: numNC, serie: serieFiscalTF() })
                     });
                     estadoData = await re.json().catch(() => ({}));
                 } catch (e) { console.error('ERROR_ESTADO_NC: ' + e); }
@@ -6342,7 +6816,7 @@ console.log("📡 ENVIANDO A LA EDGE FUNCTION SUPABASE (facturacion-thefactory).
                 try {
                     const rc = await fetch(`${supabaseUrl}/functions/v1/facturacion-thefactory/api/Correo/Enviar`, {
                         method: 'POST', headers: H,
-                        body: JSON.stringify({ serie: '', tipoDocumento: '02', numeroDocumento: numNC, correos: [correo] })
+                        body: JSON.stringify({ ...configTF(), serie: serieFiscalTF(), tipoDocumento: '02', numeroDocumento: numNC, correos: [correo] })
                     });
                     const rcorreo = await rc.json().catch(() => ({}));
                     await db.from('notas_credito').update({ correo_enviado: String(rcorreo.codigo) === '200' }).eq('numero_documento', numNC);
@@ -6370,7 +6844,7 @@ console.log("📡 ENVIANDO A LA EDGE FUNCTION SUPABASE (facturacion-thefactory).
                 const res = await fetch(`${supabaseUrl}/functions/v1/facturacion-thefactory/api/DescargaArchivo`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${supabaseKey}`, 'apikey': supabaseKey },
-                    body: JSON.stringify({ serie: '', tipoDocumento: '02', numeroDocumento: String(numeroDocumento) })
+                    body: JSON.stringify({ ...configTF(), serie: serieFiscalTF(), tipoDocumento: '02', numeroDocumento: String(numeroDocumento) })
                 });
                 const data = await res.json().catch(() => ({}));
                 if (!res.ok || !data.archivo) return alert('No se pudo descargar el PDF de la NC.\n' + (data.mensaje || data.codigo || res.status));
@@ -6990,7 +7464,8 @@ console.log("📡 ENVIANDO A LA EDGE FUNCTION SUPABASE (facturacion-thefactory).
             verificarSesion();
             const uGuardado = sessionStorage.getItem('das_user');
             if (uGuardado) document.getElementById('label-usuario-activo').innerText = uGuardado;
-            await cargarDatosGenerales(); 
+            await cargarDatosGenerales();
+            await cargarConfiguracionSistema();
             await cargarVendedores();
             mostrarModulo('dashboard'); 
             obtenerTasaBCV(true); 
