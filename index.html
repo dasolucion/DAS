@@ -4113,6 +4113,31 @@ Escribe los montos SOLO con dígitos y punto decimal, SIN separador de miles y S
                 const texto = (id) => (document.getElementById(id).value || '').trim();
                 const proveedor = texto('ia-draft-proveedor');
                 if (!proveedor) throw new Error('El proveedor es obligatorio.');
+                const numFactura = texto('ia-draft-factura');
+
+                // Evita duplicados si el usuario aprueba dos veces el mismo borrador.
+                if (numFactura) {
+                    const { data: existe } = await db.from('compras')
+                        .select('id, descripcion, total')
+                        .eq('numero_factura', numFactura)
+                        .ilike('descripcion', proveedor)
+                        .limit(1);
+                    if (existe?.length) {
+                        throw new Error(`Ya existe una compra de ${proveedor} con la factura ${numFactura} (id ${existe[0].id}). No se creó un duplicado.`);
+                    }
+                }
+
+                // La IA crea el proveedor si aún no existe en el catálogo.
+                let proveedorCreado = false;
+                const { data: provExiste } = await db.from('proveedores')
+                    .select('id, descripcion')
+                    .ilike('descripcion', proveedor)
+                    .limit(1);
+                if (!provExiste?.length) {
+                    const { error: errProv } = await db.from('proveedores').insert([{ descripcion: proveedor }]);
+                    if (errProv) console.warn('No se pudo crear el proveedor automáticamente:', errProv.message);
+                    else proveedorCreado = true;
+                }
 
                 const { data: fila, error } = await db.from('compras').insert([{
                     descripcion: proveedor,
@@ -4127,12 +4152,15 @@ Escribe los montos SOLO con dígitos y punto decimal, SIN separador de miles y S
                 }]).select();
                 if (error) throw error;
 
+                let estadoAdjunto = 'sin imagen adjunta';
                 if (fila?.[0] && borradorIA.archivo) {
-                    await subirCopiaCompra(fila[0].id, borradorIA.archivo);
+                    const subio = await subirCopiaCompra(fila[0].id, borradorIA.archivo);
+                    estadoAdjunto = subio ? 'imagen adjunta' : 'la compra quedó guardada pero la imagen no se adjuntó (usa el botón 📎)';
                 }
                 descartarBorradorIA();
-                estadoIA('✅ Compra guardada y aprobada.');
+                estadoIA(`✅ Compra guardada (id ${fila?.[0]?.id ?? '?'}). ${proveedorCreado ? 'Proveedor creado. ' : ''}${estadoAdjunto}.`);
                 await cargarHistorialCompras();
+                await cargarOpcionesCompras();
                 await cargarResumenIVA();
             } catch (e) {
                 console.error('ERROR_GUARDAR_IA_COMPRA: ' + e);
@@ -4233,7 +4261,36 @@ Escribe los montos SOLO con dígitos y punto decimal, SIN separador de miles y S
         // ===== COPIAS DE FACTURAS EN SUPABASE STORAGE =====
         const BUCKET_COMPRAS = 'facturas-compras';
 
-        async function subirCopiaCompra(compraId, archivo) {
+        // Reduce el peso de las fotos antes de subirlas: evita fallos por
+        // tamaño y acelera la carga en el bucket de compras.
+        async function prepararImagenCompra(archivo) {
+            if (!archivo?.type?.startsWith('image/') || archivo.type === 'image/svg+xml') return archivo;
+            try {
+                const urlTemporal = URL.createObjectURL(archivo);
+                const img = new Image();
+                await new Promise((resolve, reject) => {
+                    img.onload = resolve;
+                    img.onerror = reject;
+                    img.src = urlTemporal;
+                });
+                const escala = Math.min(1, 1600 / Math.max(img.width || 1, img.height || 1));
+                const canvas = document.createElement('canvas');
+                canvas.width = Math.max(1, Math.round((img.width || 1) * escala));
+                canvas.height = Math.max(1, Math.round((img.height || 1) * escala));
+                canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+                URL.revokeObjectURL(urlTemporal);
+                const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.82));
+                if (!blob) return archivo;
+                const nombre = String(archivo.name || 'factura').replace(/\.[^.]+$/, '') + '.jpg';
+                return new File([blob], nombre, { type: 'image/jpeg' });
+            } catch (e) {
+                console.warn('No se pudo comprimir la imagen, se sube la original:', e);
+                return archivo;
+            }
+        }
+
+        async function subirCopiaCompra(compraId, archivoOriginal) {
+            const archivo = await prepararImagenCompra(archivoOriginal);
             try {
                 const fecha = new Date().toISOString().split('T')[0];
                 const seguro = String(archivo.name || 'factura')
@@ -4252,16 +4309,23 @@ Escribe los montos SOLO con dígitos y punto decimal, SIN separador de miles y S
                 });
                 if (!res.ok) {
                     const t = await res.text().catch(() => '');
-                    console.error('ERROR_SUBIR_COPIA_COMPRA: ' + res.status + ' ' + t.slice(0, 200));
-                    alert('La compra se guardó, pero no se pudo subir la copia de la factura.');
-                    return;
+                    console.error('ERROR_SUBIR_COPIA_COMPRA: ' + res.status + ' ' + t.slice(0, 500));
+                    alert(`La compra SÍ quedó guardada (id ${compraId}), pero no se pudo adjuntar la imagen (HTTP ${res.status}). Puedes hacerlo después con el botón 📎 del historial.\nDetalle: ${t.slice(0, 200)}`);
+                    return false;
                 }
                 const url = `${supabaseUrl}/storage/v1/object/public/${BUCKET_COMPRAS}/${ruta}`;
-                await db.from('compras').update({ imagen_url: url }).eq('id', compraId);
-                cargarHistorialCompras();
+                const { error: errUpdate } = await db.from('compras').update({ imagen_url: url }).eq('id', compraId);
+                if (errUpdate) {
+                    console.error('ERROR_GUARDAR_URL_IMAGEN: ' + errUpdate.message);
+                    alert(`La imagen se subió, pero no se pudo vincular a la compra ${compraId}. Revisa la consola.`);
+                    return false;
+                }
+                await cargarHistorialCompras();
+                return true;
             } catch (e) {
                 console.error('ERROR_SUBIR_COPIA_COMPRA: ' + e);
-                alert('La compra se guardó, pero hubo un error subiendo la copia: ' + e.message);
+                alert(`La compra SÍ quedó guardada (id ${compraId}), pero hubo un error subiendo la copia: ${e.message}`);
+                return false;
             }
         }
 
