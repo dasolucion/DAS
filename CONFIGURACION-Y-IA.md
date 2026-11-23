@@ -28,7 +28,7 @@ La Edge Function mantiene como respaldo las variables de entorno `THEFACTORY_URL
 Configuración en **Parámetros → Asistente IA**:
 
 - **API Key de Gemini**: se obtiene gratis en Google AI Studio (`https://aistudio.google.com/app/apikey`).
-- **Modelo**: por defecto `gemini-2.5-flash-lite` (plan gratuito).
+- **Modelo**: por defecto `gemini-2.5-flash-lite` (plan gratuito). Si el modelo por defecto da error, prueba `gemini-3.5-flash-lite` o el modelo gratuito vigente en Google AI Studio.
 - **Módulo activo**: habilita el asistente.
 - **Exigir revisión y aprobación**: activado por defecto. Con esta opción, la IA **siempre genera un borrador** y no guarda ni emite nada hasta que el usuario apruebe. Al desactivarla, la IA ejecuta de forma autónoma.
 
@@ -39,6 +39,8 @@ Configuración en **Parámetros → Asistente IA**:
 4. Revisar el borrador (todos los campos son editables) y pulsar **Aprobar y guardar compra**. La foto se adjunta automáticamente al bucket `facturas-compras`.
 
 Si la aprobación está desactivada, el paso 4 se ejecuta automáticamente después del análisis.
+
+Los montos se normalizan antes de mostrarlos: se aceptan tanto formatos venezolanos (`64.111,11`) como internacionales (`64,111.11`). Si el total no coincide con base + exento + IVA, el borrador muestra una advertencia para revisar los valores.
 
 ### Notas
 - La API Key se guarda en `configuracion_sistema` y se usa desde el navegador contra `generativelanguage.googleapis.com`. Para un despliegue multiusuario conviene moverla a una Edge Function proxy.
