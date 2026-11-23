@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DAS Ventas - Sistema de GestiÃ³n</title>
+    <title>DAS Ventas - Sistema de Gestión</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -15,6 +15,9 @@
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: #475569; }
+
+        #contenido-principal { padding-bottom: 6rem; overscroll-behavior-y: contain; }
+        @media (min-width: 768px) { #contenido-principal { padding-bottom: 2rem; } }
 
         .doc-factura-hoja {
             width: 210mm;
@@ -73,7 +76,7 @@
         }
     </style>
 </head>
-<body class="bg-slate-950 text-slate-100 font-sans h-screen overflow-hidden flex antialiased selection:bg-sky-500 selection:text-white">
+<body class="bg-slate-950 text-slate-100 font-sans h-[100dvh] overflow-hidden flex antialiased selection:bg-sky-500 selection:text-white" style="height:100dvh;overscroll-behavior:none">
 
     <!-- LOGIN -->
     <div id="pantalla-login" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950 px-4">
@@ -96,19 +99,19 @@
                 </div>
 
                 <div>
-                    <label class="block text-xs font-medium text-slate-300 mb-1">ContraseÃ±a</label>
+                    <label class="block text-xs font-medium text-slate-300 mb-1">Contraseña</label>
                     <div class="relative">
                         <i class="fa-solid fa-lock absolute left-3 top-3 text-slate-500 text-xs"></i>
-                        <input type="password" id="login-password" class="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-3 py-2.5 text-xs text-white outline-none focus:border-sky-500 transition" placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" required autocomplete="current-password">
+                        <input type="password" id="login-password" class="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-3 py-2.5 text-xs text-white outline-none focus:border-sky-500 transition" placeholder="••••••••" required autocomplete="current-password">
                     </div>
                 </div>
 
                 <div id="login-error" class="hidden text-rose-400 text-[11px] font-medium bg-rose-950/40 border border-rose-800/50 rounded-xl p-2.5 text-center">
-                    Usuario o contraseÃ±a incorrectos.
+                    Usuario o contraseña incorrectos.
                 </div>
 
                 <button type="submit" class="w-full bg-sky-600 hover:bg-sky-500 text-white font-bold py-2.5 rounded-xl transition text-xs shadow-lg shadow-sky-600/20 flex items-center justify-center gap-2">
-                    <i class="fa-solid fa-arrow-right-to-bracket"></i> Iniciar SesiÃ³n
+                    <i class="fa-solid fa-arrow-right-to-bracket"></i> Iniciar Sesión
                 </button>
             </form>
 
@@ -118,7 +121,7 @@
         </div>
     </div>
 
-    <!-- MenÃº Lateral -->
+    <!-- Menú Lateral -->
     <aside id="sidebar" class="no-print w-64 bg-slate-900 flex flex-col transition-transform transform -translate-x-full absolute z-40 h-full md:relative md:translate-x-0 shadow-2xl border-r border-slate-800">
         <div class="p-5 text-lg font-bold text-white border-b border-slate-800 flex justify-between items-center bg-slate-950/50 backdrop-blur-sm">
             <span class="flex items-center gap-3">
@@ -209,7 +212,7 @@
                 <i class="fa-solid fa-circle-user text-sky-400"></i>
                 <span id="label-usuario-activo">Admin</span>
             </span>
-            <button onclick="cerrarSesion()" class="text-rose-400 hover:text-rose-300 font-semibold text-[10px] px-2 py-1 rounded-lg bg-rose-950/30 border border-rose-900/40 transition" title="Cerrar sesiÃ³n">
+            <button onclick="cerrarSesion()" class="text-rose-400 hover:text-rose-300 font-semibold text-[10px] px-2 py-1 rounded-lg bg-rose-950/30 border border-rose-900/40 transition" title="Cerrar sesión">
                 <i class="fa-solid fa-power-off"></i> Salir
             </button>
         </div>
@@ -225,7 +228,11 @@
             <button onclick="toggleSidebar()" class="text-slate-300 focus:outline-none"><i class="fa-solid fa-bars text-xl"></i></button>
         </header>
 
-        <div class="flex-1 p-4 md:p-8 overflow-y-auto w-full">
+        <div id="contenido-principal" class="flex-1 p-4 md:p-8 overflow-y-auto w-full">
+
+            <div id="ptr-indicador" class="hidden fixed top-20 left-1/2 -translate-x-1/2 z-40 bg-slate-800 border border-slate-700 text-slate-200 text-[11px] font-bold px-4 py-2 rounded-full shadow-xl pointer-events-none">
+                <i class="fa-solid fa-rotate text-sky-400 mr-1"></i> Suelta para actualizar
+            </div>
             
             <!-- DASHBOARD -->
             <section id="dashboard" class="modulo block max-w-6xl mx-auto space-y-6">
@@ -236,7 +243,7 @@
                             <i class="fa-solid fa-chart-pie text-lg"></i>
                         </div>
                         <div>
-                            <h2 class="text-xl font-bold text-white tracking-tight">Dashboard de GestiÃ³n <span id="dash-year" class="text-purple-400"></span></h2>
+                            <h2 class="text-xl font-bold text-white tracking-tight">Dashboard de Gestión <span id="dash-year" class="text-purple-400"></span></h2>
                             <p class="text-xs text-slate-400">Resumen visual de ventas y productos</p>
                         </div>
                     </div>
@@ -247,7 +254,7 @@
 
                 <div class="bg-slate-900 border border-fuchsia-900/50 rounded-2xl overflow-hidden shadow-xl">
                     <h3 class="text-sm font-bold p-5 border-b border-slate-800 text-white flex items-center gap-2">
-                        <i class="fa-solid fa-list-check text-fuchsia-400"></i> PrÃ³ximos Compromisos y Cobros
+                        <i class="fa-solid fa-list-check text-fuchsia-400"></i> Próximos Compromisos y Cobros
                     </h3>
                     <div class="overflow-x-auto">
                         <table class="w-full text-left border-collapse text-xs">
@@ -256,7 +263,7 @@
                                     <th class="p-4 font-medium">Vencimiento</th>
                                     <th class="p-4 font-medium">Cliente</th>
                                     <th class="p-4 font-medium">Tipo</th>
-                                    <th class="p-4 font-medium">DescripciÃ³n</th>
+                                    <th class="p-4 font-medium">Descripción</th>
                                 </tr>
                             </thead>
                             <tbody id="tabla-dashboard-compromisos" class="divide-y border-slate-800"></tbody>
@@ -267,7 +274,7 @@
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <div class="bg-slate-900 border border-purple-900/50 rounded-2xl overflow-hidden shadow-xl p-5">
                         <h3 class="text-sm font-bold text-purple-400 mb-4 flex items-center gap-2">
-                            <i class="fa-solid fa-chart-column"></i> Ventas vs Compras - Ãšltimos 3 Meses (Bs)
+                            <i class="fa-solid fa-chart-column"></i> Ventas vs Compras - Últimos 3 Meses (Bs)
                         </h3>
                         <div class="h-64"><canvas id="graficaVentas3Meses"></canvas></div>
                     </div>
@@ -281,7 +288,7 @@
 
                 <div class="bg-slate-900 border border-sky-900/50 rounded-2xl overflow-hidden shadow-xl p-5">
                     <h3 class="text-sm font-bold text-sky-400 mb-4 flex items-center gap-2">
-                        <i class="fa-solid fa-ranking-star"></i> Top 5 Productos/Servicios MÃ¡s Vendidos
+                        <i class="fa-solid fa-ranking-star"></i> Top 5 Productos/Servicios Más Vendidos
                     </h3>
                     <div class="h-64"><canvas id="graficaTopProductos"></canvas></div>
                 </div>
@@ -319,7 +326,7 @@
                                 <option value="Cobro">Cobro</option>
                                 <option value="Proyecto web">Proyecto web</option>
                                 <option value="RRHH">RRHH</option>
-                                <option value="ImpresiÃ³n 3D">ImpresiÃ³n 3D</option>
+                                <option value="Impresión 3D">Impresión 3D</option>
                             </select>
                         </div>
                         <div>
@@ -331,7 +338,7 @@
                             </select>
                         </div>
                         <div class="md:col-span-4">
-                            <label class="block text-xs font-medium text-slate-300 mb-1">DescripciÃ³n breve</label>
+                            <label class="block text-xs font-medium text-slate-300 mb-1">Descripción breve</label>
                             <input type="text" id="tarea-desc" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-fuchsia-500 transition" placeholder="Ej: Mantenimiento preventivo de 4 equipos" required>
                         </div>
                         <div>
@@ -358,10 +365,10 @@
                         <table class="w-full text-left border-collapse text-xs">
                             <thead class="bg-slate-950 border-b border-slate-800 text-slate-400 uppercase tracking-wider text-[10px]">
                                 <tr>
-                                    <th class="p-4 font-medium">SemÃ¡foro</th>
+                                    <th class="p-4 font-medium">Semáforo</th>
                                     <th class="p-4 font-medium">Cliente</th>
                                     <th class="p-4 font-medium">Tipo</th>
-                                    <th class="p-4 font-medium">DescripciÃ³n</th>
+                                    <th class="p-4 font-medium">Descripción</th>
                                     <th class="p-4 font-medium">Vencimiento</th>
                                     <th class="p-4 font-medium">Estado</th>
                                     <th class="p-4 font-medium text-right">Acciones</th>
@@ -373,14 +380,14 @@
                 </div>
             </section>
 
-            <!-- PARÃMETROS -->
+            <!-- PARÁMETROS -->
             <section id="parametros" class="modulo hidden max-w-6xl mx-auto space-y-6">
                 <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-2xl flex items-center gap-3">
                     <div class="bg-slate-800 text-indigo-400 p-2.5 rounded-xl border border-slate-700">
                         <i class="fa-solid fa-gears text-lg"></i>
                     </div>
                     <div>
-                        <h2 class="text-xl font-bold text-white tracking-tight">ParÃ¡metros del Sistema</h2>
+                        <h2 class="text-xl font-bold text-white tracking-tight">Parámetros del Sistema</h2>
                         <p class="text-xs text-slate-400">Tasa de cambio, correlativos y datos de la empresa</p>
                     </div>
                 </div>
@@ -404,26 +411,26 @@
                         <div>
                             <label class="block text-xs font-bold text-amber-400 mb-1">Valor Unidad Tributaria (Bs)</label>
                             <input type="number" step="0.01" id="conf-ut" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-sm text-amber-400 outline-none focus:border-amber-500 font-mono font-bold transition" required>
-                            <div class="text-[9px] text-slate-500 mt-1 h-3 font-medium">Actualizar segÃºn Gaceta Oficial</div>
+                            <div class="text-[9px] text-slate-500 mt-1 h-3 font-medium">Actualizar según Gaceta Oficial</div>
                         </div>
 
                         <div>
-                            <label class="block text-xs font-medium text-slate-300 mb-1">Ãšltima Factura Emitida</label>
+                            <label class="block text-xs font-medium text-slate-300 mb-1">Última Factura Emitida</label>
                             <input type="text" id="conf-fact" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-indigo-500 font-mono transition" required>
                         </div>
 
                         <div>
-                            <label class="block text-xs font-medium text-slate-300 mb-1">Ãšltimo Control Emitido</label>
+                            <label class="block text-xs font-medium text-slate-300 mb-1">Último Control Emitido</label>
                             <input type="text" id="conf-ctrl" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-indigo-500 font-mono transition" required>
                         </div>
 
                         <div class="md:col-span-3 mt-2 pt-4 border-t border-slate-800">
                             <h4 class="text-xs font-bold text-sky-400 mb-4 uppercase tracking-wider flex items-center gap-2">
-                                <i class="fa-solid fa-building"></i> Datos de la Empresa (Aparecen en ImpresiÃ³n)
+                                <i class="fa-solid fa-building"></i> Datos de la Empresa (Aparecen en Impresión)
                             </h4>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                                 <div>
-                                    <label class="block text-xs font-medium text-slate-300 mb-1">Nombre / RazÃ³n Social</label>
+                                    <label class="block text-xs font-medium text-slate-300 mb-1">Nombre / Razón Social</label>
                                     <input type="text" id="conf-empresa-nombre" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-sky-500 transition">
                                 </div>
                                 <div>
@@ -431,11 +438,11 @@
                                     <input type="text" id="conf-empresa-rif" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-sky-500 font-mono transition">
                                 </div>
                                 <div class="md:col-span-2">
-                                    <label class="block text-xs font-medium text-slate-300 mb-1">DirecciÃ³n Fiscal</label>
+                                    <label class="block text-xs font-medium text-slate-300 mb-1">Dirección Fiscal</label>
                                     <input type="text" id="conf-empresa-direccion" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-sky-500 transition">
                                 </div>
                                 <div>
-                                    <label class="block text-xs font-medium text-slate-300 mb-1">TelÃ©fono / Contacto</label>
+                                    <label class="block text-xs font-medium text-slate-300 mb-1">Teléfono / Contacto</label>
                                     <input type="text" id="conf-empresa-telefono" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-sky-500 transition">
                                 </div>
                             </div>
@@ -443,24 +450,24 @@
 
                         <div class="md:col-span-3 flex justify-end pt-2">
                             <button type="submit" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-6 py-2.5 rounded-xl transition shadow-lg shadow-indigo-600/20 text-xs flex items-center gap-2">
-                                <i class="fa-solid fa-save"></i> Actualizar ParÃ¡metros
+                                <i class="fa-solid fa-save"></i> Actualizar Parámetros
                             </button>
                         </div>
                     </form>
                 </div>
 
-                <!-- FACTURACIÃ“N DIGITAL / THE FACTORY -->
+                <!-- FACTURACIÓN DIGITAL / THE FACTORY -->
                 <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-xl no-print">
                     <div class="flex flex-wrap items-center justify-between gap-3 mb-5 pb-3 border-b border-slate-800">
                         <h3 class="text-sm font-bold text-white flex items-center gap-2">
-                            <i class="fa-solid fa-file-invoice text-rose-400"></i> FacturaciÃ³n Digital â€” The Factory HKA
+                            <i class="fa-solid fa-file-invoice text-rose-400"></i> Facturación Digital — The Factory HKA
                         </h3>
                         <label class="flex items-center gap-2 text-xs font-bold cursor-pointer text-slate-400" id="label-tfhka-activo">
-                            <input type="checkbox" id="conf-tfhka-activo" class="w-4 h-4 accent-emerald-500 cursor-pointer"> MÃ³dulo activo
+                            <input type="checkbox" id="conf-tfhka-activo" class="w-4 h-4 accent-emerald-500 cursor-pointer"> Módulo activo
                         </label>
                     </div>
                     <p class="text-[11px] text-slate-400 mb-5">
-                        Configure aquÃ­ la <b>URL</b>, el <b>usuario</b>, la <b>clave</b> y la <b>serie</b> suministrados por The Factory. Para cambiar de demo a producciÃ³n, reemplace la URL y las credenciales aquÃ­; no se requiere modificar el cÃ³digo.
+                        Configure aquí la <b>URL</b>, el <b>usuario</b>, la <b>clave</b> y la <b>serie</b> suministrados por The Factory. Para cambiar de demo a producción, reemplace la URL y las credenciales aquí; no se requiere modificar el código.
                     </p>
                     <form id="form-config-tfhka" onsubmit="guardarConfigTFHKA(event)" class="grid grid-cols-1 md:grid-cols-2 gap-5">
                         <div class="md:col-span-2">
@@ -487,7 +494,7 @@
                                 <i class="fa-solid fa-save"></i> Guardar The Factory
                             </button>
                             <button type="button" onclick="probarConexionTFHKA(this)" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 font-bold px-4 py-2.5 rounded-xl transition text-xs flex items-center gap-2">
-                                <i class="fa-solid fa-plug"></i> Probar conexiÃ³n
+                                <i class="fa-solid fa-plug"></i> Probar conexión
                             </button>
                         </div>
                     </form>
@@ -498,14 +505,14 @@
                 <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-xl no-print">
                     <div class="flex flex-wrap items-center justify-between gap-3 mb-5 pb-3 border-b border-slate-800">
                         <h3 class="text-sm font-bold text-white flex items-center gap-2">
-                            <i class="fa-solid fa-wand-magic-sparkles text-violet-400"></i> Asistente IA (Gemini â€” plan gratuito)
+                            <i class="fa-solid fa-wand-magic-sparkles text-violet-400"></i> Asistente IA (Gemini — plan gratuito)
                         </h3>
                         <label class="flex items-center gap-2 text-xs font-bold cursor-pointer text-violet-400">
-                            <input type="checkbox" id="conf-ia-activo" class="w-4 h-4 accent-violet-500 cursor-pointer"> MÃ³dulo activo
+                            <input type="checkbox" id="conf-ia-activo" class="w-4 h-4 accent-violet-500 cursor-pointer"> Módulo activo
                         </label>
                     </div>
                     <p class="text-[11px] text-slate-400 mb-5">
-                        Permite registrar compras desde una foto. La IA lee la factura y prepara un borrador. Con la aprobaciÃ³n activa, el borrador se muestra para revisiÃ³n y no se guarda hasta que lo confirmes; si la desactivas, se guarda automÃ¡ticamente.
+                        Permite registrar compras desde una foto. La IA lee la factura y prepara un borrador. Con la aprobación activa, el borrador se muestra para revisión y no se guarda hasta que lo confirmes; si la desactivas, se guarda automáticamente.
                     </p>
                     <form id="form-config-ia" onsubmit="guardarConfigIA(event)" class="grid grid-cols-1 md:grid-cols-3 gap-5">
                         <div class="md:col-span-2">
@@ -522,13 +529,13 @@
                         <div class="md:col-span-3 flex items-center gap-3 bg-slate-950 p-3.5 rounded-xl border border-slate-800">
                             <input type="checkbox" id="conf-ia-aprobacion" class="w-4 h-4 accent-violet-500 cursor-pointer">
                             <label for="conf-ia-aprobacion" class="text-xs font-bold text-white cursor-pointer flex flex-col">
-                                <span>Exigir revisiÃ³n y aprobaciÃ³n antes de guardar / emitir</span>
-                                <span class="text-[10px] text-slate-400 font-normal">Recomendado mientras se ajusta la integraciÃ³n. Al desactivarlo, la IA ejecuta de forma autÃ³noma.</span>
+                                <span>Exigir revisión y aprobación antes de guardar / emitir</span>
+                                <span class="text-[10px] text-slate-400 font-normal">Recomendado mientras se ajusta la integración. Al desactivarlo, la IA ejecuta de forma autónoma.</span>
                             </label>
                         </div>
                         <div class="md:col-span-3 flex justify-end">
                             <button type="submit" class="bg-violet-600 hover:bg-violet-500 text-white font-bold px-5 py-2.5 rounded-xl transition shadow-lg shadow-violet-600/20 text-xs flex items-center gap-2">
-                                <i class="fa-solid fa-save"></i> Guardar configuraciÃ³n IA
+                                <i class="fa-solid fa-save"></i> Guardar configuración IA
                             </button>
                         </div>
                     </form>
@@ -543,8 +550,8 @@
                         <i class="fa-solid fa-id-badge text-lg"></i>
                     </div>
                     <div>
-                        <h2 class="text-xl font-bold text-white tracking-tight">GestiÃ³n de Vendedores</h2>
-                        <p class="text-xs text-slate-400">Equipo comercial y asignaciÃ³n a clientes</p>
+                        <h2 class="text-xl font-bold text-white tracking-tight">Gestión de Vendedores</h2>
+                        <p class="text-xs text-slate-400">Equipo comercial y asignación a clientes</p>
                     </div>
                 </div>
                 
@@ -558,19 +565,19 @@
                             <input type="text" id="vend-nombre" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-pink-500 transition" required>
                         </div>
                         <div>
-                            <label class="block text-xs font-medium text-slate-300 mb-1">CÃ©dula / IdentificaciÃ³n</label>
+                            <label class="block text-xs font-medium text-slate-300 mb-1">Cédula / Identificación</label>
                             <input type="text" id="vend-id" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-pink-500 transition">
                         </div>
                         <div>
-                            <label class="block text-xs font-medium text-slate-300 mb-1">TelÃ©fono</label>
+                            <label class="block text-xs font-medium text-slate-300 mb-1">Teléfono</label>
                             <input type="tel" id="vend-tel" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-pink-500 transition">
                         </div>
                         <div>
-                            <label class="block text-xs font-medium text-slate-300 mb-1">Correo ElectrÃ³nico</label>
+                            <label class="block text-xs font-medium text-slate-300 mb-1">Correo Electrónico</label>
                             <input type="email" id="vend-correo" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-pink-500 transition">
                         </div>
                         <div>
-                            <label class="block text-xs font-medium text-slate-300 mb-1">ComisiÃ³n Referencial (%)</label>
+                            <label class="block text-xs font-medium text-slate-300 mb-1">Comisión Referencial (%)</label>
                             <input type="number" step="0.01" min="0" id="vend-comision" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-pink-500 font-mono transition" value="0.00">
                         </div>
                         <div>
@@ -594,10 +601,10 @@
                             <thead class="bg-slate-950 border-b border-slate-800 text-slate-400 uppercase tracking-wider text-[10px]">
                                 <tr>
                                     <th class="p-4 font-medium">Nombre</th>
-                                    <th class="p-4 font-medium">IdentificaciÃ³n</th>
-                                    <th class="p-4 font-medium">TelÃ©fono</th>
+                                    <th class="p-4 font-medium">Identificación</th>
+                                    <th class="p-4 font-medium">Teléfono</th>
                                     <th class="p-4 font-medium">Correo</th>
-                                    <th class="p-4 font-medium">ComisiÃ³n</th>
+                                    <th class="p-4 font-medium">Comisión</th>
                                     <th class="p-4 font-medium">Observaciones</th>
                                     <th class="p-4 font-medium text-right">Acciones</th>
                                 </tr>
@@ -616,18 +623,18 @@
                     </div>
                     <div>
                         <h2 class="text-xl font-bold text-white tracking-tight">Inventario de Productos/Servicios</h2>
-                        <p class="text-xs text-slate-400">CatÃ¡logo general de costos y precios</p>
+                        <p class="text-xs text-slate-400">Catálogo general de costos y precios</p>
                     </div>
                 </div>
                 
                 <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-xl no-print">
                     <h3 id="form-producto-titulo" class="text-sm font-bold text-white mb-5 pb-3 border-b border-slate-800 flex items-center gap-2">
-                        <i class="fa-solid fa-plus-circle text-sky-400"></i> Registrar Nuevo Ãtem
+                        <i class="fa-solid fa-plus-circle text-sky-400"></i> Registrar Nuevo Ítem
                     </h3>
                     <form id="form-producto" class="grid grid-cols-1 md:grid-cols-4 gap-5">
                         <div class="md:col-span-4 lg:col-span-2">
-                            <label class="block text-xs font-medium text-slate-300 mb-1">DescripciÃ³n del Ãtem</label>
-                            <textarea id="prod-desc" rows="5" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-sky-500 transition resize-y" placeholder="Ej: ImpresiÃ³n 3D..." required></textarea>
+                            <label class="block text-xs font-medium text-slate-300 mb-1">Descripción del Ítem</label>
+                            <textarea id="prod-desc" rows="5" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-sky-500 transition resize-y" placeholder="Ej: Impresión 3D..." required></textarea>
                         </div>
 
                         <div class="md:col-span-4 lg:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-5">
@@ -648,11 +655,11 @@
                             </div>
                             <div class="md:col-span-3 flex items-center gap-3 pt-2">
                                 <input type="checkbox" id="prod-lleva-iva" class="w-4 h-4 bg-slate-950 border-slate-700 rounded accent-sky-500 cursor-pointer" checked>
-                                <label for="prod-lleva-iva" class="text-xs font-medium text-slate-300 cursor-pointer">Â¿Este Ã­tem lleva IVA?</label>
+                                <label for="prod-lleva-iva" class="text-xs font-medium text-slate-300 cursor-pointer">¿Este ítem lleva IVA?</label>
                             </div>
                             <div class="md:col-span-3 flex items-end justify-end mt-2">
                                 <button type="submit" class="w-full md:w-auto bg-sky-600 hover:bg-sky-500 text-white font-bold px-6 py-2.5 rounded-xl transition shadow-lg shadow-sky-600/20 text-xs flex items-center justify-center gap-2">
-                                    <i class="fa-solid fa-save"></i> Guardar Ãtem
+                                    <i class="fa-solid fa-save"></i> Guardar Ítem
                                 </button>
                             </div>
                         </div>
@@ -664,7 +671,7 @@
                         <table class="w-full text-left border-collapse text-xs">
                             <thead class="bg-slate-950 border-b border-slate-800 text-slate-400 uppercase tracking-wider text-[10px]">
                                 <tr>
-                                    <th class="p-4 font-medium">DescripciÃ³n</th>
+                                    <th class="p-4 font-medium">Descripción</th>
                                     <th class="p-4 font-medium text-center">Tipo</th>
                                     <th class="p-4 font-medium text-center">IVA</th>
                                     <th class="p-4 font-medium">Costo ($)</th>
@@ -685,8 +692,8 @@
                         <i class="fa-solid fa-users text-lg"></i>
                     </div>
                     <div>
-                        <h2 class="text-xl font-bold text-white tracking-tight">GestiÃ³n de Clientes</h2>
-                        <p class="text-xs text-slate-400">Directorio y asignaciÃ³n de vendedor comercial</p>
+                        <h2 class="text-xl font-bold text-white tracking-tight">Gestión de Clientes</h2>
+                        <p class="text-xs text-slate-400">Directorio y asignación de vendedor comercial</p>
                     </div>
                 </div>
                 
@@ -696,11 +703,11 @@
                     </h3>
                     <form id="form-cliente" class="grid grid-cols-1 md:grid-cols-2 gap-5">
                         <div>
-                            <label class="block text-xs font-medium text-slate-300 mb-1">RazÃ³n Social</label>
+                            <label class="block text-xs font-medium text-slate-300 mb-1">Razón Social</label>
                             <input type="text" id="cli-desc" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-sky-500 transition" required>
                         </div>
                         <div>
-                            <label class="block text-xs font-medium text-slate-300 mb-1">IdentificaciÃ³n (RIF / CÃ©dula)</label>
+                            <label class="block text-xs font-medium text-slate-300 mb-1">Identificación (RIF / Cédula)</label>
                             <input type="text" id="cli-id" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-sky-500 transition" required>
                         </div>
                         <div>
@@ -708,15 +715,15 @@
                             <input type="text" id="cli-contacto" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-sky-500 transition">
                         </div>
                         <div>
-                            <label class="block text-xs font-medium text-slate-300 mb-1">TelÃ©fono</label>
+                            <label class="block text-xs font-medium text-slate-300 mb-1">Teléfono</label>
                             <input type="tel" id="cli-tel" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-sky-500 transition">
                         </div>
                         <div>
-                            <label class="block text-xs font-medium text-slate-300 mb-1">Correo ElectrÃ³nico</label>
+                            <label class="block text-xs font-medium text-slate-300 mb-1">Correo Electrónico</label>
                             <input type="email" id="cli-correo" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-sky-500 transition">
                         </div>
                         <div>
-                            <label class="block text-xs font-medium text-slate-300 mb-1">DirecciÃ³n</label>
+                            <label class="block text-xs font-medium text-slate-300 mb-1">Dirección</label>
                             <input type="text" id="cli-dir" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-sky-500 transition">
                         </div>
                         <!-- NUEVO SELECT DE VENDEDOR EN CLIENTE -->
@@ -734,7 +741,7 @@
                         </div>
                         <div class="flex items-center space-x-3 md:col-span-2 pt-2">
                             <input type="checkbox" id="cli-especial" class="w-4 h-4 bg-slate-950 border-slate-700 rounded accent-sky-500 cursor-pointer">
-                            <label for="cli-especial" class="text-xs font-medium text-slate-300 cursor-pointer">Â¿Es Contribuyente Especial?</label>
+                            <label for="cli-especial" class="text-xs font-medium text-slate-300 cursor-pointer">¿Es Contribuyente Especial?</label>
                         </div>
                         <div class="md:col-span-2 flex gap-3 pt-2">
                             <button type="submit" class="bg-sky-600 hover:bg-sky-500 text-white font-bold px-6 py-2.5 rounded-xl transition text-xs flex items-center gap-2">
@@ -749,7 +756,7 @@
                         <table class="w-full text-left border-collapse text-xs">
                             <thead class="bg-slate-950 border-b border-slate-800 text-slate-400 uppercase tracking-wider text-[10px]">
                                 <tr>
-                                    <th class="p-4 font-medium">DescripciÃ³n</th>
+                                    <th class="p-4 font-medium">Descripción</th>
                                     <th class="p-4 font-medium">ID / RIF</th>
                                     <th class="p-4 font-medium">Contacto</th>
                                     <th class="p-4 font-medium">Vendedor</th>
@@ -771,7 +778,7 @@
                         <i class="fa-solid fa-truck-fast text-lg"></i>
                     </div>
                     <div>
-                        <h2 class="text-xl font-bold text-white tracking-tight">GestiÃ³n de Proveedores</h2>
+                        <h2 class="text-xl font-bold text-white tracking-tight">Gestión de Proveedores</h2>
                         <p class="text-xs text-slate-400">Directorio de proveedores</p>
                     </div>
                 </div>
@@ -782,11 +789,11 @@
                     </h3>
                     <form id="form-proveedor" class="grid grid-cols-1 md:grid-cols-2 gap-5">
                         <div>
-                            <label class="block text-xs font-medium text-slate-300 mb-1">RazÃ³n Social</label>
+                            <label class="block text-xs font-medium text-slate-300 mb-1">Razón Social</label>
                             <input type="text" id="prov-desc" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-teal-500 transition" required>
                         </div>
                         <div>
-                            <label class="block text-xs font-medium text-slate-300 mb-1">IdentificaciÃ³n (RIF / CÃ©dula)</label>
+                            <label class="block text-xs font-medium text-slate-300 mb-1">Identificación (RIF / Cédula)</label>
                             <input type="text" id="prov-id" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-teal-500 transition">
                         </div>
                         <div>
@@ -794,15 +801,15 @@
                             <input type="text" id="prov-contacto" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-teal-500 transition">
                         </div>
                         <div>
-                            <label class="block text-xs font-medium text-slate-300 mb-1">TelÃ©fono</label>
+                            <label class="block text-xs font-medium text-slate-300 mb-1">Teléfono</label>
                             <input type="tel" id="prov-tel" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-teal-500 transition">
                         </div>
                         <div>
-                            <label class="block text-xs font-medium text-slate-300 mb-1">Correo ElectrÃ³nico</label>
+                            <label class="block text-xs font-medium text-slate-300 mb-1">Correo Electrónico</label>
                             <input type="email" id="prov-correo" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-teal-500 transition">
                         </div>
                         <div>
-                            <label class="block text-xs font-medium text-slate-300 mb-1">DirecciÃ³n</label>
+                            <label class="block text-xs font-medium text-slate-300 mb-1">Dirección</label>
                             <input type="text" id="prov-dir" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-teal-500 transition">
                         </div>
                         <div class="md:col-span-2">
@@ -822,10 +829,10 @@
                         <table class="w-full text-left border-collapse text-xs">
                             <thead class="bg-slate-950 border-b border-slate-800 text-slate-400 uppercase tracking-wider text-[10px]">
                                 <tr>
-                                    <th class="p-4 font-medium">DescripciÃ³n</th>
+                                    <th class="p-4 font-medium">Descripción</th>
                                     <th class="p-4 font-medium">ID / RIF</th>
                                     <th class="p-4 font-medium">Contacto</th>
-                                    <th class="p-4 font-medium">TelÃ©fono</th>
+                                    <th class="p-4 font-medium">Teléfono</th>
                                     <th class="p-4 font-medium text-right">Acciones</th>
                                 </tr>
                             </thead>
@@ -843,7 +850,7 @@
                     </div>
                     <div>
                         <h2 class="text-xl font-bold text-white tracking-tight">Generar Presupuesto</h2>
-                        <p class="text-xs text-slate-400">CreaciÃ³n de cotizaciones para clientes en Divisas y BolÃ­vares</p>
+                        <p class="text-xs text-slate-400">Creación de cotizaciones para clientes en Divisas y Bolívares</p>
                     </div>
                 </div>
                 
@@ -880,10 +887,10 @@
 
                         <div class="mt-6 border border-slate-800 rounded-2xl p-5 bg-slate-950">
                             <h4 class="font-bold text-slate-300 mb-3 text-xs uppercase tracking-wider flex items-center gap-2">
-                                <i class="fa-solid fa-list-check text-sky-400"></i> ArtÃ­culos Seleccionados
+                                <i class="fa-solid fa-list-check text-sky-400"></i> Artículos Seleccionados
                             </h4>
                             <div id="lista-articulos" class="space-y-2 mb-4 text-xs min-h-[60px]">
-                                <p class="text-slate-500 text-xs italic">No hay productos agregados aÃºn.</p>
+                                <p class="text-slate-500 text-xs italic">No hay productos agregados aún.</p>
                             </div>
                             
                             <div class="flex justify-end pt-4 border-t border-slate-800 space-x-8">
@@ -945,7 +952,7 @@
                     </div>
                     <div>
                         <h2 class="text-xl font-bold text-white tracking-tight">Notas de Entrega</h2>
-                        <p class="text-xs text-slate-400">Registros directos e impresiÃ³n en moneda extranjera ($)</p>
+                        <p class="text-xs text-slate-400">Registros directos e impresión en moneda extranjera ($)</p>
                     </div>
                 </div>
                 
@@ -973,7 +980,7 @@
 
                         <div class="mt-6 border border-slate-800 rounded-2xl p-5 bg-slate-950">
                             <h4 class="font-bold text-slate-300 mb-3 text-xs uppercase tracking-wider flex items-center gap-2">
-                                <i class="fa-solid fa-box-open text-cyan-400"></i> ArtÃ­culos (Nota de Entrega)
+                                <i class="fa-solid fa-box-open text-cyan-400"></i> Artículos (Nota de Entrega)
                             </h4>
                             <div id="lista-articulos-nota" class="space-y-2 mb-4 text-xs min-h-[60px]">
                                 <p class="text-slate-500 text-xs italic">No hay productos agregados a la nota.</p>
@@ -1017,7 +1024,7 @@
                                 <tr>
                                     <th class="p-4 font-medium">Fecha</th>
                                     <th class="p-4 font-medium">Cliente</th>
-                                    <th class="p-4 font-medium">Detalle (ArtÃ­culos)</th>
+                                    <th class="p-4 font-medium">Detalle (Artículos)</th>
                                     <th class="p-4 font-medium">Total ($)</th>
                                     <th class="p-4 font-medium">Estado CxC</th>
                                     <th class="p-4 font-medium text-right">Acciones</th>
@@ -1036,8 +1043,8 @@
                         <i class="fa-solid fa-file-arrow-down text-lg"></i>
                     </div>
                     <div>
-                        <h2 class="text-xl font-bold text-white tracking-tight">Notas de CrÃ©dito</h2>
-                        <p class="text-xs text-slate-400">EmisiÃ³n digital ante The Factory HKA</p>
+                        <h2 class="text-xl font-bold text-white tracking-tight">Notas de Crédito</h2>
+                        <p class="text-xs text-slate-400">Emisión digital ante The Factory HKA</p>
                     </div>
                 </div>
 
@@ -1055,7 +1062,7 @@
                             </select>
                         </div>
                         <div>
-                            <label class="block text-xs font-medium text-slate-300 mb-1">NÂ° Nota de CrÃ©dito</label>
+                            <label class="block text-xs font-medium text-slate-300 mb-1">N° Nota de Crédito</label>
                             <input id="nc-numero" readonly class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-rose-300 font-mono font-bold outline-none">
                         </div>
                         <div>
@@ -1064,28 +1071,28 @@
                         </div>
                     </div>
                     <div>
-                        <label class="block text-xs font-medium text-slate-300 mb-1">Motivo de la devoluciÃ³n</label>
-                        <input id="nc-motivo" type="text" maxlength="255" placeholder="Ej. DevoluciÃ³n de mercancÃ­a" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-rose-500">
+                        <label class="block text-xs font-medium text-slate-300 mb-1">Motivo de la devolución</label>
+                        <input id="nc-motivo" type="text" maxlength="255" placeholder="Ej. Devolución de mercancía" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-rose-500">
                     </div>
                     <div id="nc-detalles" class="overflow-x-auto border border-slate-800 rounded-xl"></div>
                     <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pt-2">
                         <div id="nc-resumen" class="font-mono text-xs text-slate-300 space-y-1"></div>
                         <button id="btn-emitir-nc" type="button" onclick="emitirNotaCredito()" class="bg-rose-600 hover:bg-rose-500 text-white px-5 py-2.5 rounded-xl text-xs font-bold transition shadow-sm">
-                            <i class="fa-solid fa-file-arrow-down mr-2"></i>Emitir Nota de CrÃ©dito
+                            <i class="fa-solid fa-file-arrow-down mr-2"></i>Emitir Nota de Crédito
                         </button>
                     </div>
                 </div>
 
                 <div class="bg-slate-900/60 border border-slate-800 rounded-2xl overflow-hidden">
                     <div class="p-4 border-b border-slate-800">
-                        <h3 class="text-sm font-bold text-slate-200">Historial de Notas de CrÃ©dito</h3>
+                        <h3 class="text-sm font-bold text-slate-200">Historial de Notas de Crédito</h3>
                     </div>
                     <div class="overflow-x-auto">
                         <table class="w-full text-left text-xs">
                             <thead class="bg-slate-950/60 text-slate-400">
                                 <tr>
                                     <th class="p-4 font-medium">Fecha</th>
-                                    <th class="p-4 font-medium">NÂ° NC</th>
+                                    <th class="p-4 font-medium">N° NC</th>
                                     <th class="p-4 font-medium">Control TFHKA</th>
                                     <th class="p-4 font-medium">Factura afectada</th>
                                     <th class="p-4 font-medium">Cliente</th>
@@ -1109,7 +1116,7 @@
                     </div>
                     <div>
                         <h2 class="text-xl font-bold text-white tracking-tight">Procesar Venta</h2>
-                        <p class="text-xs text-slate-400">FacturaciÃ³n fiscal y control de retenciones</p>
+                        <p class="text-xs text-slate-400">Facturación fiscal y control de retenciones</p>
                     </div>
                 </div>
                 
@@ -1118,7 +1125,7 @@
                         
                         <div class="grid grid-cols-1 md:grid-cols-4 gap-5 no-print border-b border-slate-800 pb-5 mb-5 bg-slate-950/50 p-4 rounded-xl border border-slate-800">
                             <div>
-                                <label class="block text-xs font-bold text-sky-400 uppercase mb-2" title="Tasa editable para esta factura en especÃ­fico"><i class="fa-solid fa-money-bill-transfer"></i> Tasa Venta (Editable)</label>
+                                <label class="block text-xs font-bold text-sky-400 uppercase mb-2" title="Tasa editable para esta factura en específico"><i class="fa-solid fa-money-bill-transfer"></i> Tasa Venta (Editable)</label>
                                 <div class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2 text-sm text-sky-400 font-mono font-bold flex items-center gap-2">
                                     Bs. <input type="number" step="0.01" id="input-tasa-venta" class="bg-transparent outline-none w-full text-sky-400 font-bold" value="1.00">
                                 </div>
@@ -1128,11 +1135,11 @@
                                 <input type="date" id="venta-fecha" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-sky-500 font-mono transition" required>
                             </div>
                             <div>
-                                <label class="block text-xs font-medium text-slate-300 mb-1">NÂº Factura (Sugerido)</label>
+                                <label class="block text-xs font-medium text-slate-300 mb-1">Nº Factura (Sugerido)</label>
                                 <input type="text" id="venta-factura" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-sky-500 font-mono transition" required>
                             </div>
                             <div>
-                                <label class="block text-xs font-medium text-slate-300 mb-1">NÂº Control (Sugerido)</label>
+                                <label class="block text-xs font-medium text-slate-300 mb-1">Nº Control (Sugerido)</label>
                                 <input type="text" id="venta-control" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-emerald-400 font-bold outline-none focus:border-emerald-500 font-mono transition" required>
                             </div>
                         </div>
@@ -1168,7 +1175,7 @@
 
                         <div class="mt-6 border border-slate-800 rounded-2xl p-5 bg-slate-950">
                             <h4 class="font-bold text-slate-300 mb-3 text-xs uppercase tracking-wider flex items-center gap-2">
-                                <i class="fa-solid fa-cart-arrow-down text-emerald-400"></i> ArtÃ­culos (Venta)
+                                <i class="fa-solid fa-cart-arrow-down text-emerald-400"></i> Artículos (Venta)
                             </h4>
                             <div id="lista-articulos-venta" class="space-y-2 mb-4 text-xs min-h-[60px]">
                                 <p class="text-slate-500 text-xs italic">No hay productos agregados a la venta.</p>
@@ -1186,7 +1193,7 @@
                                         <input type="number" step="0.01" min="0" id="calc-descuento-venta" value="0" class="w-20 bg-slate-900 border border-slate-700 text-center py-1 rounded-lg text-rose-400 font-mono font-bold outline-none focus:border-rose-500">
                                     </p>
                                     <p class="font-bold text-slate-300 text-sm pt-1">Total Factura (Bs):</p>
-                                    <p class="text-slate-400 font-medium pb-1" title="RetenciÃ³n del 2% estimada para servicios facturados">RetenciÃ³n ISLR 2% (-):</p>
+                                    <p class="text-slate-400 font-medium pb-1" title="Retención del 2% estimada para servicios facturados">Retención ISLR 2% (-):</p>
                                     <p class="font-bold text-white text-base border-t border-slate-700 pt-2 mt-1">TOTAL A PAGAR (Bs):</p>
                                 </div>
                                 <div class="text-right font-mono flex flex-col justify-between text-xs space-y-2">
@@ -1262,13 +1269,13 @@
                             <thead class="bg-slate-950 border-b border-slate-800 text-slate-400 uppercase tracking-wider text-[10px]">
                                 <tr>
                                     <th class="p-4 font-medium">Fecha</th>
-                                    <th class="p-4 font-medium">NÂº Factura</th>
-                                    <th class="p-4 font-medium">NÂº Control</th>
+                                    <th class="p-4 font-medium">Nº Factura</th>
+                                    <th class="p-4 font-medium">Nº Control</th>
                                     <th class="p-4 font-medium">Cliente</th>
                                     <th class="p-4 font-medium">Total Factura</th>
                                     <th class="p-4 font-medium">Total ($)</th>
-                                    <th class="p-4 font-medium text-center text-blue-400" title="Checklist RetenciÃ³n de IVA">Ret. IVA</th>
-                                    <th class="p-4 font-medium text-center text-violet-400" title="Checklist RetenciÃ³n de ISLR">Ret. ISLR</th>
+                                    <th class="p-4 font-medium text-center text-blue-400" title="Checklist Retención de IVA">Ret. IVA</th>
+                                    <th class="p-4 font-medium text-center text-violet-400" title="Checklist Retención de ISLR">Ret. ISLR</th>
                                     <th class="p-4 font-medium">Estado CxC</th>
                                     <th class="p-4 font-medium text-right">Acciones</th>
                                 </tr>
@@ -1287,7 +1294,7 @@
                     </div>
                     <div>
                         <h2 class="text-xl font-bold text-white tracking-tight">Registro de Compras</h2>
-                        <p class="text-xs text-slate-400">Control de egresos para el cÃ¡lculo del IVA</p>
+                        <p class="text-xs text-slate-400">Control de egresos para el cálculo del IVA</p>
                     </div>
                 </div>
                 
@@ -1305,7 +1312,7 @@
                         <div class="md:col-span-4 flex items-center gap-3 bg-slate-950 border border-cyan-800/50 rounded-xl p-3">
                             <input type="checkbox" id="comp-es-personal" class="w-4 h-4 bg-slate-950 border-slate-700 rounded accent-cyan-500 cursor-pointer">
                             <label for="comp-es-personal" class="text-xs font-medium text-cyan-300 cursor-pointer">
-                                <i class="fa-solid fa-user-tie"></i> Â¿Esta factura es mÃ­a como persona natural? <span class="text-slate-500">(Se registrarÃ¡ como factura propia)</span>
+                                <i class="fa-solid fa-user-tie"></i> ¿Esta factura es mía como persona natural? <span class="text-slate-500">(Se registrará como factura propia)</span>
                             </label>
                         </div>
                         <div>
@@ -1313,11 +1320,11 @@
                             <input type="date" id="comp-fecha" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-orange-500 transition" required>
                         </div>
                         <div>
-                            <label class="block text-xs font-medium text-slate-300 mb-1">NÂº de Factura</label>
+                            <label class="block text-xs font-medium text-slate-300 mb-1">Nº de Factura</label>
                             <input type="text" id="comp-factura" placeholder="Ej. 000277" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-orange-500 transition font-mono">
                         </div>
                         <div>
-                            <label class="block text-xs font-medium text-slate-300 mb-1">NÂº de Control</label>
+                            <label class="block text-xs font-medium text-slate-300 mb-1">Nº de Control</label>
                             <input type="text" id="comp-control" placeholder="Ej. 00-000298" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white outline-none focus:border-orange-500 transition font-mono">
                         </div>
                         <div class="md:col-span-2">
@@ -1346,12 +1353,12 @@
                             <div class="flex items-center gap-3">
                                 <input type="checkbox" id="comp-ret-check" class="w-4 h-4 bg-slate-950 border-slate-700 rounded accent-rose-500 cursor-pointer" onchange="calcularRetencionCompraFormulario()">
                                 <label for="comp-ret-check" class="text-xs font-medium text-rose-300 cursor-pointer">
-                                    <i class="fa-solid fa-file-invoice-dollar"></i> Registrar RetenciÃ³n de IVA de esta compra <span class="text-slate-500">(opcional)</span>
+                                    <i class="fa-solid fa-file-invoice-dollar"></i> Registrar Retención de IVA de esta compra <span class="text-slate-500">(opcional)</span>
                                 </label>
                             </div>
                             <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                                 <div>
-                                    <label class="block text-[10px] font-medium text-slate-400 mb-1">NÂº Comprobante</label>
+                                    <label class="block text-[10px] font-medium text-slate-400 mb-1">Nº Comprobante</label>
                                     <input type="text" id="comp-ret-nro" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2 text-xs text-white font-mono outline-none focus:border-rose-500" placeholder="Ej: 20261100001234">
                                 </div>
                                 <div>
@@ -1363,7 +1370,7 @@
                                     <input type="number" step="0.01" min="0" id="comp-ret-monto" value="0" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2 text-xs text-rose-300 font-mono font-bold outline-none focus:border-rose-500">
                                 </div>
                                 <div>
-                                    <label class="block text-[10px] font-medium text-amber-400 mb-1">Fecha RetenciÃ³n</label>
+                                    <label class="block text-[10px] font-medium text-amber-400 mb-1">Fecha Retención</label>
                                     <input type="date" id="comp-ret-fecha" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2 text-xs text-amber-300 font-mono outline-none focus:border-amber-500">
                                 </div>
                             </div>
@@ -1385,7 +1392,7 @@
                         <span id="ia-compra-estado" class="text-[10px] font-mono bg-slate-950 border border-slate-800 text-slate-400 px-2.5 py-1 rounded-lg"></span>
                     </div>
                     <p class="text-[11px] text-slate-400 mb-4">
-                        Sube la foto (o PDF) de la factura de compra. Gemini extrae los datos y prepara un borrador; con la aprobaciÃ³n activa no se guarda hasta que lo confirmes.
+                        Sube la foto (o PDF) de la factura de compra. Gemini extrae los datos y prepara un borrador; con la aprobación activa no se guarda hasta que lo confirmes.
                     </p>
                     <div class="flex flex-wrap items-end gap-3">
                         <div class="flex-1 min-w-[220px]">
@@ -1400,7 +1407,7 @@
                     <div id="ia-borrador" class="hidden mt-5 pt-5 border-t border-slate-800">
                         <div class="flex items-center justify-between mb-4">
                             <h4 class="text-xs font-bold text-violet-300 flex items-center gap-2">
-                                <i class="fa-solid fa-file-circle-check"></i> Borrador generado â€” revisa antes de guardar
+                                <i class="fa-solid fa-file-circle-check"></i> Borrador generado — revisa antes de guardar
                             </h4>
                             <button type="button" onclick="descartarBorradorIA()" class="text-rose-400 hover:text-rose-300 text-xs font-semibold"><i class="fa-solid fa-xmark"></i> Descartar</button>
                         </div>
@@ -1415,11 +1422,11 @@
                                 <input type="date" id="ia-draft-fecha" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2 text-xs text-white outline-none focus:border-violet-500">
                             </div>
                             <div>
-                                <label class="block text-[10px] font-medium text-slate-400 mb-1">NÂº Factura</label>
+                                <label class="block text-[10px] font-medium text-slate-400 mb-1">Nº Factura</label>
                                 <input type="text" id="ia-draft-factura" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2 text-xs text-white font-mono outline-none focus:border-violet-500">
                             </div>
                             <div>
-                                <label class="block text-[10px] font-medium text-slate-400 mb-1">NÂº Control</label>
+                                <label class="block text-[10px] font-medium text-slate-400 mb-1">Nº Control</label>
                                 <input type="text" id="ia-draft-control" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2 text-xs text-white font-mono outline-none focus:border-violet-500">
                             </div>
                             <div>
@@ -1490,9 +1497,9 @@
                             <thead class="bg-slate-950 border-b border-slate-800 text-slate-400 uppercase tracking-wider text-[10px]">
                                 <tr>
                                     <th class="p-4 font-medium">Fecha</th>
-                                    <th class="p-4 font-medium">DescripciÃ³n/Proveedor</th>
-                                    <th class="p-4 font-medium">NÂº Factura</th>
-                                    <th class="p-4 font-medium">NÂº Control</th>
+                                    <th class="p-4 font-medium">Descripción/Proveedor</th>
+                                    <th class="p-4 font-medium">Nº Factura</th>
+                                    <th class="p-4 font-medium">Nº Control</th>
                                     <th class="p-4 font-medium">Subtotal Gravado</th>
                                     <th class="p-4 font-medium">Exento</th>
                                     <th class="p-4 font-medium">IVA</th>
@@ -1514,7 +1521,7 @@
                     </div>
                     <div>
                         <h2 class="text-xl font-bold text-white tracking-tight">Cuentas por Cobrar (CxC)</h2>
-                        <p class="text-xs text-slate-400">Seguimiento de saldos pendientes y deducciÃ³n de retenciones confirmadas</p>
+                        <p class="text-xs text-slate-400">Seguimiento de saldos pendientes y deducción de retenciones confirmadas</p>
                     </div>
                 </div>
 
@@ -1553,7 +1560,7 @@
                     </div>
                     <div>
                         <h2 class="text-xl font-bold text-white tracking-tight">Resumen de IVA <span id="iva-year" class="text-blue-400"></span></h2>
-                        <p class="text-xs text-slate-400">Bases imponibles y retenciones confirmadas asignadas a su mes real de retenciÃ³n</p>
+                        <p class="text-xs text-slate-400">Bases imponibles y retenciones confirmadas asignadas a su mes real de retención</p>
                     </div>
                 </div>
 
@@ -1568,7 +1575,7 @@
                                         <th class="p-2 font-medium">Base Gravada</th>
                                         <th class="p-2 font-medium text-amber-400">Exento</th>
                                         <th class="p-2 font-medium">IVA</th>
-                                        <th class="p-2 font-medium">RetenciÃ³n Confirmada</th>
+                                        <th class="p-2 font-medium">Retención Confirmada</th>
                                     </tr>
                                 </thead>
                                 <tbody id="tabla-dash-ventas" class="divide-y divide-emerald-900/20 text-slate-300 font-mono text-[11px]"></tbody>
@@ -1627,7 +1634,7 @@
                     </div>
                     <div>
                         <h2 class="text-xl font-bold text-white tracking-tight">Libros Fiscales</h2>
-                        <p class="text-xs text-slate-400">Libro de Ventas y Libro de Compras IVA generados bajo demanda por perÃ­odo mensual</p>
+                        <p class="text-xs text-slate-400">Libro de Ventas y Libro de Compras IVA generados bajo demanda por período mensual</p>
                     </div>
                 </div>
 
@@ -1641,7 +1648,7 @@
                             </select>
                         </div>
                         <div>
-                            <label class="block text-xs font-medium text-slate-300 mb-1">PerÃ­odo mensual</label>
+                            <label class="block text-xs font-medium text-slate-300 mb-1">Período mensual</label>
                             <input type="month" id="libro-periodo" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white font-mono outline-none focus:border-blue-500 transition">
                         </div>
                         <div class="flex gap-2">
@@ -1655,7 +1662,7 @@
                     </div>
                     <p class="text-[11px] text-slate-500 mt-4 flex items-center gap-2">
                         <i class="fa-solid fa-circle-info text-blue-400"></i>
-                        El libro se arma con las ventas, compras, notas de crÃ©dito y retenciones de IVA ya registradas en el sistema. Selecciona el mes y genera el PDF cuando lo necesites.
+                        El libro se arma con las ventas, compras, notas de crédito y retenciones de IVA ya registradas en el sistema. Selecciona el mes y genera el PDF cuando lo necesites.
                     </p>
                 </div>
 
@@ -1684,14 +1691,14 @@
                             <p id="libro-card-iva" class="text-xl font-mono font-bold text-amber-400">Bs. 0,00</p>
                         </div>
                         <div class="bg-slate-900 border border-rose-900/50 rounded-2xl p-5">
-                            <p class="text-[10px] text-slate-400 mb-1 uppercase tracking-wider">RetenciÃ³n IVA</p>
+                            <p class="text-[10px] text-slate-400 mb-1 uppercase tracking-wider">Retención IVA</p>
                             <p id="libro-card-ret" class="text-xl font-mono font-bold text-rose-400">Bs. 0,00</p>
                         </div>
                     </div>
 
                     <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
                         <h3 class="text-sm font-bold p-4 border-b border-slate-800 text-white flex items-center gap-2">
-                            <i class="fa-solid fa-list-ol text-blue-400"></i> Detalle del perÃ­odo
+                            <i class="fa-solid fa-list-ol text-blue-400"></i> Detalle del período
                         </h3>
                         <div class="overflow-x-auto">
                             <table class="w-full text-left border-collapse text-[11px]">
@@ -1700,7 +1707,7 @@
                                         <th class="p-3 font-medium">Fecha</th>
                                         <th class="p-3 font-medium">Doc.</th>
                                         <th class="p-3 font-medium">RIF</th>
-                                        <th class="p-3 font-medium">Nombre / RazÃ³n social</th>
+                                        <th class="p-3 font-medium">Nombre / Razón social</th>
                                         <th class="p-3 font-medium text-right">Total</th>
                                         <th class="p-3 font-medium text-right">Exento</th>
                                         <th class="p-3 font-medium text-right">Base</th>
@@ -1723,7 +1730,7 @@
                                     <tr>
                                         <th class="p-3 font-medium">Concepto</th>
                                         <th class="p-3 font-medium text-right">Base Imponible</th>
-                                        <th class="p-3 font-medium text-right">IVA / DÃ©bito Fiscal</th>
+                                        <th class="p-3 font-medium text-right">IVA / Débito Fiscal</th>
                                     </tr>
                                 </thead>
                                 <tbody id="tabla-libro-resumen" class="divide-y divide-slate-800 text-slate-300 font-mono text-[11px]"></tbody>
@@ -1742,7 +1749,7 @@
                         </div>
                         <div>
                             <h2 class="text-xl font-bold text-white tracking-tight">Caja y Flujo de Efectivo <span id="caja-year" class="text-lime-400"></span></h2>
-                            <p class="text-xs text-slate-400">Control de flujo disponible y retiros por facturaciÃ³n personal</p>
+                            <p class="text-xs text-slate-400">Control de flujo disponible y retiros por facturación personal</p>
                         </div>
                     </div>
                     <button onclick="cargarCaja()" class="bg-slate-800 hover:bg-slate-700 text-white font-bold p-2.5 rounded-xl border border-slate-700 transition text-xs shadow-sm">
@@ -1752,7 +1759,7 @@
 
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div class="bg-slate-900 border border-emerald-900/50 rounded-2xl p-5">
-                        <p class="text-xs text-slate-400 mb-1 uppercase tracking-wider">Ingresos del AÃ±o</p>
+                        <p class="text-xs text-slate-400 mb-1 uppercase tracking-wider">Ingresos del Año</p>
                         <p id="caja-total-ventas" class="text-2xl font-mono font-bold text-emerald-400">Bs. 0.00</p>
                     </div>
                     <div class="bg-slate-900 border border-lime-900/50 rounded-2xl p-5">
@@ -1793,7 +1800,7 @@
                 </div>
             </section>
 
-            <!-- PROYECCIÃ“N ISLR -->
+            <!-- PROYECCIÓN ISLR -->
             <section id="islr" class="modulo hidden max-w-6xl mx-auto space-y-6">
                 <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-2xl flex justify-between items-center gap-3">
                     <div class="flex items-center gap-3">
@@ -1801,8 +1808,8 @@
                             <i class="fa-solid fa-scale-balanced text-lg"></i>
                         </div>
                         <div>
-                            <h2 class="text-xl font-bold text-white tracking-tight">ProyecciÃ³n ISLR Anual <span id="islr-year" class="text-amber-400"></span></h2>
-                            <p class="text-xs text-slate-400">EstimaciÃ³n considerando retenciones confirmadas con comprobante</p>
+                            <h2 class="text-xl font-bold text-white tracking-tight">Proyección ISLR Anual <span id="islr-year" class="text-amber-400"></span></h2>
+                            <p class="text-xs text-slate-400">Estimación considerando retenciones confirmadas con comprobante</p>
                         </div>
                     </div>
                     <button onclick="cargarProyeccionISLR()" class="bg-slate-800 hover:bg-slate-700 text-white font-bold p-2.5 rounded-xl border border-slate-700 transition text-xs shadow-sm">
@@ -1812,7 +1819,7 @@
 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div class="bg-slate-900 border border-emerald-900/50 rounded-2xl p-5">
-                        <p class="text-xs text-slate-400 mb-1 uppercase tracking-wider">Ingresos Brutos (AÃ±o)</p>
+                        <p class="text-xs text-slate-400 mb-1 uppercase tracking-wider">Ingresos Brutos (Año)</p>
                         <p id="islr-ingresos" class="text-2xl font-mono font-bold text-emerald-400">Bs. 0.00</p>
                     </div>
                     <div class="bg-slate-900 border border-rose-900/50 rounded-2xl p-5">
@@ -1827,7 +1834,7 @@
 
                 <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
                     <h3 class="text-sm font-bold p-5 border-b border-slate-800 text-white flex items-center gap-2">
-                        <i class="fa-solid fa-calculator text-amber-400"></i> CÃ¡lculo Proyectado
+                        <i class="fa-solid fa-calculator text-amber-400"></i> Cálculo Proyectado
                         <span class="ml-auto bg-slate-950 border border-slate-700 text-slate-300 px-3 py-1 rounded-lg font-mono text-[10px]">UT: Bs. <span id="islr-valor-ut">0.00</span></span>
                     </h3>
                     
@@ -1838,13 +1845,13 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             <div>
                                 <div class="flex justify-between items-center mb-1">
-                                    <label class="text-[10px] text-slate-400">Sueldo Directivo (mÃ¡x. 15%)</label>
+                                    <label class="text-[10px] text-slate-400">Sueldo Directivo (máx. 15%)</label>
                                     <button type="button" onclick="aplicar15Directivo()" class="text-[9px] bg-amber-900/40 text-amber-300 hover:bg-amber-600 hover:text-white border border-amber-700/50 rounded px-1.5 py-0.5 transition" title="Aplicar 15% del ingreso bruto">15%</button>
                                 </div>
                                 <input type="number" step="0.01" id="gasto-directivo" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-xs text-white outline-none focus:border-amber-500 font-mono" oninput="recalcularISLR()">
                             </div>
                             <div>
-                                <label class="block text-[10px] text-slate-400 mb-1">NÃ³mina</label>
+                                <label class="block text-[10px] text-slate-400 mb-1">Nómina</label>
                                 <input type="number" step="0.01" id="gasto-nomina" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-xs text-white outline-none focus:border-amber-500 font-mono" oninput="recalcularISLR()">
                             </div>
                             <div>
@@ -1905,7 +1912,7 @@
                             <span id="islr-sustraendo" class="font-mono text-white">0.00 UT</span>
                         </div>
                         <div class="flex justify-between">
-                            <span class="text-slate-400">Impuesto segÃºn Tarifa</span>
+                            <span class="text-slate-400">Impuesto según Tarifa</span>
                             <span id="islr-impuesto-base" class="font-mono text-white">Bs. 0.00</span>
                         </div>
                         <div class="flex justify-between bg-emerald-950/30 -mx-5 px-5 py-2 border-y border-emerald-900/30">
@@ -1964,10 +1971,10 @@
         </div>
     </main>
 
-    <!-- Overlay mÃ³vil -->
+    <!-- Overlay móvil -->
     <div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-30 hidden md:hidden"></div>
 
-    <!-- MODAL IMPRESIÃ“N (ESTILO FACTURA EN DIVISAS) -->
+    <!-- MODAL IMPRESIÓN (ESTILO FACTURA EN DIVISAS) -->
     <div id="modal-impresion" class="fixed inset-0 z-50 hidden flex-col items-center justify-start p-2 sm:p-6 bg-slate-950/80 backdrop-blur-sm overflow-y-auto">
         <div id="modal-impresion-toolbar" class="no-print w-full max-w-[210mm] flex items-center justify-between bg-slate-900 border border-slate-800 p-3 rounded-2xl mb-4 shadow-2xl">
             <div class="flex items-center gap-2 text-xs font-semibold text-slate-300">
@@ -1987,7 +1994,7 @@
         <div id="documento-impresion-papel" class="doc-factura-hoja shadow-2xl"></div>
     </div>
 
-    <!-- NUEVO: MODAL PARA REGISTRO DE RETENCIÃ“N (IVA / ISLR) -->
+    <!-- NUEVO: MODAL PARA REGISTRO DE RETENCIÓN (IVA / ISLR) -->
     <div id="modal-retencion" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/85 backdrop-blur-sm p-4 overflow-y-auto">
         <div class="w-full max-w-lg bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl relative my-auto">
             <div class="flex items-center justify-between pb-4 border-b border-slate-800 mb-5">
@@ -1996,8 +2003,8 @@
                         <i class="fa-solid fa-receipt"></i>
                     </div>
                     <div>
-                        <h3 id="modal-ret-titulo" class="text-base font-bold text-white tracking-tight">Comprobante de RetenciÃ³n</h3>
-                        <p id="modal-ret-subtitulo" class="text-xs text-slate-400">Factura NÂº - Cliente</p>
+                        <h3 id="modal-ret-titulo" class="text-base font-bold text-white tracking-tight">Comprobante de Retención</h3>
+                        <p id="modal-ret-subtitulo" class="text-xs text-slate-400">Factura Nº - Cliente</p>
                     </div>
                 </div>
                 <button type="button" onclick="cerrarModalRetencion()" class="text-slate-400 hover:text-white text-lg">
@@ -2009,18 +2016,18 @@
                 <input type="hidden" id="modal-ret-venta-id">
                 <input type="hidden" id="modal-ret-tipo">
 
-                <!-- CHECKBOX PRINCIPAL DE ACTIVACIÃ“N -->
+                <!-- CHECKBOX PRINCIPAL DE ACTIVACIÓN -->
                 <div class="flex items-center gap-3 bg-slate-950 p-3.5 rounded-xl border border-slate-800">
                     <input type="checkbox" id="modal-ret-check" class="w-5 h-5 bg-slate-900 border-slate-700 rounded accent-emerald-500 cursor-pointer">
                     <label for="modal-ret-check" class="text-xs font-bold text-white cursor-pointer flex flex-col">
-                        <span>Â¿Aplicar esta RetenciÃ³n?</span>
-                        <span class="text-[10px] text-slate-400 font-normal">Si estÃ¡ marcada, se computarÃ¡ en los libros fiscales y restarÃ¡ de la cobranza.</span>
+                        <span>¿Aplicar esta Retención?</span>
+                        <span class="text-[10px] text-slate-400 font-normal">Si está marcada, se computará en los libros fiscales y restará de la cobranza.</span>
                     </label>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-[11px] font-medium text-slate-300 mb-1">NÂº Comprobante / RetenciÃ³n</label>
+                        <label class="block text-[11px] font-medium text-slate-300 mb-1">Nº Comprobante / Retención</label>
                         <input type="text" id="modal-ret-nro" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white font-mono outline-none focus:border-sky-500" placeholder="Ej: 20260400001234">
                     </div>
                     <div>
@@ -2032,7 +2039,7 @@
                         <input type="number" step="0.01" min="0" id="modal-ret-monto" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-emerald-400 font-mono font-bold outline-none focus:border-emerald-500">
                     </div>
                     <div>
-                        <label class="block text-[11px] font-medium text-amber-400 mb-1">Fecha de la RetenciÃ³n (Mes Fiscal)</label>
+                        <label class="block text-[11px] font-medium text-amber-400 mb-1">Fecha de la Retención (Mes Fiscal)</label>
                         <input type="date" id="modal-ret-fecha" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-amber-300 font-mono outline-none focus:border-amber-500" required>
                     </div>
                 </div>
@@ -2046,14 +2053,14 @@
 
                 <div class="flex justify-between items-center pt-3 border-t border-slate-800">
                     <button type="button" onclick="quitarRetencionModal()" class="text-rose-400 hover:text-rose-300 text-xs font-semibold flex items-center gap-1.5 px-3 py-2 rounded-xl hover:bg-rose-950/30 transition">
-                        <i class="fa-solid fa-trash-can"></i> Quitar RetenciÃ³n
+                        <i class="fa-solid fa-trash-can"></i> Quitar Retención
                     </button>
                     <div class="flex gap-2">
                         <button type="button" onclick="cerrarModalRetencion()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold px-4 py-2.5 rounded-xl text-xs transition border border-slate-700">
                             Cerrar
                         </button>
                         <button type="submit" class="bg-sky-600 hover:bg-sky-500 text-white font-bold px-5 py-2.5 rounded-xl text-xs transition shadow-lg shadow-sky-600/20 flex items-center gap-1.5">
-                            <i class="fa-solid fa-floppy-disk"></i> Guardar RetenciÃ³n
+                            <i class="fa-solid fa-floppy-disk"></i> Guardar Retención
                         </button>
                     </div>
                 </div>
@@ -2069,8 +2076,8 @@
                         <i class="fa-solid fa-file-invoice-dollar"></i>
                     </div>
                     <div>
-                        <h3 class="text-base font-bold text-white tracking-tight">RetenciÃ³n de IVA en Compra</h3>
-                        <p id="modal-retencion-compra-sub" class="text-xs text-slate-400">Proveedor â€¢ Factura</p>
+                        <h3 class="text-base font-bold text-white tracking-tight">Retención de IVA en Compra</h3>
+                        <p id="modal-retencion-compra-sub" class="text-xs text-slate-400">Proveedor • Factura</p>
                     </div>
                 </div>
                 <button type="button" onclick="cerrarModalRetencionCompra()" class="text-slate-400 hover:text-white text-lg">
@@ -2083,14 +2090,14 @@
                 <div class="flex items-center gap-3 bg-slate-950 p-3.5 rounded-xl border border-slate-800">
                     <input type="checkbox" id="modal-compra-ret-check" class="w-5 h-5 bg-slate-900 border-slate-700 rounded accent-rose-500 cursor-pointer">
                     <label for="modal-compra-ret-check" class="text-xs font-bold text-white cursor-pointer flex flex-col">
-                        <span>Â¿Aplicar RetenciÃ³n de IVA?</span>
-                        <span class="text-[10px] text-slate-400 font-normal">Se reflejarÃ¡ en el Libro de Compras IVA del perÃ­odo.</span>
+                        <span>¿Aplicar Retención de IVA?</span>
+                        <span class="text-[10px] text-slate-400 font-normal">Se reflejará en el Libro de Compras IVA del período.</span>
                     </label>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-[11px] font-medium text-slate-300 mb-1">NÂº Comprobante / RetenciÃ³n</label>
+                        <label class="block text-[11px] font-medium text-slate-300 mb-1">Nº Comprobante / Retención</label>
                         <input type="text" id="modal-compra-ret-nro" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white font-mono outline-none focus:border-rose-500" placeholder="Ej: 20261100001234">
                     </div>
                     <div>
@@ -2102,21 +2109,21 @@
                         <input type="number" step="0.01" min="0" id="modal-compra-ret-monto" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-rose-300 font-mono font-bold outline-none focus:border-rose-500">
                     </div>
                     <div>
-                        <label class="block text-[11px] font-medium text-amber-400 mb-1">Fecha de la RetenciÃ³n (Mes Fiscal)</label>
+                        <label class="block text-[11px] font-medium text-amber-400 mb-1">Fecha de la Retención (Mes Fiscal)</label>
                         <input type="date" id="modal-compra-ret-fecha" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-amber-300 font-mono outline-none focus:border-amber-500">
                     </div>
                 </div>
 
                 <div class="flex justify-between items-center pt-3 border-t border-slate-800">
                     <button type="button" onclick="quitarRetencionCompra()" class="text-rose-400 hover:text-rose-300 text-xs font-semibold flex items-center gap-1.5 px-3 py-2 rounded-xl hover:bg-rose-950/30 transition">
-                        <i class="fa-solid fa-trash-can"></i> Quitar RetenciÃ³n
+                        <i class="fa-solid fa-trash-can"></i> Quitar Retención
                     </button>
                     <div class="flex gap-2">
                         <button type="button" onclick="cerrarModalRetencionCompra()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold px-4 py-2.5 rounded-xl text-xs transition border border-slate-700">
                             Cerrar
                         </button>
                         <button type="submit" class="bg-rose-600 hover:bg-rose-500 text-white font-bold px-5 py-2.5 rounded-xl text-xs transition shadow-lg shadow-rose-600/20 flex items-center gap-1.5">
-                            <i class="fa-solid fa-floppy-disk"></i> Guardar RetenciÃ³n
+                            <i class="fa-solid fa-floppy-disk"></i> Guardar Retención
                         </button>
                     </div>
                 </div>
@@ -2159,7 +2166,7 @@
         }
 
         function cerrarSesion() {
-            if (confirm("Â¿Deseas cerrar tu sesiÃ³n?")) {
+            if (confirm("¿Deseas cerrar tu sesión?")) {
                 sessionStorage.removeItem('das_auth');
                 sessionStorage.removeItem('das_user');
                 document.getElementById('pantalla-login').classList.remove('hidden');
@@ -2167,7 +2174,7 @@
         }
 
         // ==========================================
-        // SUPABASE & CONFIGURACIÃ“N GENERAL
+        // SUPABASE & CONFIGURACIÓN GENERAL
         // ==========================================
         const { createClient } = supabase;
         const supabaseUrl = 'https://frlaldgtcoykntmgxqmh.supabase.co';
@@ -2229,12 +2236,13 @@
         let mapClientesGlobal = {};
         let mapClientesVendedor = {};
         let mapVendedoresGlobal = {};
+        let vendedoresPorNombre = {};
 
         function formatNumber(num) {
             return parseFloat(num || 0).toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         }
 
-        // FUNCIÃ“N CLAVE: Evita el desfase de zona horaria de -1 dÃ­a
+        // FUNCIÓN CLAVE: Evita el desfase de zona horaria de -1 día
         function normalizarFechaYMD(fechaRaw) {
             if (!fechaRaw) return '';
             const str = String(fechaRaw).trim();
@@ -2288,7 +2296,7 @@
                 if(btnIcon) btnIcon.classList.remove('fa-spin');
             } catch (error) {
                 console.error("Error obteniendo tasa BCV:", error);
-                if(!silencioso) alert("Hubo un error de conexiÃ³n al intentar obtener la tasa oficial del BCV.");
+                if(!silencioso) alert("Hubo un error de conexión al intentar obtener la tasa oficial del BCV.");
             }
         }
 
@@ -2296,8 +2304,8 @@
             try {
                 // ORDEN DETERMINISTA: la tabla 'datos' puede tener filas duplicadas.
                 // Sin ORDER BY, PostgREST devuelve una fila arbitraria y, como un UPDATE
-                // mueve la fila al final de la tabla, tras guardar y refrescar se leÃ­a
-                // otra fila distinta (los campos aparecÃ­an "borrados").
+                // mueve la fila al final de la tabla, tras guardar y refrescar se leía
+                // otra fila distinta (los campos aparecían "borrados").
                 const { data, error } = await db.from('datos').select('*').order('id', { ascending: false }).limit(1);
                 if (data && data.length > 0) {
                     datosGenerales = data[0];
@@ -2379,10 +2387,10 @@
                 empresa_nombre: empNombre, empresa_rif: empRif, empresa_direccion: empDir, empresa_telefono: empTel
             };
 
-            // Actualizar SIEMPRE el registro canÃ³nico (el de mayor id, igual que al cargar).
+            // Actualizar SIEMPRE el registro canónico (el de mayor id, igual que al cargar).
             let { data: updated, error } = await db.from('datos').update(payload).eq('id', datosGenerales.id || 1).select();
 
-            // Si no se actualizÃ³ ninguna fila (id desincronizado), ubicar el registro real y reintentar.
+            // Si no se actualizó ninguna fila (id desincronizado), ubicar el registro real y reintentar.
             if (!error && (!updated || updated.length === 0)) {
                 const { data: ultimo } = await db.from('datos').select('id').order('id', { ascending: false }).limit(1);
                 if (ultimo && ultimo.length > 0) {
@@ -2394,9 +2402,9 @@
             }
             
             if (error) {
-                alert("Error al actualizar parÃ¡metros: " + error.message);
+                alert("Error al actualizar parámetros: " + error.message);
             } else if (!updated || updated.length === 0) {
-                alert("No se pudo guardar: no se encontrÃ³ el registro de parÃ¡metros. RecargÃ¡ la pÃ¡gina e intentÃ¡ de nuevo.");
+                alert("No se pudo guardar: no se encontró el registro de parámetros. Recargá la página e intentá de nuevo.");
             } else {
                 datosGenerales = { ...datosGenerales, ...updated[0] };
                 datosGenerales.tasa = nuevaTasa;
@@ -2419,14 +2427,14 @@
                 
                 const statusText = document.getElementById('bcv-status');
                 if(statusText) statusText.innerText = "";
-                alert("ParÃ¡metros actualizados con Ã©xito.");
+                alert("Parámetros actualizados con éxito.");
             }
             btn.innerHTML = originalHTML;
             btn.disabled = false;
         }
 
         // ==========================================
-        // CONFIGURACIÃ“N DEL SISTEMA (THE FACTORY / IA)
+        // CONFIGURACIÓN DEL SISTEMA (THE FACTORY / IA)
         // ==========================================
         async function cargarConfiguracionSistema() {
             try {
@@ -2482,11 +2490,11 @@
                 if (error) throw error;
                 configSistema = { ...configSistema, ...(data?.[0] || payload) };
                 reflejarConfiguracionSistema();
-                document.getElementById('tfhka-config-status').innerText = 'âœ… ConfiguraciÃ³n de The Factory guardada.';
+                document.getElementById('tfhka-config-status').innerText = '✅ Configuración de The Factory guardada.';
             } catch (err) {
                 console.error('ERROR_CONFIG_TFHKA: ' + err);
-                document.getElementById('tfhka-config-status').innerText = 'âŒ ' + err.message;
-                alert('No se pudo guardar la configuraciÃ³n: ' + err.message);
+                document.getElementById('tfhka-config-status').innerText = '❌ ' + err.message;
+                alert('No se pudo guardar la configuración: ' + err.message);
             } finally {
                 if (btn) { btn.disabled = false; btn.innerHTML = original; }
             }
@@ -2509,11 +2517,11 @@
                 if (error) throw error;
                 configSistema = { ...configSistema, ...(data?.[0] || payload) };
                 reflejarConfiguracionSistema();
-                document.getElementById('ia-config-status').innerText = 'âœ… ConfiguraciÃ³n de IA guardada.';
+                document.getElementById('ia-config-status').innerText = '✅ Configuración de IA guardada.';
             } catch (err) {
                 console.error('ERROR_CONFIG_IA: ' + err);
-                document.getElementById('ia-config-status').innerText = 'âŒ ' + err.message;
-                alert('No se pudo guardar la configuraciÃ³n de IA: ' + err.message);
+                document.getElementById('ia-config-status').innerText = '❌ ' + err.message;
+                alert('No se pudo guardar la configuración de IA: ' + err.message);
             } finally {
                 if (btn) { btn.disabled = false; btn.innerHTML = original; }
             }
@@ -2538,10 +2546,10 @@
                 });
                 const data = await res.json().catch(() => ({}));
                 if (!res.ok || data.status !== 'ok') throw new Error(data.mensaje || ('HTTP ' + res.status));
-                status.innerText = 'âœ… ConexiÃ³n con The Factory exitosa.';
+                status.innerText = '✅ Conexión con The Factory exitosa.';
             } catch (e) {
                 console.error('ERROR_PRUEBA_TFHKA: ' + e);
-                status.innerText = 'âŒ ' + e.message;
+                status.innerText = '❌ ' + e.message;
                 alert('Prueba fallida: ' + e.message);
             } finally {
                 if (boton) { boton.disabled = false; boton.innerHTML = html; }
@@ -2596,14 +2604,14 @@
                     if (inpC) inpC.value = '1';
                 }, 100);
             }
-            if(id === 'compras') { cargarOpcionesCompras(); cargarHistorialCompras(); estadoIA(configSistema.ia_activo ? 'Asistente IA activo' : 'Asistente IA desactivado (ver ParÃ¡metros)'); }
+            if(id === 'compras') { cargarOpcionesCompras(); cargarHistorialCompras(); estadoIA(configSistema.ia_activo ? 'Asistente IA activo' : 'Asistente IA desactivado (ver Parámetros)'); }
             if(id === 'cxc') { cargarCxC(); }
             if(id === 'caja') cargarCaja();
             if(id === 'compromisos') cargarCompromisos(); 
         }
 
         // ==========================================
-        // VENDEDORES (NUEVO MÃ“DULO)
+        // VENDEDORES (NUEVO MÓDULO)
         // ==========================================
         async function cargarVendedores() {
             try {
@@ -2642,6 +2650,8 @@
         async function cargarSelectVendedores() {
             try {
                 const { data } = await db.from('vendedores').select('id, nombre').order('nombre');
+                vendedoresPorNombre = {};
+                if (data) data.forEach(v => { vendedoresPorNombre[v.nombre] = v.id; });
                 const selCliente = document.getElementById('cli-vendedor');
                 if (selCliente) {
                     const actualVal = selCliente.value;
@@ -2730,14 +2740,14 @@
         }
 
         async function eliminarVendedor(id) {
-            if (!confirm("Â¿Deseas eliminar este vendedor?")) return;
+            if (!confirm("¿Deseas eliminar este vendedor?")) return;
             const { error } = await db.from('vendedores').delete().eq('id', id);
             if (error) alert("Error: " + error.message);
             else cargarVendedores();
         }
 
         // ==============================================================
-        // PLANTILLA DE IMPRESIÃ“N IDÃ‰NTICA A FACTURA_PDF (EN DIVISAS $)
+        // PLANTILLA DE IMPRESIÓN IDÉNTICA A FACTURA_PDF (EN DIVISAS $)
         // ==============================================================
         function cerrarModalImpresion() {
             const modal = document.getElementById('modal-impresion');
@@ -2773,7 +2783,7 @@
 
             const esPresupuesto = (tipoDoc === 'PRESUPUESTO');
             const textoTipo = esPresupuesto ? 'PRESUPUESTO' : 'NOTA DE ENTREGA';
-            const etiquetaNum = esPresupuesto ? 'PRESUPUESTO NÂº:' : 'CONTROL NÂº:';
+            const etiquetaNum = esPresupuesto ? 'PRESUPUESTO Nº:' : 'CONTROL Nº:';
 
             let filasHTML = '';
             items.forEach(it => {
@@ -2823,11 +2833,11 @@
                                 <div style="flex-grow: 1; font-size: 10px; font-family: monospace;">${cliente.identificacion || 'N/A'}</div>
                             </div>
                             <div style="display: flex; margin-bottom: 2px; align-items: baseline;">
-                                <div style="width: 55px; font-weight: bold; font-size: 10px;">DirecciÃ³n:</div>
+                                <div style="width: 55px; font-weight: bold; font-size: 10px;">Dirección:</div>
                                 <div style="flex-grow: 1; font-size: 9px;">${cliente.direccion || '-'}</div>
                             </div>
                             <div style="display: flex; margin-bottom: 2px; align-items: baseline;">
-                                <div style="width: 55px; font-weight: bold; font-size: 10px;">TelÃ©fono:</div>
+                                <div style="width: 55px; font-weight: bold; font-size: 10px;">Teléfono:</div>
                                 <div style="flex-grow: 1; font-size: 10px;">${cliente.telefono || '-'}</div>
                             </div>
                             <div style="display: flex; margin-bottom: 2px; align-items: baseline;">
@@ -2841,12 +2851,12 @@
                                 <div style="flex-grow: 1; font-size: 11px; font-weight: bold; color: #1e4189;">${textoTipo}</div>
                             </div>
                             <div style="display: flex; margin-bottom: 2px; align-items: baseline;">
-                                <div style="width: 75px; font-weight: bold; font-size: 10px;">EmisiÃ³n:</div>
+                                <div style="width: 75px; font-weight: bold; font-size: 10px;">Emisión:</div>
                                 <div style="flex-grow: 1; font-size: 10px; font-weight: bold;">${fechaDoc}</div>
                             </div>
                             <div style="display: flex; margin-bottom: 2px; align-items: baseline;">
                                 <div style="width: 75px; font-weight: bold; font-size: 10px;">Moneda:</div>
-                                <div style="flex-grow: 1; font-size: 10px; font-weight: bold;">DÃ³lares Americanos ($)</div>
+                                <div style="flex-grow: 1; font-size: 10px; font-weight: bold;">Dólares Americanos ($)</div>
                             </div>
                             <div style="display: flex; margin-bottom: 2px; align-items: baseline;">
                                 <div style="width: 75px; font-weight: bold; font-size: 10px;">Tasa Ref.:</div>
@@ -2862,7 +2872,7 @@
                     <table style="width: 100%; border-collapse: collapse; margin-bottom: 8px;">
                         <thead>
                             <tr>
-                                <th style="border-top: 1px solid #000; border-bottom: 1px solid #000; padding: 3px 2px; font-size: 9px; text-align: left; width: 44%;">DescripciÃ³n</th>
+                                <th style="border-top: 1px solid #000; border-bottom: 1px solid #000; padding: 3px 2px; font-size: 9px; text-align: left; width: 44%;">Descripción</th>
                                 <th style="border-top: 1px solid #000; border-bottom: 1px solid #000; padding: 3px 2px; font-size: 9px; text-align: right; width: 8%;">Cant</th>
                                 <th style="border-top: 1px solid #000; border-bottom: 1px solid #000; padding: 3px 2px; font-size: 9px; text-align: right; width: 14%;">Precio ($)</th>
                                 <th style="border-top: 1px solid #000; border-bottom: 1px solid #000; padding: 3px 2px; font-size: 9px; text-align: right; width: 10%;">% Alic.</th>
@@ -2879,13 +2889,13 @@
                         <div style="width: 54%; font-weight: bold; font-size: 9px; text-align: left;">
                             <p style="margin: 0 0 3px 0;">Notas:</p>
                             <p style="margin: 0; line-height: 1.3; font-weight: normal;">
-                                Favor realizar depÃ³sito o transferencia a nombre de:<br>
+                                Favor realizar depósito o transferencia a nombre de:<br>
                                 <strong>${empresaNombre}</strong><br>
                                 Banco Banesco Cta: 01340342273421075292<br>
-                                ${esPresupuesto ? 'â€¢ Validez de la oferta: 7 dÃ­as continuos.' : 'â€¢ MercancÃ­a recibida en perfecto estado y conformidad.'}
+                                ${esPresupuesto ? '• Validez de la oferta: 7 días continuos.' : '• Mercancía recibida en perfecto estado y conformidad.'}
                             </p>
                             <div style="margin-top: 6px; padding: 4px 6px; background-color: #f1f5f9; border-radius: 4px; font-size: 8.5px; color: #334155;">
-                                <strong>Equivalente Ref. en BolÃ­vares:</strong> Bs. ${formatNumber(totalEquivBs)}
+                                <strong>Equivalente Ref. en Bolívares:</strong> Bs. ${formatNumber(totalEquivBs)}
                             </div>
                         </div>
                         
@@ -2909,11 +2919,11 @@
                     </div>
 
                     <div class="disclaimer texto-azul" style="text-align: center; font-size: 7.5px; color: #64748b; margin-top: 12px; line-height: 1.2; width: 100%;">
-                        DOCUMENTO ADMINISTRATIVO EMITIDO EN DIVISAS SEGÃšN CONVENIO CAMBIARIO NÂ° 1 DEL BANCO CENTRAL DE VENEZUELA.<br>
-                        TASA OFICIAL APLICABLE AL MOMENTO DE LA CANCELACIÃ“N EN MONEDA NACIONAL.
+                        DOCUMENTO ADMINISTRATIVO EMITIDO EN DIVISAS SEGÚN CONVENIO CAMBIARIO N° 1 DEL BANCO CENTRAL DE VENEZUELA.<br>
+                        TASA OFICIAL APLICABLE AL MOMENTO DE LA CANCELACIÓN EN MONEDA NACIONAL.
                     </div>
                     <div class="original texto-rojo" style="text-align: center; font-weight: bold; font-size: 10px; margin-top: 4px; width: 100%;">
-                        ${esPresupuesto ? 'COTIZACIÃ“N / PRESUPUESTO' : 'ORIGINAL - NOTA DE ENTREGA'}
+                        ${esPresupuesto ? 'COTIZACIÓN / PRESUPUESTO' : 'ORIGINAL - NOTA DE ENTREGA'}
                     </div>
                 </div>
             `;
@@ -2986,7 +2996,7 @@
                 abrirModalImpresion(html, `Presupuesto: ${codDoc}`);
             } catch (err) {
                 console.error("Error al imprimir presupuesto:", err);
-                alert("Error al cargar la cotizaciÃ³n.");
+                alert("Error al cargar la cotización.");
             }
         }
 
@@ -3165,7 +3175,7 @@
                 direccion: document.getElementById('cli-dir').value.trim(),
                 contribuyente_especial: document.getElementById('cli-especial').checked,
                 observaciones: document.getElementById('cli-obs').value.trim(),
-                vendedor_id: vendedorVal ? vendedorVal : null
+                vendedor_id: vendedorVal || vendedoresPorNombre['DAS Soluciones'] || null
             };
 
             if (editandoClienteId) {
@@ -3192,7 +3202,11 @@
 
                     async function cargarClientes() {
             const { data: vends } = await db.from('vendedores').select('id, nombre');
-            if (vends) vends.forEach(v => mapVendedoresGlobal[v.id] = v.nombre);
+            vendedoresPorNombre = {};
+            if (vends) vends.forEach(v => {
+                mapVendedoresGlobal[v.id] = v.nombre;
+                vendedoresPorNombre[v.nombre] = v.id;
+            });
 
             const { data, error } = await db.from('clientes').select('*').order('descripcion');
             if (error) { console.error(error); return; }
@@ -3207,25 +3221,31 @@
                 { bg: 'rgba(219, 39, 119, 0.1)', text: '#f472b6', border: 'rgba(219, 39, 119, 0.3)' }, // Rosa
                 { bg: 'rgba(37, 99, 235, 0.1)', text: '#60a5fa', border: 'rgba(37, 99, 235, 0.3)' },  // Azul
                 { bg: 'rgba(16, 185, 129, 0.1)', text: '#34d399', border: 'rgba(16, 185, 129, 0.3)' }, // Verde
-                { bg: 'rgba(245, 158, 11, 0.1)', text: '#fbbf24', border: 'rgba(245, 158, 11, 0.3)' }, // Ãmbar
-                { bg: 'rgba(79, 70, 229, 0.1)', text: '#818cf8', border: 'rgba(79, 70, 229, 0.3)' },  // Ãndigo
+                { bg: 'rgba(245, 158, 11, 0.1)', text: '#fbbf24', border: 'rgba(245, 158, 11, 0.3)' }, // Ámbar
+                { bg: 'rgba(79, 70, 229, 0.1)', text: '#818cf8', border: 'rgba(79, 70, 229, 0.3)' },  // Índigo
                 { bg: 'rgba(225, 29, 72, 0.1)', text: '#fb7185', border: 'rgba(225, 29, 72, 0.3)' },  // Rojo suave
                 { bg: 'rgba(13, 148, 136, 0.1)', text: '#2dd4bf', border: 'rgba(13, 148, 136, 0.3)' }, // Teal
-                { bg: 'rgba(147, 51, 234, 0.1)', text: '#c084fc', border: 'rgba(147, 51, 234, 0.3)' }  // PÃºrpura
+                { bg: 'rgba(147, 51, 234, 0.1)', text: '#c084fc', border: 'rgba(147, 51, 234, 0.3)' }  // Púrpura
             ];
 
             (data || []).forEach(c => {
                 mapClientesGlobal[c.id] = c.descripcion || 'Sin nombre';
-                mapClientesVendedor[c.id] = c.vendedor_id || null;
+                mapClientesVendedor[c.id] = c.vendedor_id || vendedoresPorNombre['DAS Soluciones'] || null;
 
                 const badge = c.contribuyente_especial 
-                    ? '<span class="bg-sky-500/10 text-sky-400 border border-sky-500/20 px-2 py-1 rounded-md text-[10px] font-bold">SÃ­</span>' 
+                    ? '<span class="bg-sky-500/10 text-sky-400 border border-sky-500/20 px-2 py-1 rounded-md text-[10px] font-bold">Sí</span>' 
                     : '<span class="bg-slate-800 text-slate-400 border border-slate-700 px-2 py-1 rounded-md text-[10px]">No</span>';
                 
-                // LÃ³gica para asignar color Ãºnico por vendedor usando estilos en lÃ­nea
-                let styleVendedor = 'background-color: #1e293b; color: #94a3b8; border-color: #334155;'; // Color por defecto (Gris)
-                
-                if (c.vendedor_id && mapVendedoresGlobal[c.vendedor_id]) {
+                // Colores fijos para diferenciar las dos marcas; el resto usa la paleta.
+                const nombreVend = (c.vendedor_id && mapVendedoresGlobal[c.vendedor_id])
+                    ? mapVendedoresGlobal[c.vendedor_id]
+                    : 'DAS Soluciones';
+                let styleVendedor = 'background-color: #1e293b; color: #94a3b8; border-color: #334155;';
+                if (nombreVend === 'DAS Soluciones') {
+                    styleVendedor = 'background-color: rgba(6, 182, 212, 0.14); color: #67e8f9; border-color: rgba(6, 182, 212, 0.45);';
+                } else if (nombreVend === 'RMGCA') {
+                    styleVendedor = 'background-color: rgba(217, 70, 239, 0.14); color: #f0abfc; border-color: rgba(217, 70, 239, 0.45);';
+                } else if (c.vendedor_id) {
                     let hash = 0;
                     const strId = String(c.vendedor_id);
                     for (let i = 0; i < strId.length; i++) {
@@ -3236,9 +3256,7 @@
                     styleVendedor = `background-color: ${color.bg}; color: ${color.text}; border-color: ${color.border};`;
                 }
 
-                const nombreVendedor = (c.vendedor_id && mapVendedoresGlobal[c.vendedor_id]) 
-                    ? `<span style="${styleVendedor}" class="px-2 py-1 rounded text-[10px] font-medium border"><i class="fa-solid fa-id-badge mr-1"></i>${mapVendedoresGlobal[c.vendedor_id]}</span>`
-                    : '<span class="text-slate-500 text-[10px] italic">Sin asignar</span>';
+                const nombreVendedor = `<span style="${styleVendedor}" class="px-2 py-1 rounded text-[10px] font-medium border"><i class="fa-solid fa-id-badge mr-1"></i>${nombreVend}</span>`;
 
                 tbody.innerHTML += `
                     <tr class="hover:bg-slate-800/50 transition border-b border-slate-800">
@@ -3279,7 +3297,7 @@
         }
 
         async function eliminarCliente(id) {
-            if (!confirm('Â¿Eliminar cliente?')) return;
+            if (!confirm('¿Eliminar cliente?')) return;
             const { error } = await db.from('clientes').delete().eq('id', id);
             if (error) alert('Error: ' + error.message);
             else cargarClientes();
@@ -3366,7 +3384,7 @@
         }
 
         async function eliminarProveedor(id) {
-            if (!confirm('Â¿Eliminar proveedor?')) return;
+            if (!confirm('¿Eliminar proveedor?')) return;
             const { error } = await db.from('proveedores').delete().eq('id', id);
             if (error) alert('Error: ' + error.message);
             else cargarProveedores();
@@ -3395,8 +3413,8 @@
                 if (error) alert("Error guardando: " + error.message);
                 else {
                     editandoProductoId = null;
-                    document.getElementById('form-producto-titulo').innerHTML = '<i class="fa-solid fa-plus-circle text-sky-400"></i> Registrar Nuevo Ãtem';
-                    btn.innerHTML = '<i class="fa-solid fa-save"></i> Guardar Ãtem';
+                    document.getElementById('form-producto-titulo').innerHTML = '<i class="fa-solid fa-plus-circle text-sky-400"></i> Registrar Nuevo Ítem';
+                    btn.innerHTML = '<i class="fa-solid fa-save"></i> Guardar Ítem';
                     document.getElementById('form-producto').reset();
                     document.getElementById('prod-lleva-iva').checked = true;
                     cargarProductos();
@@ -3453,13 +3471,13 @@
             document.getElementById('prod-precio').value = data.precio;
             document.getElementById('prod-lleva-iva').checked = (data.lleva_iva !== false);
             editandoProductoId = id;
-            document.getElementById('form-producto-titulo').innerHTML = '<i class="fa-solid fa-pen-to-square text-sky-400"></i> Editando Ãtem';
-            document.querySelector('#form-producto button[type="submit"]').innerHTML = '<i class="fa-solid fa-arrows-rotate"></i> Actualizar Ãtem';
+            document.getElementById('form-producto-titulo').innerHTML = '<i class="fa-solid fa-pen-to-square text-sky-400"></i> Editando Ítem';
+            document.querySelector('#form-producto button[type="submit"]').innerHTML = '<i class="fa-solid fa-arrows-rotate"></i> Actualizar Ítem';
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
         async function eliminarProducto(id) {
-            if (!confirm('Â¿Eliminar producto/servicio?')) return;
+            if (!confirm('¿Eliminar producto/servicio?')) return;
             const { error } = await db.from('productos').delete().eq('id', id);
             if (error) alert('Error: ' + error.message);
             else cargarProductos();
@@ -3509,7 +3527,7 @@
             lista.innerHTML = '';
             subtotalPresupuesto = 0;
             if(carritoPresupuesto.length === 0) {
-                lista.innerHTML = '<p class="text-slate-500 text-xs italic">No hay productos agregados aÃºn.</p>';
+                lista.innerHTML = '<p class="text-slate-500 text-xs italic">No hay productos agregados aún.</p>';
                 actualizarTotalesPresupuesto();
                 return;
             }
@@ -3662,7 +3680,7 @@
         }
 
      async function procesarPresupuestoAVenta(id) {
-    if (!confirm('Â¿Desea procesar este presupuesto como una nueva Venta?')) return;
+    if (!confirm('¿Desea procesar este presupuesto como una nueva Venta?')) return;
 
     const { data: presData, error: presErr } = await db.from('presupuestos').select('*').eq('id', id).single();
     if (presErr || !presData) return alert('Error al cargar el presupuesto.');
@@ -3679,14 +3697,14 @@
     const nextControl = '00-' + String(lastControlNum + 1).padStart(6, '0');
     const tasaUsada = parseFloat(datosGenerales.tasa) || 1;
 
-    // VALIDACIÃ“N DE DUPLICADOS EN CONVERSIÃ“N
+    // VALIDACIÓN DE DUPLICADOS EN CONVERSIÓN
     const { data: duplicados } = await db
         .from('ventas')
         .select('id, factura, control')
         .or(`factura.eq.${nextFactura},control.eq.${nextControl}`);
 
     if (duplicados && duplicados.length > 0) {
-        return alert(`âš ï¸ Conflicto de correlativo: La Factura ${nextFactura} o el Control ${nextControl} ya existen. Actualice los correlativos en ParÃ¡metros.`);
+        return alert(`⚠️ Conflicto de correlativo: La Factura ${nextFactura} o el Control ${nextControl} ya existen. Actualice los correlativos en Parámetros.`);
     }
 
     const { data: vData, error: vErr } = await db.from('ventas').insert([{
@@ -3720,7 +3738,7 @@
 
     alert(`Venta registrada exitosamente.\nFactura: ${nextFactura}\nControl: ${nextControl}`);
 
-    if (confirm('Â¿Desea eliminar el presupuesto original ahora que fue procesado?')) {
+    if (confirm('¿Desea eliminar el presupuesto original ahora que fue procesado?')) {
         await db.from('presupuestos').delete().eq('id', id);
     }
 
@@ -3733,7 +3751,7 @@
 }
 
         async function eliminarPresupuesto(id) {
-            if (!confirm('Â¿Eliminar presupuesto?')) return;
+            if (!confirm('¿Eliminar presupuesto?')) return;
             const { error } = await db.from('presupuestos').delete().eq('id', id);
             if (error) alert('Error: ' + error.message);
             else cargarHistorialPresupuestos();
@@ -3909,7 +3927,7 @@
                 notas.forEach(n => {
                     const nombreCliente = mapCli[n.cliente_id] || 'Desconocido';
                     const misDetalles = detalles.filter(d => d.nota_id === n.id);
-                    let detalleTexto = misDetalles.map(d => `${d.cantidad}x ${mapProds[d.producto_id] || 'Ãtem'}`).join('<br>');
+                    let detalleTexto = misDetalles.map(d => `${d.cantidad}x ${mapProds[d.producto_id] || 'Ítem'}`).join('<br>');
                     if(!detalleTexto) detalleTexto = '-';
 
                     const estadoCxC = n.cxc 
@@ -3935,7 +3953,7 @@
         }
 
         async function eliminarNota(id) {
-            if (!confirm('Â¿Eliminar esta nota de entrega?')) return;
+            if (!confirm('¿Eliminar esta nota de entrega?')) return;
             const { error } = await db.from('notas_entrega').delete().eq('id', id);
             if (error) alert('Error: ' + error.message);
             else {
@@ -4008,14 +4026,14 @@
 
         async function consultarGeminiCompra(archivo) {
             const apiKey = configSistema.ia_api_key;
-            if (!apiKey) throw new Error('Configura la API Key de Gemini en ParÃ¡metros.');
+            if (!apiKey) throw new Error('Configura la API Key de Gemini en Parámetros.');
             const modelo = configSistema.ia_modelo || 'gemini-2.5-flash-lite';
             const base64 = await archivoABase64(archivo);
-            if (!base64) throw new Error('El archivo estÃ¡ vacÃ­o.');
+            if (!base64) throw new Error('El archivo está vacío.');
 
-            const prompt = `Analiza la factura de compra adjunta y extrae Ãºnicamente los datos visibles.
-Devuelve un objeto JSON con estas claves: proveedor (razÃ³n social del emisor), fecha (AAAA-MM-DD), numero_factura, numero_control, subtotal (base gravada sin IVA), monto_exento, impuestos (monto de IVA), total (total a pagar).
-Escribe los montos SOLO con dÃ­gitos y punto decimal, SIN separador de miles y SIN sÃ­mbolos de moneda (ejemplo: 64111.11, no "64.111,11"). Si un dato no es legible, usa "" en textos y 0 en nÃºmeros. No inventes informaciÃ³n.`;
+            const prompt = `Analiza la factura de compra adjunta y extrae únicamente los datos visibles.
+Devuelve un objeto JSON con estas claves: proveedor (razón social del emisor), fecha (AAAA-MM-DD), numero_factura, numero_control, subtotal (base gravada sin IVA), monto_exento, impuestos (monto de IVA), total (total a pagar).
+Escribe los montos SOLO con dígitos y punto decimal, SIN separador de miles y SIN símbolos de moneda (ejemplo: 64111.11, no "64.111,11"). Si un dato no es legible, usa "" en textos y 0 en números. No inventes información.`;
 
             const esquema = {
                 type: 'OBJECT',
@@ -4053,7 +4071,7 @@ Escribe los montos SOLO con dÃ­gitos y punto decimal, SIN separador de miles y
             const texto = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
             const limpio = texto.replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/, '').trim();
             let parsed;
-            try { parsed = JSON.parse(limpio); } catch (_) { throw new Error('La IA no devolviÃ³ un JSON vÃ¡lido.'); }
+            try { parsed = JSON.parse(limpio); } catch (_) { throw new Error('La IA no devolvió un JSON válido.'); }
             return parsed;
         }
 
@@ -4076,7 +4094,7 @@ Escribe los montos SOLO con dÃ­gitos y punto decimal, SIN separador de miles y
                 const total = m('total');
                 if (total > 0 && Math.abs(suma - total) > 0.5) {
                     alerta.classList.remove('hidden');
-                    alerta.innerText = `âš ï¸ El total detectado (${formatNumber(total)}) no coincide con base + exento + IVA (${formatNumber(suma)}). Revisa los montos antes de aprobar.`;
+                    alerta.innerText = `⚠️ El total detectado (${formatNumber(total)}) no coincide con base + exento + IVA (${formatNumber(suma)}). Revisa los montos antes de aprobar.`;
                 } else {
                     alerta.classList.add('hidden');
                     alerta.innerText = '';
@@ -4100,21 +4118,21 @@ Escribe los montos SOLO con dÃ­gitos y punto decimal, SIN separador de miles y
             const html = boton ? boton.innerHTML : null;
             if (boton) { boton.disabled = true; boton.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Analizando...'; }
             try {
-                if (!configSistema.ia_activo) throw new Error('Activa el asistente IA en ParÃ¡metros.');
+                if (!configSistema.ia_activo) throw new Error('Activa el asistente IA en Parámetros.');
                 const archivo = document.getElementById('comp-ia-archivo')?.files?.[0];
                 if (!archivo) throw new Error('Selecciona una foto o PDF de la factura.');
                 estadoIA('Analizando la factura con Gemini...');
                 const datos = await consultarGeminiCompra(archivo);
                 mostrarBorradorIA(datos, archivo);
-                estadoIA('Borrador listo para revisiÃ³n.');
+                estadoIA('Borrador listo para revisión.');
 
                 if (!configSistema.ia_exigir_aprobacion) {
-                    estadoIA('AprobaciÃ³n desactivada: guardando automÃ¡ticamente...');
+                    estadoIA('Aprobación desactivada: guardando automáticamente...');
                     await guardarCompraIA();
                 }
             } catch (e) {
                 console.error('ERROR_IA_COMPRA: ' + e);
-                estadoIA('âŒ ' + e.message, true);
+                estadoIA('❌ ' + e.message, true);
                 alert('No se pudo analizar la compra: ' + e.message);
             } finally {
                 if (boton) { boton.disabled = false; boton.innerHTML = html; }
@@ -4140,11 +4158,11 @@ Escribe los montos SOLO con dÃ­gitos y punto decimal, SIN separador de miles y
                         .ilike('descripcion', proveedor)
                         .limit(1);
                     if (existe?.length) {
-                        throw new Error(`Ya existe una compra de ${proveedor} con la factura ${numFactura} (id ${existe[0].id}). No se creÃ³ un duplicado.`);
+                        throw new Error(`Ya existe una compra de ${proveedor} con la factura ${numFactura} (id ${existe[0].id}). No se creó un duplicado.`);
                     }
                 }
 
-                // La IA crea el proveedor si aÃºn no existe en el catÃ¡logo.
+                // La IA crea el proveedor si aún no existe en el catálogo.
                 let proveedorCreado = false;
                 const { data: provExiste } = await db.from('proveedores')
                     .select('id, descripcion')
@@ -4152,7 +4170,7 @@ Escribe los montos SOLO con dÃ­gitos y punto decimal, SIN separador de miles y
                     .limit(1);
                 if (!provExiste?.length) {
                     const { error: errProv } = await db.from('proveedores').insert([{ descripcion: proveedor }]);
-                    if (errProv) console.warn('No se pudo crear el proveedor automÃ¡ticamente:', errProv.message);
+                    if (errProv) console.warn('No se pudo crear el proveedor automáticamente:', errProv.message);
                     else proveedorCreado = true;
                 }
 
@@ -4172,16 +4190,16 @@ Escribe los montos SOLO con dÃ­gitos y punto decimal, SIN separador de miles y
                 let estadoAdjunto = 'sin imagen adjunta';
                 if (fila?.[0] && borradorIA.archivo) {
                     const subio = await subirCopiaCompra(fila[0].id, borradorIA.archivo);
-                    estadoAdjunto = subio ? 'imagen adjunta' : 'la compra quedÃ³ guardada pero la imagen no se adjuntÃ³ (usa el botÃ³n ðŸ“Ž)';
+                    estadoAdjunto = subio ? 'imagen adjunta' : 'la compra quedó guardada pero la imagen no se adjuntó (usa el botón 📎)';
                 }
                 descartarBorradorIA();
-                estadoIA(`âœ… Compra guardada (id ${fila?.[0]?.id ?? '?'}). ${proveedorCreado ? 'Proveedor creado. ' : ''}${estadoAdjunto}.`);
+                estadoIA(`✅ Compra guardada (id ${fila?.[0]?.id ?? '?'}). ${proveedorCreado ? 'Proveedor creado. ' : ''}${estadoAdjunto}.`);
                 await cargarHistorialCompras();
                 await cargarOpcionesCompras();
                 await cargarResumenIVA();
             } catch (e) {
                 console.error('ERROR_GUARDAR_IA_COMPRA: ' + e);
-                estadoIA('âŒ ' + e.message, true);
+                estadoIA('❌ ' + e.message, true);
                 alert('No se pudo guardar la compra: ' + e.message);
             } finally {
                 if (boton) { boton.disabled = false; boton.innerHTML = original; }
@@ -4279,7 +4297,7 @@ Escribe los montos SOLO con dÃ­gitos y punto decimal, SIN separador de miles y
         const BUCKET_COMPRAS = 'facturas-compras';
 
         // Reduce el peso de las fotos antes de subirlas: evita fallos por
-        // tamaÃ±o y acelera la carga en el bucket de compras.
+        // tamaño y acelera la carga en el bucket de compras.
         async function prepararImagenCompra(archivo) {
             if (!archivo?.type?.startsWith('image/') || archivo.type === 'image/svg+xml') return archivo;
             try {
@@ -4327,21 +4345,21 @@ Escribe los montos SOLO con dÃ­gitos y punto decimal, SIN separador de miles y
                 if (!res.ok) {
                     const t = await res.text().catch(() => '');
                     console.error('ERROR_SUBIR_COPIA_COMPRA: ' + res.status + ' ' + t.slice(0, 500));
-                    alert(`La compra SÃ quedÃ³ guardada (id ${compraId}), pero no se pudo adjuntar la imagen (HTTP ${res.status}). Puedes hacerlo despuÃ©s con el botÃ³n ðŸ“Ž del historial.\nDetalle: ${t.slice(0, 200)}`);
+                    alert(`La compra SÍ quedó guardada (id ${compraId}), pero no se pudo adjuntar la imagen (HTTP ${res.status}). Puedes hacerlo después con el botón 📎 del historial.\nDetalle: ${t.slice(0, 200)}`);
                     return false;
                 }
                 const url = `${supabaseUrl}/storage/v1/object/public/${BUCKET_COMPRAS}/${ruta}`;
                 const { error: errUpdate } = await db.from('compras').update({ imagen_url: url }).eq('id', compraId);
                 if (errUpdate) {
                     console.error('ERROR_GUARDAR_URL_IMAGEN: ' + errUpdate.message);
-                    alert(`La imagen se subiÃ³, pero no se pudo vincular a la compra ${compraId}. Revisa la consola.`);
+                    alert(`La imagen se subió, pero no se pudo vincular a la compra ${compraId}. Revisa la consola.`);
                     return false;
                 }
                 await cargarHistorialCompras();
                 return true;
             } catch (e) {
                 console.error('ERROR_SUBIR_COPIA_COMPRA: ' + e);
-                alert(`La compra SÃ quedÃ³ guardada (id ${compraId}), pero hubo un error subiendo la copia: ${e.message}`);
+                alert(`La compra SÍ quedó guardada (id ${compraId}), pero hubo un error subiendo la copia: ${e.message}`);
                 return false;
             }
         }
@@ -4426,7 +4444,7 @@ Escribe los montos SOLO con dÃ­gitos y punto decimal, SIN separador de miles y
                         <td class="p-4 font-mono text-slate-400 text-[11px]">Bs. ${formatNumber(c.impuestos)}</td>
                         <td class="p-4 font-mono font-bold text-orange-400 text-[11px]">Bs. ${formatNumber(c.total)}</td>
                         <td class="p-4 text-right">
-                            <button onclick="abrirModalRetencionCompra('${c.id}')" class="${c.retencion_iva_check ? 'text-rose-400 hover:text-rose-300' : 'text-slate-500 hover:text-rose-400'} font-medium px-2" title="${c.retencion_iva_check ? `RetenciÃ³n IVA: Bs. ${formatNumber(c.retencion_iva_monto || 0)} (${c.retencion_iva_porc || 75}%)` : 'Registrar retenciÃ³n de IVA'}"><i class="fa-${c.retencion_iva_check ? 'solid' : 'regular'} fa-file-invoice-dollar"></i></button>
+                            <button onclick="abrirModalRetencionCompra('${c.id}')" class="${c.retencion_iva_check ? 'text-rose-400 hover:text-rose-300' : 'text-slate-500 hover:text-rose-400'} font-medium px-2" title="${c.retencion_iva_check ? `Retención IVA: Bs. ${formatNumber(c.retencion_iva_monto || 0)} (${c.retencion_iva_porc || 75}%)` : 'Registrar retención de IVA'}"><i class="fa-${c.retencion_iva_check ? 'solid' : 'regular'} fa-file-invoice-dollar"></i></button>
                             ${c.imagen_url ? `<button onclick="verCopiaCompra('${c.imagen_url}')" class="text-emerald-400 hover:text-emerald-300 font-medium px-2" title="Ver copia de la factura"><i class="fa-solid fa-eye"></i></button>` : `<button onclick="adjuntarCopiaCompra('${c.id}')" class="text-slate-500 hover:text-emerald-400 font-medium px-2" title="Adjuntar copia de la factura"><i class="fa-solid fa-paperclip"></i></button>`}
                             <button onclick="eliminarCompra('${c.id}')" class="text-rose-400 hover:text-rose-300 font-medium px-2"><i class="fa-solid fa-trash"></i></button>
                         </td>
@@ -4439,13 +4457,13 @@ Escribe los montos SOLO con dÃ­gitos y punto decimal, SIN separador de miles y
         }
 
         async function eliminarCompra(id) {
-            if (!confirm('Â¿Eliminar registro de compra?')) return;
+            if (!confirm('¿Eliminar registro de compra?')) return;
             const { error } = await db.from('compras').delete().eq('id', id);
             if (error) alert('Error: ' + error.message);
             else { cargarHistorialCompras(); cargarResumenIVA(); }
         }
 
-        // ===== RETENCIÃ“N DE IVA EN COMPRAS =====
+        // ===== RETENCIÓN DE IVA EN COMPRAS =====
         let retencionCompraSeleccionada = null;
 
         function abrirModalRetencionCompra(compraId) {
@@ -4455,7 +4473,7 @@ Escribe los montos SOLO con dÃ­gitos y punto decimal, SIN separador de miles y
 
             document.getElementById('modal-compra-ret-id').value = compra.id;
             document.getElementById('modal-retencion-compra-sub').innerText =
-                `${compra.descripcion || 'Proveedor'} â€¢ Factura ${compra.numero_factura || '-'}`;
+                `${compra.descripcion || 'Proveedor'} • Factura ${compra.numero_factura || '-'}`;
 
             document.getElementById('modal-compra-ret-check').checked = !!compra.retencion_iva_check;
             document.getElementById('modal-compra-ret-nro').value = compra.retencion_iva_comprobante || '';
@@ -4500,7 +4518,7 @@ Escribe los montos SOLO con dÃ­gitos y punto decimal, SIN separador de miles y
                 retencion_iva_fecha: check ? (document.getElementById('modal-compra-ret-fecha').value || null) : null
             };
             const { error } = await db.from('compras').update(payload).eq('id', retencionCompraSeleccionada.id);
-            if (error) return alert('Error guardando retenciÃ³n: ' + error.message);
+            if (error) return alert('Error guardando retención: ' + error.message);
             cerrarModalRetencionCompra();
             await cargarHistorialCompras();
             await cargarResumenIVA();
@@ -4508,7 +4526,7 @@ Escribe los montos SOLO con dÃ­gitos y punto decimal, SIN separador de miles y
 
         async function quitarRetencionCompra() {
             if (!retencionCompraSeleccionada) return;
-            if (!confirm('Â¿Quitar la retenciÃ³n de IVA de esta compra?')) return;
+            if (!confirm('¿Quitar la retención de IVA de esta compra?')) return;
             const { error } = await db.from('compras').update({
                 retencion_iva_check: false,
                 retencion_iva_monto: 0,
@@ -4533,7 +4551,7 @@ Escribe los montos SOLO con dÃ­gitos y punto decimal, SIN separador de miles y
                 campoFecha.value = new Date().toISOString().split('T')[0];
             }
             
-            // CORRECCIÃ“N CRUCIAL: Mantener siempre la tasa real configurada
+            // CORRECCIÓN CRUCIAL: Mantener siempre la tasa real configurada
             const inputTasa = document.getElementById('input-tasa-venta');
             if (inputTasa) {
                 inputTasa.value = parseFloat(datosGenerales.tasa || 1).toFixed(2);
@@ -4767,7 +4785,7 @@ Escribe los montos SOLO con dÃ­gitos y punto decimal, SIN separador de miles y
             const fechaFactura = document.getElementById('venta-fecha').value;
 
             if (!clienteId || carritoVentas.length === 0) return alert('Seleccione cliente y agregue productos.');
-            if (!numFactura || !numControl) return alert('Debe indicar el NÂº de Factura y NÂº de Control.');
+            if (!numFactura || !numControl) return alert('Debe indicar el Nº de Factura y Nº de Control.');
 
             const btn = document.querySelector('#form-venta button[type="submit"]');
             const originalHTML = btn.innerHTML;
@@ -4778,14 +4796,14 @@ Escribe los montos SOLO con dÃ­gitos y punto decimal, SIN separador de miles y
                 const { data: factDuplicada, error: errFact } = await db.from('ventas').select('id, factura').eq('factura', numFactura).limit(1);
                 if (errFact) throw errFact;
                 if (factDuplicada && factDuplicada.length > 0) {
-                    alert(`âš ï¸ ERROR FISCAL: La Factura NÂº "${numFactura}" ya fue emitida anteriormente.`);
+                    alert(`⚠️ ERROR FISCAL: La Factura Nº "${numFactura}" ya fue emitida anteriormente.`);
                     btn.innerHTML = originalHTML; btn.disabled = false; return;
                 }
 
                 const { data: ctrlDuplicado, error: errCtrl } = await db.from('ventas').select('id', 'control').eq('control', numControl).limit(1);
                 if (errCtrl) throw errCtrl;
                 if (ctrlDuplicado && ctrlDuplicado.length > 0) {
-                    alert(`âš ï¸ ERROR FISCAL: El NÂº de Control "${numControl}" ya existe en otra factura.`);
+                    alert(`⚠️ ERROR FISCAL: El Nº de Control "${numControl}" ya existe en otra factura.`);
                     btn.innerHTML = originalHTML; btn.disabled = false; return;
                 }
 
@@ -4830,7 +4848,7 @@ Escribe los montos SOLO con dÃ­gitos y punto decimal, SIN separador de miles y
                         await db.from('tareas').insert([{
                             cliente_id: clienteId,
                             tipo: 'Cobro',
-                            descripcion: `Cobrar Factura NÂº ${numFactura}`,
+                            descripcion: `Cobrar Factura Nº ${numFactura}`,
                             fecha_vencimiento: fechaVenc.toISOString().split('T')[0],
                             estado: 'Pendiente'
                         }]);
@@ -4860,7 +4878,7 @@ Escribe los montos SOLO con dÃ­gitos y punto decimal, SIN separador de miles y
                 if(document.getElementById('islr') && !document.getElementById('islr').classList.contains('hidden')) {
                     cargarProyeccionISLR();
                 }
-                alert(`âœ… Factura NÂº ${numFactura} registrada exitosamente${exitoTFHKA ? ' â€” Comprobante digital emitido en The Factory âœ…. Descarga el PDF fiscal con el botÃ³n rojo ðŸ“„ del historial.' : ' â€” Comprobante digital NO emitido (revisar consola) âš ï¸'}.`);
+                alert(`✅ Factura Nº ${numFactura} registrada exitosamente${exitoTFHKA ? ' — Comprobante digital emitido en The Factory ✅. Descarga el PDF fiscal con el botón rojo 📄 del historial.' : ' — Comprobante digital NO emitido (revisar consola) ⚠️'}.`);
             } catch (err) {
                 console.error("ERROR REAL:", err);
                 alert("Error al procesar la venta: " + err.message);
@@ -4893,7 +4911,7 @@ Escribe los montos SOLO con dÃ­gitos y punto decimal, SIN separador de miles y
         if (cliData) {
             cliData.forEach(c => {
                 mapClientesGlobal[c.id] = c.descripcion || 'Sin nombre';
-                mapClientesVendedor[c.id] = c.vendedor_id || null;
+                mapClientesVendedor[c.id] = c.vendedor_id || vendedoresPorNombre['DAS Soluciones'] || null;
             });
         }
     }
@@ -4907,7 +4925,7 @@ Escribe los montos SOLO con dÃ­gitos y punto decimal, SIN separador de miles y
     ventasNCCache = {};
     notasAcreditadas.forEach(n => { ventasNCCache[n.venta_id] = (ventasNCCache[n.venta_id] || 0) + (parseFloat(n.total) || 0); });
     
-    // ORDENAMIENTO NUMÃ‰RICO POR FACTURA (Ãšltima emitida arriba)
+    // ORDENAMIENTO NUMÉRICO POR FACTURA (Última emitida arriba)
     ventasHistorialCache = (data || []).sort((a, b) => {
         const numA = parseInt(String(a.factura || '').replace(/\D/g, ''), 10) || 0;
         const numB = parseInt(String(b.factura || '').replace(/\D/g, ''), 10) || 0;
@@ -4939,7 +4957,7 @@ Escribe los montos SOLO con dÃ­gitos y punto decimal, SIN separador de miles y
         return true;
     });
 
-    // Mantiene el orden estricto por nÃºmero de factura
+    // Mantiene el orden estricto por número de factura
     filtradas.sort((a, b) => {
         const numA = parseInt(String(a.factura || '').replace(/\D/g, ''), 10) || 0;
         const numB = parseInt(String(b.factura || '').replace(/\D/g, ''), 10) || 0;
@@ -5041,7 +5059,7 @@ const btnRetIva = retIvaActiva
     ? `<button type="button" onclick="abrirModalRetencion('${v.id}', 'iva')" class="text-blue-400 hover:text-blue-300 text-lg transition p-1 focus:outline-none" title="Ret. IVA Aplicada: Bs. ${formatNumber(v.retencion_iva_monto || 0)} (${v.retencion_iva_porc || 75}%)">
         <i class="fa-solid fa-square-check"></i>
        </button>`
-    : `<button type="button" onclick="abrirModalRetencion('${v.id}', 'iva')" class="text-slate-600 hover:text-blue-400 text-lg transition p-1 focus:outline-none" title="Clic para registrar RetenciÃ³n IVA">
+    : `<button type="button" onclick="abrirModalRetencion('${v.id}', 'iva')" class="text-slate-600 hover:text-blue-400 text-lg transition p-1 focus:outline-none" title="Clic para registrar Retención IVA">
         <i class="fa-regular fa-square"></i>
        </button>`;
 
@@ -5050,7 +5068,7 @@ const btnRetIslr = retIslrActiva
     ? `<button type="button" onclick="abrirModalRetencion('${v.id}', 'islr')" class="text-violet-400 hover:text-violet-300 text-lg transition p-1 focus:outline-none" title="Ret. ISLR Aplicada: Bs. ${formatNumber(v.retencion_islr_monto || 0)} (${v.retencion_islr_porc || 2}%)">
         <i class="fa-solid fa-square-check"></i>
        </button>`
-    : `<button type="button" onclick="abrirModalRetencion('${v.id}', 'islr')" class="text-slate-600 hover:text-violet-400 text-lg transition p-1 focus:outline-none" title="Clic para registrar RetenciÃ³n ISLR">
+    : `<button type="button" onclick="abrirModalRetencion('${v.id}', 'islr')" class="text-slate-600 hover:text-violet-400 text-lg transition p-1 focus:outline-none" title="Clic para registrar Retención ISLR">
         <i class="fa-regular fa-square"></i>
        </button>`;
 
@@ -5078,7 +5096,7 @@ const btnRetIslr = retIslrActiva
         }
 
         async function eliminarVenta(id) {
-            if (!confirm('Â¿Eliminar venta?')) return;
+            if (!confirm('¿Eliminar venta?')) return;
             const { error } = await db.from('ventas').delete().eq('id', id);
             if (error) alert('Error: ' + error.message);
             else {
@@ -5090,7 +5108,7 @@ const btnRetIslr = retIslrActiva
         }
 
         // ==========================================
-        // MODAL RETENCIÃ“N (IVA & ISLR)
+        // MODAL RETENCIÓN (IVA & ISLR)
         // ==========================================
         let retencionVentaSeleccionada = null;
 
@@ -5134,7 +5152,7 @@ function obtenerBaseImponibleFactura(v) {
     const sub = document.getElementById('modal-ret-subtitulo');
     const clienteNom = mapClientesGlobal[retencionVentaSeleccionada.cliente_id] || 'Cliente';
 
-    sub.innerText = `Factura NÂº ${retencionVentaSeleccionada.factura || '-'} â€¢ ${clienteNom}`;
+    sub.innerText = `Factura Nº ${retencionVentaSeleccionada.factura || '-'} • ${clienteNom}`;
 
     const check = document.getElementById('modal-ret-check');
     const inputNro = document.getElementById('modal-ret-nro');
@@ -5149,7 +5167,7 @@ function obtenerBaseImponibleFactura(v) {
     if (tipo === 'iva') {
         iconoBox.className = "p-2.5 rounded-xl text-base bg-blue-950 border border-blue-800 text-blue-400";
         iconoBox.innerHTML = '<i class="fa-solid fa-file-invoice-dollar"></i>';
-        titulo.innerText = "Comprobante de RetenciÃ³n de IVA";
+        titulo.innerText = "Comprobante de Retención de IVA";
 
         const aplicada = !!retencionVentaSeleccionada.retencion_iva_check;
         check.checked = aplicada || true; // Por defecto marcado si se abre para registrar
@@ -5161,7 +5179,7 @@ function obtenerBaseImponibleFactura(v) {
             : 75;
         inputPorc.value = porc;
 
-        // CÃLCULO AUTOMÃTICO: % sobre el IVA
+        // CÁLCULO AUTOMÁTICO: % sobre el IVA
         const ivaTotal = parseFloat(retencionVentaSeleccionada.impuestos) || 0;
         const montoCalculado = (ivaTotal * (parseFloat(porc) / 100));
         
@@ -5176,7 +5194,7 @@ function obtenerBaseImponibleFactura(v) {
     } else {
         iconoBox.className = "p-2.5 rounded-xl text-base bg-violet-950 border border-violet-800 text-violet-400";
         iconoBox.innerHTML = '<i class="fa-solid fa-scale-balanced"></i>';
-        titulo.innerText = "Comprobante de RetenciÃ³n de ISLR";
+        titulo.innerText = "Comprobante de Retención de ISLR";
 
         const aplicada = !!retencionVentaSeleccionada.retencion_islr_check;
         check.checked = aplicada || true;
@@ -5188,7 +5206,7 @@ function obtenerBaseImponibleFactura(v) {
             : 2;
         inputPorc.value = porc;
 
-        // CÃLCULO AUTOMÃTICO: % sobre la Base Imponible
+        // CÁLCULO AUTOMÁTICO: % sobre la Base Imponible
         const baseImponible = obtenerBaseImponibleFactura(retencionVentaSeleccionada);
         const montoCalculado = (baseImponible * (parseFloat(porc) / 100));
 
@@ -5315,11 +5333,11 @@ function obtenerBaseImponibleFactura(v) {
             if(document.getElementById('islr') && !document.getElementById('islr').classList.contains('hidden')) {
                 cargarProyeccionISLR();
             }
-            alert("âœ… Comprobante de retenciÃ³n actualizado correctamente.");
+            alert("✅ Comprobante de retención actualizado correctamente.");
         }
 
         async function quitarRetencionModal() {
-            if (!confirm("Â¿Deseas desmarcar y anular esta retenciÃ³n?")) return;
+            if (!confirm("¿Deseas desmarcar y anular esta retención?")) return;
             const ventaId = document.getElementById('modal-ret-venta-id').value;
             const tipo = document.getElementById('modal-ret-tipo').value;
 
@@ -5382,7 +5400,7 @@ function obtenerBaseImponibleFactura(v) {
                         const cliInfo = mapClientes[v.cliente_id] || {};
                         const ivaTotal = parseFloat(v.impuestos) || 0;
 
-                        // Si tiene retenciÃ³n IVA confirmada mediante checklist, usar ese monto; de lo contrario si es especial estimar 75%
+                        // Si tiene retención IVA confirmada mediante checklist, usar ese monto; de lo contrario si es especial estimar 75%
                         let retIva = 0;
                         if (v.retencion_iva_check) {
                             retIva = parseFloat(v.retencion_iva_monto) || (ivaTotal * 0.75);
@@ -5393,7 +5411,7 @@ function obtenerBaseImponibleFactura(v) {
                         const ncVenta = mapNcVenta[v.id] || { total: 0, iva: 0 };
                         const ivaRecibido = Math.max(0, ivaTotal - retIva - ncVenta.iva);
 
-                        // Si tiene retenciÃ³n ISLR confirmada mediante checklist, deducir su monto real
+                        // Si tiene retención ISLR confirmada mediante checklist, deducir su monto real
                         let islrRetenido = 0;
                         if (v.retencion_islr_check) {
                             islrRetenido = parseFloat(v.retencion_islr_monto) || (parseFloat(v.retencion_islr) || 0);
@@ -5475,7 +5493,7 @@ function obtenerBaseImponibleFactura(v) {
         }
 
         async function marcarComoPagado(id, tipo) {
-            if (!confirm('Â¿Desea registrar esta cuenta como pagada?')) return;
+            if (!confirm('¿Desea registrar esta cuenta como pagada?')) return;
             
             const tabla = tipo === 'venta' ? 'ventas' : 'notas_entrega';
             const { data: doc } = await db.from(tabla).select('factura, cliente_id').eq('id', id).single();
@@ -5504,7 +5522,7 @@ function obtenerBaseImponibleFactura(v) {
         }
 
         // ==========================================
-        // RESUMEN DE IVA (ASIGNADO A LA FECHA DE LA RETENCIÃ“N)
+        // RESUMEN DE IVA (ASIGNADO A LA FECHA DE LA RETENCIÓN)
         // ==========================================
         async function cargarResumenIVA() {
             const year = new Date().getFullYear();
@@ -5522,7 +5540,7 @@ function obtenerBaseImponibleFactura(v) {
             let serviciosPorMes = new Array(12).fill(0);
 
             try {
-                // Traer todas las ventas del aÃ±o o cuyas retenciones correspondan al aÃ±o
+                // Traer todas las ventas del año o cuyas retenciones correspondan al año
                 const { data: ventas } = await db.from('ventas').select('*');
                 
                 if (ventas) {
@@ -5556,7 +5574,7 @@ function obtenerBaseImponibleFactura(v) {
                             }
                         }
 
-                        // LÃ“GICA DE RETENCIÃ“N DE IVA: Se imputa en el mes de su comprobante
+                        // LÓGICA DE RETENCIÓN DE IVA: Se imputa en el mes de su comprobante
                         if (v.retencion_iva_check) {
                             const fechaRet = normalizarFechaYMD(v.retencion_iva_fecha || v.fecha);
                             if (fechaRet && fechaRet.startsWith(String(year))) {
@@ -5584,7 +5602,7 @@ function obtenerBaseImponibleFactura(v) {
                     }
                 });
 
-                // Servicios para estimaciÃ³n ISLR mensual
+                // Servicios para estimación ISLR mensual
                 const { data: detalles } = await db.from('venta_detalles').select('venta_id, producto_id, cantidad, precio_unitario');
                 const { data: prods } = await db.from('productos').select('id, tipo');
                 const mapTipo = {};
@@ -5797,7 +5815,7 @@ function obtenerBaseImponibleFactura(v) {
             if (valor > disponible + 0.01) {
                 const exceso = valor - disponible;
                 input.classList.add('border-rose-500');
-                alert(`âš ï¸ Excedes el disponible por Bs. ${formatNumber(exceso)}.`);
+                alert(`⚠️ Excedes el disponible por Bs. ${formatNumber(exceso)}.`);
             } else {
                 input.classList.remove('border-rose-500');
             }
@@ -5846,7 +5864,7 @@ function obtenerBaseImponibleFactura(v) {
         }
 
         // ==========================================
-        // PROYECCIÃ“N ISLR (RETENCIONES CHECKLIST)
+        // PROYECCIÓN ISLR (RETENCIONES CHECKLIST)
         // ==========================================
         async function cargarProyeccionISLR() {
             const year = new Date().getFullYear();
@@ -5999,7 +6017,7 @@ function obtenerBaseImponibleFactura(v) {
             if (error) alert("Error al guardar gastos: " + error.message);
             else {
                 Object.keys(payload).forEach(k => datosGenerales[k] = payload[k]);
-                alert("âœ… Gastos deducibles guardados correctamente.");
+                alert("✅ Gastos deducibles guardados correctamente.");
             }
         }
 
@@ -6137,10 +6155,10 @@ function obtenerBaseImponibleFactura(v) {
                 const diffDias = Math.ceil((fechaVenc - hoy) / (1000 * 60 * 60 * 24));
                 
                 let semaforo, colorClass;
-                if (diffDias < 0) { semaforo = 'ðŸ”´ Vencido'; colorClass = 'text-rose-400'; }
-                else if (diffDias === 0) { semaforo = 'ðŸ”´ Vence HOY'; colorClass = 'text-rose-400'; }
-                else if (diffDias <= 3) { semaforo = 'ðŸŸ¡ PrÃ³ximo'; colorClass = 'text-amber-400'; }
-                else { semaforo = 'ðŸŸ¢ Al dÃ­a'; colorClass = 'text-emerald-400'; }
+                if (diffDias < 0) { semaforo = '🔴 Vencido'; colorClass = 'text-rose-400'; }
+                else if (diffDias === 0) { semaforo = '🔴 Vence HOY'; colorClass = 'text-rose-400'; }
+                else if (diffDias <= 3) { semaforo = '🟡 Próximo'; colorClass = 'text-amber-400'; }
+                else { semaforo = '🟢 Al día'; colorClass = 'text-emerald-400'; }
 
                 const nombreCliente = t.cliente_id ? (clientes?.find(c => c.id === t.cliente_id)?.descripcion || 'Desconocido') : 'General';
 
@@ -6185,14 +6203,14 @@ function obtenerBaseImponibleFactura(v) {
         }
 
         async function eliminarTarea(id) {
-            if (!confirm('Â¿Eliminar este compromiso?')) return;
+            if (!confirm('¿Eliminar este compromiso?')) return;
             const { error } = await db.from('tareas').delete().eq('id', id);
             if (error) alert('Error: ' + error.message);
             else cargarCompromisos();
         }
 
         // ==========================================
-        // DASHBOARD (GRÃFICAS Y COMPROMISOS)
+        // DASHBOARD (GRÁFICAS Y COMPROMISOS)
         // ==========================================
         async function cargarDashboard() {
             document.getElementById('dash-year').innerText = new Date().getFullYear();
@@ -6225,7 +6243,7 @@ function obtenerBaseImponibleFactura(v) {
                         const fechaV = new Date(ymd + 'T00:00:00');
                         const mesDiff = (hoy.getMonth() - fechaV.getMonth()) + (12 * (hoy.getFullYear() - fechaV.getFullYear()));
                         if (mesDiff >= 0 && mesDiff <= 2) {
-                            // Ambas series se muestran en Bs para que la comparaciÃ³n sea vÃ¡lida.
+                            // Ambas series se muestran en Bs para que la comparación sea válida.
                             dataVentas[2 - mesDiff] += parseFloat(v.total) || 0;
                         }
                     });
@@ -6312,7 +6330,7 @@ function obtenerBaseImponibleFactura(v) {
                     options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false }
                 });
 
-            } catch (e) { console.error("Error grÃ¡ficas", e); }
+            } catch (e) { console.error("Error gráficas", e); }
 
             const { data: tareas, error } = await db.from('tareas')
                 .select('*, clientes(descripcion)')
@@ -6387,10 +6405,10 @@ function obtenerBaseImponibleFactura(v) {
         async function enviarAFacturacionDigital(ventaId, numFactura, numControl, fechaFactura, clienteData, carritoVentas, totales, tasaUsada, formaPago) {
     try {
      if (!configSistema.tfhka_activo) {
-         console.warn('FacturaciÃ³n digital desactivada desde ParÃ¡metros. Se omitiÃ³ el envÃ­o a The Factory.');
+         console.warn('Facturación digital desactivada desde Parámetros. Se omitió el envío a The Factory.');
          return false;
      }
-     console.log("ðŸš€ INICIANDO ENVÃO A TFHKA PARA LA FACTURA:", numFactura);
+     console.log("🚀 INICIANDO ENVÍO A TFHKA PARA LA FACTURA:", numFactura);
         // 1. Formatear Fecha y Hora para la API
         const [anio, mes, dia] = fechaFactura.split('-');
         const fechaFormat = `${dia}/${mes}/${anio}`;
@@ -6408,7 +6426,7 @@ function obtenerBaseImponibleFactura(v) {
         const detallesItems = carritoVentas.map((item, index) => {
             // TFHKA exige indicador 1 (Bien) o 2 (Servicio)
             const indicador = item.tipo === 'Servicio' ? '2' : '1';
-            // CÃ³digo de impuesto: G = 16%, R = 8%, A = 31%, E = Exento
+            // Código de impuesto: G = 16%, R = 8%, A = 31%, E = Exento
             const codigoImp = item.llevaIVA ? 'G' : 'E';
             const tasaIVA = item.llevaIVA ? 16 : 0;
             const valorIVA = item.llevaIVA ? (item.precio * item.cantidad * 0.16) : 0;
@@ -6419,7 +6437,7 @@ function obtenerBaseImponibleFactura(v) {
                 indicadorBienoServicio: indicador,
                 descripcion: item.nombre,
                 cantidad: String(item.cantidad),
-                unidadMedida: "NIU", // NIU = Unidad (cÃ³digo SENIAT)
+                unidadMedida: "NIU", // NIU = Unidad (código SENIAT)
                 precioUnitario: item.precio.toFixed(2),
                 precioItem: (item.precio * item.cantidad).toFixed(2),
                 codigoImpuesto: codigoImp,
@@ -6507,7 +6525,7 @@ function obtenerBaseImponibleFactura(v) {
                 detallesItems: detallesItems
             }
         };
-console.log("ðŸ“¡ ENVIANDO A LA EDGE FUNCTION SUPABASE (facturacion-thefactory)...");
+console.log("📡 ENVIANDO A LA EDGE FUNCTION SUPABASE (facturacion-thefactory)...");
         // 5. Enviar el comprobante a la Edge Function de Supabase -> The Factory HKA
         const { data: sessionTFHKA } = await db.auth.getSession();
         const accessTokenTFHKA = sessionTFHKA?.session?.access_token || supabaseKey;
@@ -6524,8 +6542,8 @@ console.log("ðŸ“¡ ENVIANDO A LA EDGE FUNCTION SUPABASE (facturacion-thefact
         const resultado = await respuestaBackend.json().catch(() => ({}));
 
         if (respuestaBackend.ok && (resultado.codigo === "200" || resultado.codigo === 200 || resultado.Codigo === "200" || resultado.Codigo === 200)) {
-            console.log("âœ… Factura digital emitida con Ã©xito:", resultado);
-            //alert(`Factura Digital Emitida Exitosamente.\nNÃºmero de Control TFHKA: ${resultado.Resultado?.numeroControl || numControl}`);
+            console.log("✅ Factura digital emitida con éxito:", resultado);
+            //alert(`Factura Digital Emitida Exitosamente.\nNúmero de Control TFHKA: ${resultado.Resultado?.numeroControl || numControl}`);
             // 6. Enviar el comprobante (PDF) via correo al cliente -> /api/Correo/Enviar
             try {
                 const resCorreo = await fetch(`${supabaseUrl}/functions/v1/facturacion-thefactory/api/Correo/Enviar`, {
@@ -6585,13 +6603,13 @@ console.log("ðŸ“¡ ENVIANDO A LA EDGE FUNCTION SUPABASE (facturacion-thefact
         } else {
             console.error("Error al emitir factura digital:", resultado);
             alert("Venta guardada localmente, pero FALLO en la nube fiscal: " + (resultado.mensaje || 'Error desconocido') + " | Validaciones: " + JSON.stringify(resultado.validaciones || []));
-            //alert(`âš ï¸ Venta guardada localmente, pero FALLÃ“ en la nube fiscal:\n${resultado.mensaje || 'Error desconocido'}\n${JSON.stringify(resultado.validaciones || '')}`);
+            //alert(`⚠️ Venta guardada localmente, pero FALLÓ en la nube fiscal:\n${resultado.mensaje || 'Error desconocido'}\n${JSON.stringify(resultado.validaciones || '')}`);
             return false;
         }
 
     } catch (error) {
-        console.error("âŒ Error crÃ­tico enviando a facturaciÃ³n digital:", error);
-        alert("La venta se guardÃ³, pero hubo un error de conexiÃ³n con el servidor fiscal.");
+        console.error("❌ Error crítico enviando a facturación digital:", error);
+        alert("La venta se guardó, pero hubo un error de conexión con el servidor fiscal.");
         return false;
     }
 }
@@ -6643,7 +6661,7 @@ console.log("ðŸ“¡ ENVIANDO A LA EDGE FUNCTION SUPABASE (facturacion-thefact
             notas.forEach(n => { mapNc[n.venta_id] = (mapNc[n.venta_id] || 0) + (parseFloat(n.total) || 0); });
 
             const lista = (resV.data || []).filter(v => {
-                // Solo facturas "vivas": pendientes de cobro y sin nota de crÃ©dito previa.
+                // Solo facturas "vivas": pendientes de cobro y sin nota de crédito previa.
                 if (v.cxc !== true) return false;
                 if ((mapNc[v.id] || 0) > 0) return false;
                 const saldo = (parseFloat(v.total) || 0) - (mapNc[v.id] || 0);
@@ -6656,7 +6674,7 @@ console.log("ðŸ“¡ ENVIANDO A LA EDGE FUNCTION SUPABASE (facturacion-thefact
 
             sel.innerHTML = '<option value="">Seleccione una factura...</option>' + lista.map(v => {
                 const saldo = (parseFloat(v.total) || 0) - (mapNc[v.id] || 0);
-                return `<option value="${v.id}">#${escNC(v.factura || v.id)} Â· ${escNC(mapCli[v.cliente_id] || 'Cliente')} Â· Bs. ${formatNumber(saldo)} âœ…</option>`;
+                return `<option value="${v.id}">#${escNC(v.factura || v.id)} · ${escNC(mapCli[v.cliente_id] || 'Cliente')} · Bs. ${formatNumber(saldo)} ✅</option>`;
             }).join('');
             if (!lista.length) {
                 sel.innerHTML = '<option value="">No hay facturas pendientes de cobro y sin NC previa</option>';
@@ -6705,13 +6723,13 @@ console.log("ðŸ“¡ ENVIANDO A LA EDGE FUNCTION SUPABASE (facturacion-thefact
             if (!caja) return;
             const parcial = document.getElementById('nc-tipo')?.value === 'parcial';
             if (!ncItemsCache.length) {
-                caja.innerHTML = '<p class="p-6 text-center text-slate-500 text-xs italic">Seleccione una factura para ver sus artÃ­culos.</p>';
+                caja.innerHTML = '<p class="p-6 text-center text-slate-500 text-xs italic">Seleccione una factura para ver sus artículos.</p>';
                 calcularTotalesNC();
                 return;
             }
             caja.innerHTML = `<table class="w-full text-xs">
                 <thead class="bg-slate-950/60 text-slate-400">
-                    <tr><th class="p-3 text-left">Incluir</th><th class="p-3 text-left">DescripciÃ³n</th><th class="p-3 text-right">Cant.</th><th class="p-3 text-right">Precio Bs.</th><th class="p-3 text-right">Subtotal Bs.</th></tr>
+                    <tr><th class="p-3 text-left">Incluir</th><th class="p-3 text-left">Descripción</th><th class="p-3 text-right">Cant.</th><th class="p-3 text-right">Precio Bs.</th><th class="p-3 text-right">Subtotal Bs.</th></tr>
                 </thead>
                 <tbody class="divide-y divide-slate-800">${ncItemsCache.map((it, i) => `
                     <tr>
@@ -6765,11 +6783,11 @@ console.log("ðŸ“¡ ENVIANDO A LA EDGE FUNCTION SUPABASE (facturacion-thefact
             const btn = document.getElementById('btn-emitir-nc');
             if (!ncVentaCache) return alert('Seleccione una factura.');
             const motivo = (document.getElementById('nc-motivo')?.value || '').trim();
-            if (!motivo) return alert('Indique el motivo de la nota de crÃ©dito.');
+            if (!motivo) return alert('Indique el motivo de la nota de crédito.');
             const correo = (document.getElementById('nc-correo')?.value || '').trim();
-            if (!correo.includes('@')) return alert('Indique el correo del cliente para enviar la nota de crÃ©dito.');
+            if (!correo.includes('@')) return alert('Indique el correo del cliente para enviar la nota de crédito.');
             const t = calcularTotalesNC(false);
-            if (t.total <= 0 || t.n === 0) return alert('Debe incluir al menos un artÃ­culo con cantidad mayor a cero.');
+            if (t.total <= 0 || t.n === 0) return alert('Debe incluir al menos un artículo con cantidad mayor a cero.');
             const saldo = (parseFloat(ncVentaCache.total) || 0) - 0;
             if (t.total > saldo + 0.01) return alert('El total de la NC no puede superar el total de la factura.');
             const tipo = document.getElementById('nc-tipo')?.value || 'total';
@@ -6852,13 +6870,13 @@ console.log("ðŸ“¡ ENVIANDO A LA EDGE FUNCTION SUPABASE (facturacion-thefact
                     detallesItems: detalles
                 }};
 
-                if (!configSistema.tfhka_activo) throw new Error('La facturaciÃ³n digital estÃ¡ desactivada en ParÃ¡metros.');
+                if (!configSistema.tfhka_activo) throw new Error('La facturación digital está desactivada en Parámetros.');
                 const H = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${supabaseKey}`, 'apikey': supabaseKey };
                 const res = await fetch(`${supabaseUrl}/functions/v1/facturacion-thefactory/api/Emision`, { method: 'POST', headers: H, body: JSON.stringify({ ...payload, ...configTF() }) });
                 const resultado = await res.json().catch(() => ({}));
                 const codigo = String(resultado.codigo ?? '');
                 if (!res.ok || codigo !== '200') {
-                    alert('FALLÃ“ la emisiÃ³n fiscal: ' + (resultado.mensaje || 'Error desconocido') + '\n' + JSON.stringify(resultado.validaciones || []));
+                    alert('FALLÓ la emisión fiscal: ' + (resultado.mensaje || 'Error desconocido') + '\n' + JSON.stringify(resultado.validaciones || []));
                     return;
                 }
 
@@ -6920,7 +6938,7 @@ console.log("ðŸ“¡ ENVIANDO A LA EDGE FUNCTION SUPABASE (facturacion-thefact
                 datosGenerales.ult_nc = numNC;
 
                 // La factura acreditada deja de estar pendiente: se retira de CxC
-                // y se cierra su compromiso de cobro (mismo patrÃ³n que marcarComoPagado).
+                // y se cierra su compromiso de cobro (mismo patrón que marcarComoPagado).
                 try {
                     await db.from('ventas').update({ cxc: false }).eq('id', ncVentaCache.id);
                     const facturaAfectada = String(ncVentaCache.factura || '');
@@ -6945,21 +6963,21 @@ console.log("ðŸ“¡ ENVIANDO A LA EDGE FUNCTION SUPABASE (facturacion-thefact
                     console.log('CORREO_NC: ' + JSON.stringify(rcorreo));
                 } catch (e) { console.error('ERROR_CORREO_NC: ' + e); }
 
-                alert(`âœ… Nota de CrÃ©dito ${numNC} emitida. Control fiscal: ${control || '(pendiente)'}. PDF disponible en el historial.`);
+                alert(`✅ Nota de Crédito ${numNC} emitida. Control fiscal: ${control || '(pendiente)'}. PDF disponible en el historial.`);
                 await Promise.all([cargarFacturasAcreditables(), cargarHistorialNC()]);
                 document.getElementById('nc-motivo').value = '';
                 document.getElementById('nc-numero').value = generarCorrelativoNC();
                 alCambiarFacturaNC();
             } catch (e) {
                 console.error('ERROR_EMISION_NC: ' + e);
-                alert('Error al emitir la nota de crÃ©dito: ' + e.message);
+                alert('Error al emitir la nota de crédito: ' + e.message);
             } finally {
                 if (btn) { btn.disabled = false; btn.innerHTML = originalHTML; }
             }
         }
 
         async function descargarPdfNC(numeroDocumento, boton) {
-            if (!numeroDocumento) return alert('Esta NC no tiene nÃºmero de documento.');
+            if (!numeroDocumento) return alert('Esta NC no tiene número de documento.');
             const original = boton ? boton.innerHTML : null;
             if (boton) { boton.disabled = true; boton.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>'; }
             try {
@@ -6996,7 +7014,7 @@ console.log("ðŸ“¡ ENVIANDO A LA EDGE FUNCTION SUPABASE (facturacion-thefact
             const mapCli = {};
             (resCli.data || []).forEach(c => mapCli[c.id] = c.descripcion || 'Desconocido');
             if (!notas.length) {
-                tbody.innerHTML = '<tr><td colspan="9" class="p-8 text-center text-slate-500 italic text-xs">No hay notas de crÃ©dito emitidas.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="9" class="p-8 text-center text-slate-500 italic text-xs">No hay notas de crédito emitidas.</td></tr>';
                 return;
             }
             notas.sort((a, b) => String(b.numero_documento || '').localeCompare(String(a.numero_documento || '')));
@@ -7208,13 +7226,13 @@ console.log("ðŸ“¡ ENVIANDO A LA EDGE FUNCTION SUPABASE (facturacion-thefact
 
             const resumen = [
                 { concepto: 'Ventas internas no gravadas (exentas)', base: tot.exento, iva: 0, retenido: 0 },
-                { concepto: 'Ventas internas gravadas alÃ­cuota general (16,00 %)', base: tot.gravadaBase, iva: tot.gravadaIva, retenido: 0 },
+                { concepto: 'Ventas internas gravadas alícuota general (16,00 %)', base: tot.gravadaBase, iva: tot.gravadaIva, retenido: 0 },
                 { concepto: 'Ventas internas a contribuyentes (16,00 %)', base: r2(tot.contribBase), iva: r2(tot.contribIva), retenido: 0 },
                 { concepto: 'Ventas internas a no contribuyentes (16,00 %)', base: r2(tot.noContribBase), iva: r2(tot.noContribIva), retenido: 0 },
-                { concepto: 'Notas de crÃ©dito emitidas en el perÃ­odo', base: r2(tot.base - tot.gravadaBase), iva: r2(tot.iva - tot.gravadaIva), retenido: 0 },
-                { concepto: 'Total ventas y dÃ©bitos fiscales del perÃ­odo', base: tot.base, iva: tot.iva, retenido: 0 },
+                { concepto: 'Notas de crédito emitidas en el período', base: r2(tot.base - tot.gravadaBase), iva: r2(tot.iva - tot.gravadaIva), retenido: 0 },
+                { concepto: 'Total ventas y débitos fiscales del período', base: tot.base, iva: tot.iva, retenido: 0 },
                 { concepto: 'Retenciones de IVA aplicadas', base: tot.baseRet, iva: 0, retenido: tot.retenido },
-                { concepto: 'DÃ©bito fiscal neto despuÃ©s de retenciones', base: tot.base, iva: r2(tot.iva - tot.retenido), retenido: tot.retenido }
+                { concepto: 'Débito fiscal neto después de retenciones', base: tot.base, iva: r2(tot.iva - tot.retenido), retenido: tot.retenido }
             ];
 
             return {
@@ -7298,11 +7316,11 @@ console.log("ðŸ“¡ ENVIANDO A LA EDGE FUNCTION SUPABASE (facturacion-thefact
             Object.keys(tot).forEach(k => tot[k] = r2(tot[k]));
 
             const resumen = [
-                { concepto: 'Compras no gravadas y/o sin derecho a crÃ©dito fiscal', base: tot.exento, iva: 0, retenido: 0 },
-                { concepto: 'Compras internas gravadas alÃ­cuota general (16,00 %)', base: tot.base, iva: tot.iva, retenido: 0 },
-                { concepto: 'Total compras y crÃ©ditos fiscales del perÃ­odo', base: tot.base, iva: tot.iva, retenido: 0 },
+                { concepto: 'Compras no gravadas y/o sin derecho a crédito fiscal', base: tot.exento, iva: 0, retenido: 0 },
+                { concepto: 'Compras internas gravadas alícuota general (16,00 %)', base: tot.base, iva: tot.iva, retenido: 0 },
+                { concepto: 'Total compras y créditos fiscales del período', base: tot.base, iva: tot.iva, retenido: 0 },
                 { concepto: 'Retenciones de IVA practicadas a proveedores', base: tot.baseRet, iva: 0, retenido: tot.retenido },
-                { concepto: 'CrÃ©dito fiscal neto del perÃ­odo', base: tot.base, iva: tot.iva, retenido: tot.retenido }
+                { concepto: 'Crédito fiscal neto del período', base: tot.base, iva: tot.iva, retenido: tot.retenido }
             ];
 
             return {
@@ -7323,7 +7341,7 @@ console.log("ðŸ“¡ ENVIANDO A LA EDGE FUNCTION SUPABASE (facturacion-thefact
             const tipo = document.getElementById('libro-tipo')?.value || 'ventas';
             const periodo = document.getElementById('libro-periodo')?.value || periodoLibroActual();
             const rango = rangoPeriodoLibro(periodo);
-            if (!rango) throw new Error('Selecciona un perÃ­odo mensual vÃ¡lido.');
+            if (!rango) throw new Error('Selecciona un período mensual válido.');
             return tipo === 'compras'
                 ? construirLibroCompras(periodo, rango)
                 : construirLibroVentas(periodo, rango);
@@ -7340,7 +7358,7 @@ console.log("ðŸ“¡ ENVIANDO A LA EDGE FUNCTION SUPABASE (facturacion-thefact
             document.getElementById('libro-preview').classList.remove('hidden');
             document.getElementById('libro-preview-titulo').innerText = data.titulo.replace('I.V.A.', 'IVA');
             document.getElementById('libro-preview-sub').innerText =
-                `${data.etiqueta} â€¢ Desde el ${fechaDDMMYYYY(data.inicio)} hasta el ${fechaDDMMYYYY(data.fin)}`;
+                `${data.etiqueta} • Desde el ${fechaDDMMYYYY(data.inicio)} hasta el ${fechaDDMMYYYY(data.fin)}`;
             document.getElementById('libro-preview-total').innerText = `${data.totalRegistros} registros`;
 
             const t = data.totales;
@@ -7350,12 +7368,12 @@ console.log("ðŸ“¡ ENVIANDO A LA EDGE FUNCTION SUPABASE (facturacion-thefact
             document.getElementById('libro-card-ret').innerText = `Bs. ${formatNumber(t.retenido)}`;
 
             document.getElementById('libro-resumen-titulo').innerHTML = data.tipo === 'ventas'
-                ? '<i class="fa-solid fa-calculator text-blue-400"></i> Resumen de DÃ©bitos Fiscales'
-                : '<i class="fa-solid fa-calculator text-blue-400"></i> Resumen de CrÃ©ditos Fiscales';
+                ? '<i class="fa-solid fa-calculator text-blue-400"></i> Resumen de Débitos Fiscales'
+                : '<i class="fa-solid fa-calculator text-blue-400"></i> Resumen de Créditos Fiscales';
 
             const tbody = document.getElementById('tabla-libro-preview');
             if (data.filas.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="9" class="p-8 text-center text-slate-500 italic">No hay operaciones registradas en este perÃ­odo.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="9" class="p-8 text-center text-slate-500 italic">No hay operaciones registradas en este período.</td></tr>';
             } else {
                 tbody.innerHTML = data.filas.map(f => `
                     <tr class="hover:bg-slate-800/40">
@@ -7373,7 +7391,7 @@ console.log("ðŸ“¡ ENVIANDO A LA EDGE FUNCTION SUPABASE (facturacion-thefact
 
             const tbRes = document.getElementById('tabla-libro-resumen');
             tbRes.innerHTML = data.resumen.map(r => `
-                <tr class="${r.concepto.startsWith('Total') || r.concepto.startsWith('DÃ©bito') || r.concepto.startsWith('CrÃ©dito') ? 'bg-slate-950/60 font-bold text-white' : ''}">
+                <tr class="${r.concepto.startsWith('Total') || r.concepto.startsWith('Débito') || r.concepto.startsWith('Crédito') ? 'bg-slate-950/60 font-bold text-white' : ''}">
                     <td class="p-3">${escNC(r.concepto)}</td>
                     <td class="p-3 text-right">${formatNumber(r.base)}</td>
                     <td class="p-3 text-right">${formatNumber(r.iva)}</td>
@@ -7438,7 +7456,7 @@ console.log("ðŸ“¡ ENVIANDO A LA EDGE FUNCTION SUPABASE (facturacion-thefact
 
         function generarPdfLibro(data) {
             if (!window.jspdf || !window.jspdf.jsPDF) {
-                throw new Error('No se cargÃ³ la librerÃ­a de PDF. Verifica tu conexiÃ³n y recarga la pÃ¡gina.');
+                throw new Error('No se cargó la librería de PDF. Verifica tu conexión y recarga la página.');
             }
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'legal', compress: true });
@@ -7461,12 +7479,12 @@ console.log("ðŸ“¡ ENVIANDO A LA EDGE FUNCTION SUPABASE (facturacion-thefact
             const head = [
                 [
                     { content: 'DATOS DEL DOCUMENTO', colSpan: 9, styles: { halign: 'center' } },
-                    { content: esVentas ? 'VENTAS DEL PERÃODO' : 'COMPRAS DEL PERÃODO', colSpan: 5, styles: { halign: 'center' } },
-                    { content: 'RETENCIÃ“N DE IVA', colSpan: 5, styles: { halign: 'center' } }
+                    { content: esVentas ? 'VENTAS DEL PERÍODO' : 'COMPRAS DEL PERÍODO', colSpan: 5, styles: { halign: 'center' } },
+                    { content: 'RETENCIÓN DE IVA', colSpan: 5, styles: { halign: 'center' } }
                 ],
                 esVentas
-                    ? ['Nro', 'Fecha', 'RIF', 'Nombre o razÃ³n social', 'Tipo Doc', 'Serial', 'Nro Doc', 'Tipo Tran', 'Nro Fac Afectada', 'Total con IVA', 'Exentas', 'Base Imponible', '% Alic', 'Monto IVA', 'Base Ret. IVA', 'Retenido', '% Ret', 'Nro Comp. Ret', 'Fecha Ret']
-                    : ['Nro', 'Fecha', 'RIF', 'Nombre o razÃ³n social', 'Tipo Doc', 'NÃºmero', 'Nro Control', 'Tipo Tran', 'Nro Fac Afectada', 'Total incl. IVA', 'Exentas / sin crÃ©dito', 'Base Imponible', '% Alic', 'Monto IVA', 'Base Ret. IVA', '% Ret', 'Monto Retenido', 'Nro Comp. Ret', 'Fecha Ret']
+                    ? ['Nro', 'Fecha', 'RIF', 'Nombre o razón social', 'Tipo Doc', 'Serial', 'Nro Doc', 'Tipo Tran', 'Nro Fac Afectada', 'Total con IVA', 'Exentas', 'Base Imponible', '% Alic', 'Monto IVA', 'Base Ret. IVA', 'Retenido', '% Ret', 'Nro Comp. Ret', 'Fecha Ret']
+                    : ['Nro', 'Fecha', 'RIF', 'Nombre o razón social', 'Tipo Doc', 'Número', 'Nro Control', 'Tipo Tran', 'Nro Fac Afectada', 'Total incl. IVA', 'Exentas / sin crédito', 'Base Imponible', '% Alic', 'Monto IVA', 'Base Ret. IVA', '% Ret', 'Monto Retenido', 'Nro Comp. Ret', 'Fecha Ret']
             ];
 
             doc.autoTable({
@@ -7510,7 +7528,7 @@ console.log("ðŸ“¡ ENVIANDO A LA EDGE FUNCTION SUPABASE (facturacion-thefact
             // Resumen fiscal
             const inicioResumen = doc.lastAutoTable.finalY + 6;
             doc.autoTable({
-                head: [['Concepto', 'Base Imponible', 'IVA / ' + (esVentas ? 'DÃ©bito Fiscal' : 'CrÃ©dito Fiscal'), 'Retenido']],
+                head: [['Concepto', 'Base Imponible', 'IVA / ' + (esVentas ? 'Débito Fiscal' : 'Crédito Fiscal'), 'Retenido']],
                 body: data.resumen.map(r => [r.concepto, formatNumber(r.base), formatNumber(r.iva), formatNumber(r.retenido)]),
                 startY: inicioResumen,
                 margin: { left: 8, right: 8, bottom: 12 },
@@ -7527,7 +7545,7 @@ console.log("ðŸ“¡ ENVIANDO A LA EDGE FUNCTION SUPABASE (facturacion-thefact
                 didParseCell: (hook) => {
                     if (hook.section === 'body') {
                         const concepto = String(hook.row.raw?.[0] || '');
-                        if (concepto.startsWith('Total') || concepto.startsWith('DÃ©bito') || concepto.startsWith('CrÃ©dito')) {
+                        if (concepto.startsWith('Total') || concepto.startsWith('Débito') || concepto.startsWith('Crédito')) {
                             hook.cell.styles.fontStyle = 'bold';
                             hook.cell.styles.fillColor = [242, 242, 242];
                         }
@@ -7543,8 +7561,8 @@ console.log("ðŸ“¡ ENVIANDO A LA EDGE FUNCTION SUPABASE (facturacion-thefact
                 doc.setFont('helvetica', 'normal');
                 doc.setFontSize(6);
                 doc.setTextColor(60);
-                doc.text(`Fecha de emisiÃ³n: ${hoyDDMMYYYY()}`, 8, pageH - 4);
-                doc.text(`PÃ¡gina ${i} de ${pageCount}`, pageW - 8, pageH - 4, { align: 'right' });
+                doc.text(`Fecha de emisión: ${hoyDDMMYYYY()}`, 8, pageH - 4);
+                doc.text(`Página ${i} de ${pageCount}`, pageW - 8, pageH - 4, { align: 'right' });
             }
             return doc;
         }
@@ -7580,7 +7598,54 @@ console.log("ðŸ“¡ ENVIANDO A LA EDGE FUNCTION SUPABASE (facturacion-thefact
         }
 
         // ==========================================
-        // INICIALIZACIÃ“N GENERAL
+        // SCROLL MÓVIL Y PULL-TO-REFRESH
+        // ==========================================
+        function configurarPullToRefresh() {
+            const scroller = document.getElementById('contenido-principal');
+            if (!scroller) return;
+            const indicador = document.getElementById('ptr-indicador');
+            let startY = 0;
+            let activo = false;
+            const esCampo = (t) => t && ['INPUT', 'TEXTAREA', 'SELECT'].includes(t.tagName);
+
+            scroller.addEventListener('touchstart', (e) => {
+                if (scroller.scrollTop <= 0 && !esCampo(e.target)) {
+                    startY = e.touches[0].clientY;
+                    activo = true;
+                }
+            }, { passive: true });
+
+            scroller.addEventListener('touchmove', (e) => {
+                if (!activo) return;
+                const delta = e.touches[0].clientY - startY;
+                if (indicador) {
+                    if (delta > 25) {
+                        indicador.classList.remove('hidden');
+                        indicador.style.opacity = String(Math.min(1, delta / 100));
+                    } else {
+                        indicador.classList.add('hidden');
+                    }
+                }
+                if (delta > 90) {
+                    activo = false;
+                    if (indicador) indicador.classList.add('hidden');
+                    location.reload();
+                }
+            }, { passive: true });
+
+            const finalizar = () => {
+                activo = false;
+                if (indicador) {
+                    indicador.classList.add('hidden');
+                    indicador.style.opacity = '';
+                }
+            };
+            scroller.addEventListener('touchend', finalizar, { passive: true });
+            scroller.addEventListener('touchcancel', finalizar, { passive: true });
+        }
+
+        // ==========================================
+        // INICIALIZACIÓN GENERAL
         // ==========================================
         window.onload = async () => {
             verificarSesion();
@@ -7589,6 +7654,7 @@ console.log("ðŸ“¡ ENVIANDO A LA EDGE FUNCTION SUPABASE (facturacion-thefact
             await cargarDatosGenerales();
             await cargarConfiguracionSistema();
             await cargarVendedores();
+            configurarPullToRefresh();
             mostrarModulo('dashboard'); 
             obtenerTasaBCV(true); 
         };
