@@ -9,6 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>try{document.documentElement.dataset.theme=localStorage.getItem('das_tema')||'light'}catch(e){document.documentElement.dataset.theme='light'}</script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -48,12 +49,33 @@
             --superficie-2: #F7F9FC;
             --tinta: #17243B;
             --tinta-2: #2B3A52;
+            --tinta-3: #3C4B63;
             --apagado: #63738C;
             --apagado-2: #91A0B4;
             --linea: #E4EAF2;
             --linea-fuerte: #D2DCE8;
             --acento: #0E7490;
             --acento-suave: #E8F5F8;
+            --campo-bg: #FFFFFF;
+            --sombra: 0 1px 2px rgba(23, 36, 59, .05), 0 1px 12px rgba(23, 36, 59, .03);
+        }
+
+        /* Modo oscuro: misma estructura, paleta original del sistema */
+        [data-theme="dark"] {
+            --lienzo: #020617;
+            --superficie: #0F172A;
+            --superficie-2: #1E293B;
+            --tinta: #F1F5F9;
+            --tinta-2: #E2E8F0;
+            --tinta-3: #CBD5E1;
+            --apagado: #94A3B8;
+            --apagado-2: #64748B;
+            --linea: #1E293B;
+            --linea-fuerte: #334155;
+            --acento: #38BDF8;
+            --acento-suave: rgba(30, 41, 59, .55);
+            --campo-bg: #0F172A;
+            --sombra: 0 1px 2px rgba(0, 0, 0, .35);
         }
 
         body.font-sans {
@@ -87,7 +109,7 @@
         /* Tinta */
         .text-slate-100 { color: var(--tinta) !important; }
         .text-slate-200 { color: var(--tinta-2) !important; }
-        .text-slate-300 { color: #3C4B63 !important; }
+        .text-slate-300 { color: var(--tinta-3) !important; }
         .text-slate-400 { color: var(--apagado) !important; }
         .text-slate-500 { color: var(--apagado-2) !important; }
         body [class*="text-white"]:not(button):not(a):not(select):not(option) { color: var(--tinta) !important; }
@@ -104,7 +126,7 @@
 
         /* Campos */
         input:not([type="checkbox"]):not([type="file"]), select, textarea {
-            background-color: #fff !important;
+            background-color: var(--campo-bg) !important;
             border-color: var(--linea-fuerte) !important;
             color: var(--tinta) !important;
         }
@@ -116,7 +138,7 @@
 
         /* Elevación casi plana */
         .shadow-xl, .shadow-lg, .shadow-md, .shadow-sm, .shadow-2xl {
-            box-shadow: 0 1px 2px rgba(23, 36, 59, .05), 0 1px 12px rgba(23, 36, 59, .03) !important;
+            box-shadow: var(--sombra) !important;
         }
         .rounded-2xl { border-radius: 16px !important; }
         .rounded-xl { border-radius: 10px !important; }
@@ -142,6 +164,15 @@
         /* Enlaces y foco */
         a { color: var(--acento); }
         :focus-visible { outline: 2px solid var(--acento); outline-offset: 2px; border-radius: 6px; }
+        .tema-toggle {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 30px; height: 30px; border-radius: 9px;
+            border: 1px solid var(--linea-fuerte);
+            background: var(--superficie-2); color: var(--acento);
+            font-size: 12px; cursor: pointer; transition: background .15s ease, color .15s ease;
+        }
+        .tema-toggle:hover { background: var(--acento-suave); }
+        [data-theme="dark"] .tema-toggle { border-color: #334155; }
         @media (prefers-reduced-motion: reduce) {
             *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
         }
@@ -332,9 +363,14 @@
                 <i class="fa-solid fa-circle-user text-sky-400"></i>
                 <span id="label-usuario-activo">Admin</span>
             </span>
-            <button onclick="cerrarSesion()" class="text-rose-400 hover:text-rose-300 font-semibold text-[10px] px-2 py-1 rounded-lg bg-rose-950/30 border border-rose-900/40 transition" title="Cerrar sesión">
-                <i class="fa-solid fa-power-off"></i> Salir
-            </button>
+            <div class="flex items-center gap-1.5">
+                <button onclick="alternarTema(this)" class="tema-toggle" title="Cambiar tema claro / oscuro" aria-label="Cambiar tema">
+                    <i class="fa-solid fa-moon"></i>
+                </button>
+                <button onclick="cerrarSesion()" class="text-rose-400 hover:text-rose-300 font-semibold text-[10px] px-2 py-1 rounded-lg bg-rose-950/30 border border-rose-900/40 transition" title="Cerrar sesión">
+                    <i class="fa-solid fa-power-off"></i> Salir
+                </button>
+            </div>
         </div>
     </aside>
 
@@ -345,7 +381,12 @@
             <h1 class="text-base font-bold text-white flex items-center gap-2">
                 <div class="bg-sky-500 text-slate-950 p-1.5 rounded-lg text-[10px]"><i class="fa-solid fa-briefcase"></i></div> DAS Ventas
             </h1>
-            <button onclick="toggleSidebar()" class="text-slate-300 focus:outline-none"><i class="fa-solid fa-bars text-xl"></i></button>
+            <div class="flex items-center gap-2">
+                <button onclick="alternarTema(this)" class="tema-toggle md:hidden" title="Cambiar tema claro / oscuro" aria-label="Cambiar tema">
+                    <i class="fa-solid fa-moon"></i>
+                </button>
+                <button onclick="toggleSidebar()" class="text-slate-300 focus:outline-none"><i class="fa-solid fa-bars text-xl"></i></button>
+            </div>
         </header>
 
         <div id="contenido-principal" class="flex-1 p-4 md:p-8 overflow-y-auto w-full">
@@ -2989,6 +3030,23 @@
             } finally {
                 if (boton) { boton.disabled = false; boton.innerHTML = html; }
             }
+        }
+
+        // ==========================================
+        // TEMA CLARO / OSCURO
+        // ==========================================
+        function aplicarTema(tema, botones) {
+            document.documentElement.setAttribute('data-theme', tema);
+            try { localStorage.setItem('das_tema', tema); } catch (e) { /* modo privado */ }
+            const icono = tema === 'dark' ? 'fa-sun' : 'fa-moon';
+            (botones || document.querySelectorAll('.tema-toggle')).forEach(b => {
+                if (b) b.innerHTML = `<i class="fa-solid ${icono}"></i>`;
+            });
+        }
+
+        function alternarTema(boton) {
+            const actual = document.documentElement.getAttribute('data-theme') || 'light';
+            aplicarTema(actual === 'dark' ? 'light' : 'dark', [boton]);
         }
 
         function toggleSidebar() {
@@ -8764,6 +8822,7 @@ console.log("📡 ENVIANDO A LA EDGE FUNCTION SUPABASE (facturacion-thefactory).
         // ==========================================
         window.onload = async () => {
             verificarSesion();
+            aplicarTema(document.documentElement.getAttribute('data-theme') || 'light');
             const uGuardado = sessionStorage.getItem('das_user');
             if (uGuardado) document.getElementById('label-usuario-activo').innerText = uGuardado;
             await cargarDatosGenerales();
