@@ -6,6 +6,9 @@
     <title>DAS Ventas - Sistema de Gestión</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -34,6 +37,114 @@
         .texto-azul { color: #1e4189; }
         .texto-rojo { color: #d32f2f; }
         .desc-multilinea { white-space: pre-wrap; line-height: 1.2; }
+
+        /* ============================================================
+           TEMA CLARO "LIENZO" — capa de presentación sobre Tailwind.
+           No altera la lógica ni los colores semánticos por módulo.
+           ============================================================ */
+        :root {
+            --lienzo: #F3F6FB;
+            --superficie: #FFFFFF;
+            --superficie-2: #F7F9FC;
+            --tinta: #17243B;
+            --tinta-2: #2B3A52;
+            --apagado: #63738C;
+            --apagado-2: #91A0B4;
+            --linea: #E4EAF2;
+            --linea-fuerte: #D2DCE8;
+            --acento: #0E7490;
+            --acento-suave: #E8F5F8;
+        }
+
+        body.font-sans {
+            font-family: "Plus Jakarta Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif !important;
+            font-feature-settings: "tnum" 1, "cv05" 1;
+            -webkit-font-smoothing: antialiased;
+            text-rendering: optimizeLegibility;
+        }
+        .font-mono, td.font-mono, span.font-mono, p.font-mono {
+            font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace !important;
+            font-variant-numeric: tabular-nums;
+            letter-spacing: -0.01em;
+        }
+
+        /* Superficies */
+        .bg-slate-950 { background-color: var(--lienzo) !important; }
+        .bg-slate-900 { background-color: var(--superficie) !important; }
+        .bg-slate-800 { background-color: var(--superficie-2) !important; }
+        .bg-slate-950\/60 { background-color: var(--superficie-2) !important; }
+        .bg-slate-900\/60 { background-color: var(--superficie) !important; }
+        .bg-slate-800\/30 { background-color: var(--acento-suave) !important; }
+        .bg-slate-800\/50 { background-color: var(--superficie-2) !important; }
+
+        /* Cubiertas de modales: se mantienen oscuras para dar foco */
+        .bg-slate-950\/85 { background-color: rgba(15, 23, 42, .58) !important; }
+        .bg-slate-950\/80 { background-color: rgba(15, 23, 42, .50) !important; }
+        .bg-slate-950\/70 { background-color: rgba(15, 23, 42, .45) !important; }
+        .bg-slate-950\/40 { background-color: var(--superficie-2) !important; }
+        .bg-slate-950\/50 { background-color: var(--superficie-2) !important; }
+
+        /* Tinta */
+        .text-slate-100 { color: var(--tinta) !important; }
+        .text-slate-200 { color: var(--tinta-2) !important; }
+        .text-slate-300 { color: #3C4B63 !important; }
+        .text-slate-400 { color: var(--apagado) !important; }
+        .text-slate-500 { color: var(--apagado-2) !important; }
+        body [class*="text-white"]:not(button):not(a):not(select):not(option) { color: var(--tinta) !important; }
+        button [class*="text-white"], button.text-white { color: #fff !important; }
+        .text-white { color: var(--tinta) !important; }
+        button.text-white, a.text-white, .bg-emerald-600 .text-white, .bg-rose-600 .text-white, .bg-sky-600 .text-white, .bg-indigo-600 .text-white, .bg-violet-600 .text-white, .bg-amber-600 .text-white, .bg-cyan-600 .text-white { color: #fff !important; }
+        ::selection { background: var(--acento-suave); color: var(--tinta); }
+
+        /* Líneas: jerarquía por grosor, no por peso visual */
+        .border-slate-700 { border-color: var(--linea-fuerte) !important; }
+        .border-slate-800 { border-color: var(--linea) !important; }
+        .border-slate-600 { border-color: var(--linea-fuerte) !important; }
+        hr, .border-t { border-color: var(--linea) !important; }
+
+        /* Campos */
+        input:not([type="checkbox"]):not([type="file"]), select, textarea {
+            background-color: #fff !important;
+            border-color: var(--linea-fuerte) !important;
+            color: var(--tinta) !important;
+        }
+        input[readonly], input:disabled, select:disabled {
+            background-color: var(--superficie-2) !important;
+            color: var(--apagado) !important;
+        }
+        input::placeholder, textarea::placeholder { color: var(--apagado-2) !important; }
+
+        /* Elevación casi plana */
+        .shadow-xl, .shadow-lg, .shadow-md, .shadow-sm, .shadow-2xl {
+            box-shadow: 0 1px 2px rgba(23, 36, 59, .05), 0 1px 12px rgba(23, 36, 59, .03) !important;
+        }
+        .rounded-2xl { border-radius: 16px !important; }
+        .rounded-xl { border-radius: 10px !important; }
+        .rounded-lg { border-radius: 8px !important; }
+        .backdrop-blur-md, .backdrop-blur-sm { backdrop-filter: none !important; }
+
+        /* Marca: el bloque superior de la barra lateral mantiene identidad */
+        aside > div:first-child { background-color: var(--superficie-2) !important; border-bottom: 1px solid var(--linea) !important; }
+
+        /* Barra lateral y navegación */
+        aside { border-right: 1px solid var(--linea) !important; box-shadow: none !important; }
+        aside nav button, aside nav summary { color: var(--tinta-2) !important; }
+        aside nav button:hover, aside nav summary:hover { background-color: var(--superficie-2) !important; color: var(--tinta) !important; }
+        aside nav button[class*="bg-slate-800/30"] { color: var(--acento) !important; font-weight: 700; }
+
+        /* Tablas: filas quiescentes, contraste solo al interactuar */
+        thead.bg-slate-950, thead.bg-slate-900, thead.bg-slate-800 { background-color: var(--superficie-2) !important; }
+        tbody tr[class*="hover:bg-slate-800"]:hover { background-color: var(--acento-suave) !important; }
+        tbody tr { border-color: var(--linea) !important; }
+        th, td { border-color: var(--linea) !important; }
+        [class*="rounded-2xl"][class*="border-"] { border-color: var(--linea) !important; }
+
+        /* Enlaces y foco */
+        a { color: var(--acento); }
+        :focus-visible { outline: 2px solid var(--acento); outline-offset: 2px; border-radius: 6px; }
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+        }
 
         @media print {
             @page {
