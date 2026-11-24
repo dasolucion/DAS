@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DAS Ventas - Sistema de Gestión</title>
+    <title>DAS Administrativo - Sistema de Gestión</title>
     <link rel="icon" type="image/png" href="DAS.png">
     <link rel="apple-touch-icon" href="DAS.png">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -229,7 +229,7 @@
                 <div class="bg-white p-2 rounded-2xl shadow-lg shadow-sky-500/10 mb-3">
                     <img src="DAS.png" alt="DAS" class="h-10 w-10 object-contain">
                 </div>
-                <h1 class="text-xl font-bold text-white tracking-tight">DAS Ventas</h1>
+                <h1 class="text-xl font-bold text-white tracking-tight">DAS Administrativo</h1>
                 <p class="text-xs text-slate-400 mt-1">Ingresa tus credenciales para acceder</p>
             </div>
 
@@ -272,7 +272,7 @@
                 <div class="bg-white p-1.5 rounded-xl shadow-sm">
                     <img src="DAS.png" alt="DAS" class="h-8 w-8 object-contain">
                 </div>
-                DAS Ventas
+                DAS Administrativo
             </span>
             <button onclick="toggleSidebar()" class="md:hidden text-slate-400 hover:text-white text-lg">
                 <i class="fa-solid fa-xmark"></i>
@@ -379,16 +379,15 @@
     <!-- Contenido Principal -->
     <main class="flex-1 flex flex-col w-full relative overflow-hidden bg-slate-950">
         
-        <header class="no-print bg-slate-900 border-b border-slate-800 p-4 flex justify-between items-center md:hidden sticky top-0 z-30 backdrop-blur-md bg-opacity-80">
-            <h1 class="text-base font-bold text-white flex items-center gap-2">
-                <div class="bg-white p-1 rounded-lg shadow-sm"><img src="DAS.png" alt="DAS" class="h-7 w-7 object-contain"></div> DAS Ventas
+        <header class="no-print bg-slate-900 border-b border-slate-800 p-4 flex items-center gap-3 md:hidden sticky top-0 z-30 backdrop-blur-md bg-opacity-80">
+            <button onclick="toggleSidebar()" class="text-slate-300 focus:outline-none shrink-0" aria-label="Abrir menú"><i class="fa-solid fa-bars text-xl"></i></button>
+            <h1 class="text-base font-bold text-white flex items-center gap-2 min-w-0 flex-1">
+                <div class="bg-white p-1 rounded-lg shadow-sm shrink-0"><img src="DAS.png" alt="DAS" class="h-7 w-7 object-contain"></div>
+                <span class="truncate">DAS Administrativo</span>
             </h1>
-            <div class="flex items-center gap-2">
-                <button onclick="toggleSidebar()" class="text-slate-300 focus:outline-none" aria-label="Abrir menú"><i class="fa-solid fa-bars text-xl"></i></button>
-                <button onclick="alternarTema(this)" class="tema-toggle md:hidden" title="Cambiar tema claro / oscuro" aria-label="Cambiar tema">
-                    <i class="fa-solid fa-moon"></i>
-                </button>
-            </div>
+            <button onclick="alternarTema(this)" class="tema-toggle md:hidden shrink-0" title="Cambiar tema claro / oscuro" aria-label="Cambiar tema">
+                <i class="fa-solid fa-moon"></i>
+            </button>
         </header>
 
         <div id="contenido-principal" class="flex-1 p-4 md:p-8 overflow-y-auto w-full">
