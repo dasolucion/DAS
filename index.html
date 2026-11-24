@@ -379,13 +379,9 @@
     <!-- Contenido Principal -->
     <main class="flex-1 flex flex-col w-full relative overflow-hidden bg-slate-950">
         
-        <header class="no-print bg-slate-900 border-b border-slate-800 p-4 flex items-center gap-3 md:hidden sticky top-0 z-30 backdrop-blur-md bg-opacity-80">
-            <button onclick="toggleSidebar()" class="text-slate-300 focus:outline-none shrink-0" aria-label="Abrir menú"><i class="fa-solid fa-bars text-xl"></i></button>
-            <h1 class="text-base font-bold text-white flex items-center gap-2 min-w-0 flex-1">
-                <div class="bg-white p-1 rounded-lg shadow-sm shrink-0"><img src="DAS.png" alt="DAS" class="h-7 w-7 object-contain"></div>
-                <span class="truncate">DAS Administrativo</span>
-            </h1>
-            <button onclick="alternarTema(this)" class="tema-toggle md:hidden shrink-0" title="Cambiar tema claro / oscuro" aria-label="Cambiar tema">
+        <header class="no-print bg-slate-900 border-b border-slate-800 p-4 flex items-center justify-between md:hidden sticky top-0 z-30 backdrop-blur-md bg-opacity-80">
+            <button onclick="toggleSidebar()" class="text-slate-300 focus:outline-none" aria-label="Abrir menú"><i class="fa-solid fa-bars text-xl"></i></button>
+            <button onclick="alternarTema(this)" class="tema-toggle md:hidden" title="Cambiar tema claro / oscuro" aria-label="Cambiar tema">
                 <i class="fa-solid fa-moon"></i>
             </button>
         </header>
