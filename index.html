@@ -272,7 +272,7 @@
                 <div class="bg-white p-1.5 rounded-xl shadow-sm">
                     <img src="DAS.png" alt="DAS" class="h-8 w-8 object-contain">
                 </div>
-                DAS Administrativo
+                <span id="label-brand-empresa">DAS Administrativo</span>
             </span>
             <button onclick="toggleSidebar()" class="md:hidden text-slate-400 hover:text-white text-lg">
                 <i class="fa-solid fa-xmark"></i>
@@ -2837,6 +2837,9 @@
                 const el = document.getElementById(domId);
                 if (el) el.value = datosGenerales[dbKey] || '';
             });
+
+            const lblBrand = document.getElementById('label-brand-empresa');
+            if (lblBrand) lblBrand.innerText = datosGenerales.empresa_nombre || 'DAS Administrativo';
         }
 
         async function guardarDatosGenerales(e) {
