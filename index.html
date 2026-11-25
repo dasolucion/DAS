@@ -147,8 +147,10 @@
         .rounded-lg { border-radius: 8px !important; }
         .backdrop-blur-md, .backdrop-blur-sm { backdrop-filter: none !important; }
 
-        /* Marca: el bloque superior de la barra lateral mantiene identidad */
-        aside > div:first-child { background-color: var(--superficie-2) !important; border-bottom: 1px solid var(--linea) !important; }
+        /* Marca: bloque superior del menú, alineado con RRHH */
+        .sidebar-brand { border-bottom: 1px solid var(--linea) !important; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: var(--linea-fuerte); border-radius: 4px; }
 
         /* Barra lateral y navegación */
         aside { border-right: 1px solid var(--linea) !important; box-shadow: none !important; }
@@ -266,20 +268,17 @@
     </div>
 
     <!-- Menú Lateral -->
-    <aside id="sidebar" class="no-print w-64 bg-slate-900 flex flex-col transition-transform transform -translate-x-full absolute z-40 h-full md:relative md:translate-x-0 shadow-2xl border-r border-slate-800">
-        <div class="p-5 text-lg font-bold text-white border-b border-slate-800 flex justify-between items-center bg-slate-950/50 backdrop-blur-sm">
-            <span class="flex items-center gap-3">
-                <div class="bg-white p-1.5 rounded-xl shadow-sm">
-                    <img src="DAS.png" alt="DAS" class="h-8 w-8 object-contain">
+    <aside id="sidebar" class="no-print fixed inset-y-0 left-0 z-50 w-64 bg-slate-900 border-r border-slate-800 p-4 flex flex-col shrink-0 h-full custom-scrollbar transform -translate-x-full transition-transform duration-300 md:relative md:translate-x-0">
+        <div class="flex-1 min-h-0 overflow-y-auto">
+            <div class="sidebar-brand flex items-center space-x-3 px-2 py-3 border-b border-slate-800 mb-4 relative">
+                <button onclick="toggleSidebar()" class="md:hidden absolute -top-1 -right-2 text-slate-500 hover:text-white p-2" aria-label="Cerrar menú"><i class="fa-solid fa-xmark text-xl"></i></button>
+                <img src="DAS.png" alt="DAS Administrativo" class="h-8 w-auto object-contain drop-shadow-sm" />
+                <div class="min-w-0">
+                    <h1 class="font-bold text-sm tracking-wide text-white">DAS Administrativo</h1>
+                    <p class="text-[10px] text-slate-400 truncate" id="label-brand-empresa">DAS Administrativo</p>
                 </div>
-                <span id="label-brand-empresa">DAS Administrativo</span>
-            </span>
-            <button onclick="toggleSidebar()" class="md:hidden text-slate-400 hover:text-white text-lg">
-                <i class="fa-solid fa-xmark"></i>
-            </button>
-        </div>
-        
-        <nav class="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
+            </div>
+            <nav class="space-y-1" id="main-navigation">
             <button onclick="mostrarModulo('dashboard')" class="w-full text-left py-3 px-4 rounded-xl text-xs font-medium transition flex items-center gap-3 text-slate-300 hover:bg-slate-800 hover:text-white border border-transparent hover:border-slate-700 bg-slate-800/30">
                 <i class="fa-solid fa-chart-pie w-5 text-center text-purple-400"></i> Dashboard
             </button>
@@ -358,20 +357,23 @@
             <button onclick="mostrarModulo('parametros')" class="w-full text-left py-3 px-4 rounded-xl text-xs font-medium transition flex items-center gap-3 text-slate-300 hover:bg-slate-800 hover:text-white border border-transparent hover:border-slate-700">
                 <i class="fa-solid fa-gears w-5 text-center text-indigo-400"></i> Parámetros
             </button>
-        </nav>
+            </nav>
+        </div>
         
-        <div class="p-3 border-t border-slate-800 flex items-center justify-between text-[11px] bg-slate-950/40">
-            <span class="text-slate-400 font-medium truncate flex items-center gap-1.5">
-                <i class="fa-solid fa-circle-user text-sky-400"></i>
-                <span id="label-usuario-activo">Admin</span>
-            </span>
-            <div class="flex items-center gap-1.5">
-                <button onclick="alternarTema(this)" class="tema-toggle" title="Cambiar tema claro / oscuro" aria-label="Cambiar tema">
-                    <i class="fa-solid fa-moon"></i>
-                </button>
-                <button onclick="cerrarSesion()" class="text-rose-400 hover:text-rose-300 font-semibold text-[10px] px-2 py-1 rounded-lg bg-rose-950/30 border border-rose-900/40 transition" title="Cerrar sesión">
-                    <i class="fa-solid fa-power-off"></i> Salir
-                </button>
+        <div class="pt-4 border-t border-slate-800">
+            <div class="bg-slate-950 p-2.5 rounded-lg border border-slate-800 flex items-center justify-between gap-2">
+                <div class="overflow-hidden mr-2 min-w-0">
+                    <div class="text-[10px] text-slate-400 font-medium">Usuario activo</div>
+                    <div class="text-xs font-bold text-white truncate" id="label-usuario-activo">Admin</div>
+                </div>
+                <div class="flex items-center gap-1.5 shrink-0">
+                    <button onclick="alternarTema(this)" class="tema-toggle" title="Cambiar tema claro / oscuro" aria-label="Cambiar tema">
+                        <i class="fa-solid fa-moon"></i>
+                    </button>
+                    <button onclick="cerrarSesion()" class="text-rose-400 hover:text-rose-300 font-semibold text-[10px] px-2 py-1 rounded-lg bg-rose-950/30 border border-rose-900/40 transition" title="Cerrar sesión">
+                        <i class="fa-solid fa-power-off"></i> Salir
+                    </button>
+                </div>
             </div>
         </div>
     </aside>
