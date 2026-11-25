@@ -2639,6 +2639,9 @@
             if (confirm("¿Deseas cerrar tu sesión?")) {
                 sessionStorage.removeItem('das_auth');
                 sessionStorage.removeItem('das_user');
+                cerrarSidebar();
+                const labelUsuario = document.getElementById('label-usuario-activo');
+                if (labelUsuario) labelUsuario.innerText = 'Admin';
                 document.getElementById('pantalla-login').classList.remove('hidden');
             }
         }
@@ -3051,6 +3054,13 @@
         function alternarTema(boton) {
             const actual = document.documentElement.getAttribute('data-theme') || 'light';
             aplicarTema(actual === 'dark' ? 'light' : 'dark', [boton]);
+        }
+
+        function cerrarSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            if (sidebar) sidebar.classList.add('-translate-x-full');
+            if (overlay) overlay.classList.add('hidden');
         }
 
         function toggleSidebar() {
