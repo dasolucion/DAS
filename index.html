@@ -274,8 +274,8 @@
                 <button onclick="toggleSidebar()" class="md:hidden absolute -top-1 -right-2 text-slate-500 hover:text-white p-2" aria-label="Cerrar menú"><i class="fa-solid fa-xmark text-xl"></i></button>
                 <img src="DAS.png" alt="DAS Administrativo" class="h-8 w-auto object-contain drop-shadow-sm" />
                 <div class="min-w-0">
-                    <h1 class="font-bold text-sm tracking-wide text-white">DAS Administrativo</h1>
-                    <p class="text-[10px] text-slate-400 truncate" id="label-brand-empresa">DAS Administrativo</p>
+                    <h1 class="font-bold text-sm tracking-wide text-white truncate" id="label-brand-empresa">DAS Administrativo</h1>
+                    <p class="text-[10px] text-slate-400 truncate" id="label-brand-rif">J-40282664-8</p>
                 </div>
             </div>
             <nav class="space-y-1" id="main-navigation">
@@ -2842,6 +2842,8 @@
 
             const lblBrand = document.getElementById('label-brand-empresa');
             if (lblBrand) lblBrand.innerText = datosGenerales.empresa_nombre || 'DAS Administrativo';
+            const lblRif = document.getElementById('label-brand-rif');
+            if (lblRif) lblRif.innerText = datosGenerales.empresa_rif || '';
         }
 
         async function guardarDatosGenerales(e) {
